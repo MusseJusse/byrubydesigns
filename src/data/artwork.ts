@@ -152,9 +152,7 @@ export const galleryCategories = [
   {
     id: "paintings",
     label: "Paintings",
-    intro: [
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae neque sit amet urna aliquam tincidunt."
-    ],
+    intro: ["“It's all there, the strangeness, colour, exhilaration.” Rita Angus"],
     items: paintingArtwork
   }
 ] as const satisfies readonly GalleryCategory[];
