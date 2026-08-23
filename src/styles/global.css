@@ -252,6 +252,12 @@ a {
   margin: 0;
 }
 
+.sonia-footer-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+}
+
 .sonia-footer a {
   color: inherit;
   text-underline-offset: 4px;
@@ -261,6 +267,14 @@ a {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 24px;
+}
+
+.sonia-back-to-top {
+  align-self: center;
+  margin-top: 28px;
+  font-size: 24px;
+  line-height: 1;
+  text-decoration: none;
 }
 
 .sonia-lightbox {
@@ -495,6 +509,10 @@ a {
   }
 
   .sonia-footer {
+    flex-direction: column;
+  }
+
+  .sonia-footer-content {
     flex-direction: column;
   }
 
