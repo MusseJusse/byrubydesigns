@@ -317,9 +317,16 @@ a {
 }
 
 .sonia-lightbox figcaption {
+  display: grid;
+  gap: 3px;
   color: #333;
   font-size: 12px;
+  line-height: 1.35;
   text-align: center;
+}
+
+.sonia-lightbox figcaption cite {
+  font-style: italic;
 }
 
 .sonia-lightbox-close,

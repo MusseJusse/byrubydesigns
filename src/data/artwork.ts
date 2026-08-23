@@ -6,6 +6,12 @@ export type GalleryArtwork = {
   title: string;
   aspectRatio: string;
   year?: 2022 | 2026;
+  medium?: string;
+  dimensions?: {
+    width: number;
+    height: number;
+    unit: "mm" | "cm";
+  };
 };
 
 export type GalleryCategory = {
@@ -57,10 +63,38 @@ const drawingArtwork = drawingAspectRatios.map((aspectRatio, index) => {
 }) satisfies GalleryArtwork[];
 
 const paintingSource = [
-  { fileName: "painting-01.webp", title: "Painting 01", aspectRatio: "1273 / 1800", year: 2026 },
-  { fileName: "painting-02.webp", title: "Painting 02", aspectRatio: "1044 / 1501", year: 2026 },
-  { fileName: "painting-03.webp", title: "Painting 03", aspectRatio: "1055 / 1510", year: 2026 },
-  { fileName: "painting-08.webp", title: "Painting 08", aspectRatio: "1130 / 1412", year: 2026 },
+  {
+    fileName: "painting-01.webp",
+    title: "A Gift",
+    medium: "Gouache and graphite on paper",
+    dimensions: { width: 420, height: 594, unit: "mm" },
+    aspectRatio: "1273 / 1800",
+    year: 2026
+  },
+  {
+    fileName: "painting-02.webp",
+    title: "The Waterlilies",
+    medium: "Gouache on paper",
+    dimensions: { width: 420, height: 594, unit: "mm" },
+    aspectRatio: "1044 / 1501",
+    year: 2026
+  },
+  {
+    fileName: "painting-03.webp",
+    title: "The Peonies",
+    medium: "Gouache on paper",
+    dimensions: { width: 420, height: 594, unit: "mm" },
+    aspectRatio: "1055 / 1510",
+    year: 2026
+  },
+  {
+    fileName: "painting-08.webp",
+    title: "Morning Glory",
+    medium: "Gouache on handmade cotton rag paper",
+    dimensions: { width: 240, height: 360, unit: "mm" },
+    aspectRatio: "1130 / 1412",
+    year: 2026
+  },
   { fileName: "painting-09.webp", title: "Painting 09", aspectRatio: "1297 / 1800", year: 2026 },
   { fileName: "painting-04.webp", title: "Kererū", aspectRatio: "1 / 1", year: 2022 },
   { fileName: "painting-05.webp", title: "Kākā", aspectRatio: "1 / 1", year: 2022 },
@@ -68,12 +102,10 @@ const paintingSource = [
   { fileName: "painting-07.webp", title: "Bird studies", aspectRatio: "1800 / 1273", year: 2022 }
 ] as const;
 
-const paintingArtwork = paintingSource.map(({ fileName, title, aspectRatio, year }) => ({
+const paintingArtwork = paintingSource.map(({ fileName, ...item }) => ({
   fileName,
   imagePath: `/src/assets/artwork/paintings/${fileName}` as const,
-  title,
-  aspectRatio,
-  year
+  ...item
 })) satisfies GalleryArtwork[];
 
 export const galleryCategories = [
