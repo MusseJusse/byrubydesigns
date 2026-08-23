@@ -266,13 +266,14 @@ a {
 .sonia-footer-links {
   display: flex;
   flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px 24px;
 }
 
 .sonia-back-to-top {
   align-self: center;
   margin-top: 28px;
-  font-size: 22px;
+  font-size: 14px;
   line-height: 1;
   text-decoration: none;
   transform: rotate(-90deg);
