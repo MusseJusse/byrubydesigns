@@ -112,6 +112,8 @@ const paintingSource = [
   {
     fileName: "painting-10.webp",
     title: "Morning Glory",
+    medium: "Gouache on handmade cotton rag paper",
+    dimensions: { width: 240, height: 360, unit: "mm" },
     aspectRatio: "2480 / 3508",
     year: 2026
   },
