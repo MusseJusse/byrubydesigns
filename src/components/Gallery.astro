@@ -47,6 +47,10 @@ const categories = await Promise.all(
           aria-label={category.label + " work"}
           hidden={category.id !== "tattoo"}
         >
+          <div class="sonia-gallery-intro">
+            {category.intro.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+          <hr class="sonia-gallery-separator" />
           {category.id === "paintings" && (
             <h2 class="sonia-gallery-year-heading">2026</h2>
           )}
