@@ -28,6 +28,11 @@ body {
   font-weight: 400;
 }
 
+::selection {
+  background: #90344c;
+  color: #fff;
+}
+
 button,
 a {
   -webkit-tap-highlight-color: transparent;
