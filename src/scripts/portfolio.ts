@@ -6,6 +6,11 @@ function isCategoryId(value: string | undefined): value is CategoryId {
   return value !== undefined && categoryIds.some((category) => category === value);
 }
 
+function categoryFromHash(): CategoryId | undefined {
+  const category = window.location.hash.slice(1);
+  return isCategoryId(category) ? category : undefined;
+}
+
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error("Portfolio element is missing: " + selector);
@@ -198,6 +203,17 @@ function selectCategory(category: CategoryId) {
   if (mobileMenuOpen) closeMobileMenu(true);
 }
 
+function selectCategoryFromHash() {
+  const category = categoryFromHash();
+  if (category) selectCategory(category);
+  else if (!window.location.hash) selectCategory("tattoo");
+}
+
+function updateCategoryHash(category: CategoryId) {
+  if (categoryFromHash() === category) return;
+  window.history.pushState(null, "", "#" + category);
+}
+
 function setMobileMenuTabStops(enabled: boolean) {
   for (const element of mobileMenu.querySelectorAll<HTMLElement>("a, button")) {
     element.tabIndex = enabled ? 0 : -1;
@@ -289,7 +305,10 @@ menuButton.addEventListener("click", () => {
 for (const trigger of categoryTriggers) {
   trigger.addEventListener("click", () => {
     const category = trigger.dataset.categoryTrigger;
-    if (isCategoryId(category)) selectCategory(category);
+    if (isCategoryId(category)) {
+      selectCategory(category);
+      updateCategoryHash(category);
+    }
   });
 }
 
@@ -330,5 +349,10 @@ window.addEventListener("pagehide", () => {
   lightboxUnlockScroll?.();
 });
 
+window.addEventListener("popstate", selectCategoryFromHash);
+window.addEventListener("hashchange", selectCategoryFromHash);
+
 document.documentElement.classList.add("portfolio-enhanced");
-observeActiveGallery();
+const initialCategory = categoryFromHash();
+if (initialCategory && initialCategory !== selectedCategory) selectCategory(initialCategory);
+else observeActiveGallery();
