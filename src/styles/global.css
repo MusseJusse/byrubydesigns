@@ -147,6 +147,32 @@ a {
   background: #fff;
 }
 
+.sonia-gallery-intro {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto 30px;
+  color: #383838;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sonia-gallery-intro p {
+  max-width: 720px;
+  margin: 0;
+}
+
+.sonia-gallery-intro p + p {
+  margin-top: 16px;
+}
+
+.sonia-gallery-separator {
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto 22px;
+  border: 0;
+  border-top: 1px solid #dedbd5;
+}
+
 .sonia-gallery-grid {
   display: grid;
   width: 100%;

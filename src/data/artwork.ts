@@ -17,6 +17,7 @@ export type GalleryArtwork = {
 export type GalleryCategory = {
   id: GalleryCategoryId;
   label: string;
+  intro: readonly string[];
   items: readonly GalleryArtwork[];
 };
 
@@ -130,7 +131,30 @@ const paintingArtwork = paintingSource.map(({ fileName, ...item }) => ({
 })) satisfies GalleryArtwork[];
 
 export const galleryCategories = [
-  { id: "tattoo", label: "Tattoo", items: tattooArtwork },
-  { id: "drawings", label: "Drawings", items: drawingArtwork },
-  { id: "paintings", label: "Paintings", items: paintingArtwork }
+  {
+    id: "tattoo",
+    label: "Tattoo",
+    intro: [
+      "Originally trained in Auckland, New Zealand, I have been tattooing since 2022 and now work out of Inkdependent Studio near Edinburgh’s Haymarket station.",
+      "Fully licensed, I do custom and my own original designs with a focus on fine-line black-and-grey."
+    ],
+    items: tattooArtwork
+  },
+  {
+    id: "drawings",
+    label: "Drawings",
+    intro: [
+      "A series of hand-sized flash designs rendered in ballpoint pen, available for tattooing.",
+      "These pieces explore core themes in my work—from delicate flora and pollinators to skulls and wildlife—all balanced with soft shading and natural placement in mind."
+    ],
+    items: drawingArtwork
+  },
+  {
+    id: "paintings",
+    label: "Paintings",
+    intro: [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer vitae neque sit amet urna aliquam tincidunt."
+    ],
+    items: paintingArtwork
+  }
 ] as const satisfies readonly GalleryCategory[];
