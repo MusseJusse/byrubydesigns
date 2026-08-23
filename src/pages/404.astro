@@ -1,0 +1,46 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Page not found | Ruby Smythe"
+  description="The requested page could not be found."
+>
+  <main class="not-found">
+    <p>404</p>
+    <h1>Page not found</h1>
+    <a href="/">Back to the portfolio</a>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    display: grid;
+    min-height: 100vh;
+    place-content: center;
+    justify-items: center;
+    gap: 16px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .not-found p,
+  .not-found h1 {
+    margin: 0;
+    font-weight: 400;
+  }
+
+  .not-found p {
+    color: #90344c;
+    font-size: 14px;
+  }
+
+  .not-found h1 {
+    font-size: clamp(2rem, 8vw, 4rem);
+  }
+
+  .not-found a {
+    color: inherit;
+    text-underline-offset: 4px;
+  }
+</style>
