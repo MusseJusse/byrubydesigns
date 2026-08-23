@@ -133,7 +133,7 @@ const paintingArtwork = paintingSource.map(({ fileName, ...item }) => ({
 export const galleryCategories = [
   {
     id: "tattoo",
-    label: "Tattoo",
+    label: "Tattoos",
     intro: [
       "Originally trained in Auckland, New Zealand, I have been tattooing since 2022 and now work out of Inkdependent Studio near Edinburgh’s Haymarket station.",
       "Fully licensed, I do custom and my own original designs with a focus on fine-line black-and-grey."
