@@ -21,27 +21,33 @@ export type GalleryCategory = {
 };
 
 const tattooSource = [
-  { fileName: "IMG_6601.webp", title: "Tattoo 13" },
-  { fileName: "IMG_3554.webp", title: "Tattoo 12" },
-  { fileName: "IMG_3112.webp", title: "Tattoo 11" },
-  { fileName: "IMG_2526.webp", title: "Tattoo 10" },
-  { fileName: "IMG_2522.webp", title: "Tattoo 09" },
-  { fileName: "IMG_2233.webp", title: "Tattoo 08" },
-  { fileName: "IMG_1356.webp", title: "Tattoo 07" },
-  { fileName: "IMG_1220.webp", title: "Tattoo 06" },
-  { fileName: "IMG_1163.webp", title: "Tattoo 05", aspectRatio: "2 / 3" },
-  { fileName: "IMG_0545.webp", title: "Tattoo 04", aspectRatio: "1 / 1" },
-  { fileName: "IMG_0502.webp", title: "Tattoo 03", aspectRatio: "2 / 3" },
-  { fileName: "7 kererū.webp", title: "Kererū" },
-  { fileName: "1 floral forearm piece.webp", title: "Floral Forearm" }
+  { fileName: "IMG_6601.webp" },
+  { fileName: "IMG_3554.webp" },
+  { fileName: "IMG_3112.webp" },
+  { fileName: "IMG_2526.webp" },
+  { fileName: "IMG_2522.webp" },
+  { fileName: "IMG_2233.webp" },
+  { fileName: "IMG_1356.webp" },
+  { fileName: "IMG_1220.webp" },
+  { fileName: "IMG_1163.webp", aspectRatio: "2 / 3" },
+  { fileName: "IMG_0545.webp", aspectRatio: "1 / 1" },
+  { fileName: "IMG_0502.webp", aspectRatio: "2 / 3" },
+  { fileName: "7 kererū.webp" },
+  { fileName: "1 floral forearm piece.webp" }
 ] as const;
 
-const tattooArtwork = tattooSource.map(({ fileName, title, ...item }) => ({
-  fileName,
-  imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
-  title,
-  aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
-})) satisfies GalleryArtwork[];
+function numberedTitle(label: "Tattoo" | "Drawing", index: number) {
+  return `${label} ${String(index + 1).padStart(2, "0")}`;
+}
+
+const tattooArtwork = tattooSource.map(({ fileName, ...item }, index) => {
+  return {
+    fileName,
+    imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
+    title: numberedTitle("Tattoo", index),
+    aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
+  };
+}) satisfies GalleryArtwork[];
 
 const drawingAspectRatios = [
   "3 / 4", "3 / 4", "4 / 5", "3 / 4", "3 / 4", "3 / 4", "4 / 5",
@@ -57,7 +63,7 @@ const drawingArtwork = drawingAspectRatios.map((aspectRatio, index) => {
   return {
     fileName,
     imagePath: `/src/assets/artwork/drawings/${fileName}` as const,
-    title: "Drawing " + number,
+    title: numberedTitle("Drawing", index),
     aspectRatio
   };
 }) satisfies GalleryArtwork[];
