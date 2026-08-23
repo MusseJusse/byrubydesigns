@@ -256,12 +256,22 @@ function showActiveImage() {
 
   const button = buttons[activeIndex];
   if (!button) return;
-  const caption = button.closest("figure")?.querySelector("figcaption")?.textContent?.trim() ?? "";
+  const titleText = button.dataset.title ?? "Artwork";
+  const title = document.createElement("cite");
+  title.textContent = titleText;
+
+  const captionLines: HTMLElement[] = [title];
+  for (const detail of [button.dataset.medium, button.dataset.dimensions]) {
+    if (!detail) continue;
+    const line = document.createElement("span");
+    line.textContent = detail;
+    captionLines.push(line);
+  }
 
   lightboxImage.src = button.dataset.fullSrc ?? "";
   lightboxImage.alt = button.dataset.alt ?? "";
-  lightboxCaption.textContent = caption;
-  lightbox.setAttribute("aria-label", "Full image of " + caption);
+  lightboxCaption.replaceChildren(...captionLines);
+  lightbox.setAttribute("aria-label", "Full image of " + titleText);
 }
 
 function openLightbox(button: HTMLButtonElement) {
