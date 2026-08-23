@@ -95,13 +95,19 @@ const paintingSource = [
   },
   {
     fileName: "painting-08.webp",
-    title: "Morning Glory",
+    title: "Irises and Daffodils revisited",
     medium: "Gouache on handmade cotton rag paper",
-    dimensions: { width: 240, height: 360, unit: "mm" },
+    dimensions: { width: 210, height: 296, unit: "mm" },
     aspectRatio: "1130 / 1412",
     year: 2026
   },
-  { fileName: "painting-09.webp", title: "Painting 09", aspectRatio: "1297 / 1800", year: 2026 },
+  {
+    fileName: "painting-09.webp",
+    title: "The Sisters",
+    dimensions: { width: 420, height: 594, unit: "mm" },
+    aspectRatio: "1297 / 1800",
+    year: 2026
+  },
   { fileName: "painting-04.webp", title: "Kererū", aspectRatio: "1 / 1", year: 2022 },
   { fileName: "painting-05.webp", title: "Kākā", aspectRatio: "1 / 1", year: 2022 },
   { fileName: "painting-06.webp", title: "Tūī", aspectRatio: "1 / 1", year: 2022 },
