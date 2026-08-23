@@ -1,0 +1,83 @@
+export type GalleryCategoryId = "tattoo" | "drawings" | "paintings";
+
+export type GalleryArtwork = {
+  fileName: string;
+  imagePath: string;
+  title: string;
+  aspectRatio: string;
+  year?: 2022 | 2026;
+};
+
+export type GalleryCategory = {
+  id: GalleryCategoryId;
+  label: string;
+  items: readonly GalleryArtwork[];
+};
+
+const tattooSource = [
+  { fileName: "IMG_6601.webp", title: "Tattoo 13" },
+  { fileName: "IMG_3554.webp", title: "Tattoo 12" },
+  { fileName: "IMG_3112.webp", title: "Tattoo 11" },
+  { fileName: "IMG_2526.webp", title: "Tattoo 10" },
+  { fileName: "IMG_2522.webp", title: "Tattoo 09" },
+  { fileName: "IMG_2233.webp", title: "Tattoo 08" },
+  { fileName: "IMG_1356.webp", title: "Tattoo 07" },
+  { fileName: "IMG_1220.webp", title: "Tattoo 06" },
+  { fileName: "IMG_1163.webp", title: "Tattoo 05", aspectRatio: "2 / 3" },
+  { fileName: "IMG_0545.webp", title: "Tattoo 04", aspectRatio: "1 / 1" },
+  { fileName: "IMG_0502.webp", title: "Tattoo 03", aspectRatio: "2 / 3" },
+  { fileName: "7 kererū.webp", title: "Kererū" },
+  { fileName: "1 floral forearm piece.webp", title: "Floral Forearm" }
+] as const;
+
+const tattooArtwork = tattooSource.map(({ fileName, title, ...item }) => ({
+  fileName,
+  imagePath: "/src/assets/artwork/tattoo/" + fileName,
+  title,
+  aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
+})) satisfies GalleryArtwork[];
+
+const drawingAspectRatios = [
+  "3 / 4", "3 / 4", "4 / 5", "3 / 4", "3 / 4", "3 / 4", "4 / 5",
+  "3 / 4", "4 / 5", "3 / 4", "3 / 4", "3 / 4", "3 / 4", "3 / 4",
+  "3 / 4", "3 / 4", "3 / 4", "3 / 4", "3 / 4", "3 / 4", "3 / 4",
+  "3 / 4", "3 / 4", "3 / 4", "1800 / 1546", "1 / 1", "1 / 1", "4 / 5"
+] as const;
+
+const drawingArtwork = drawingAspectRatios.map((aspectRatio, index) => {
+  const number = String(index + 1).padStart(2, "0");
+  const fileName = "drawing-" + number + ".webp";
+
+  return {
+    fileName,
+    imagePath: "/src/assets/artwork/drawings/" + fileName,
+    title: "Drawing " + number,
+    aspectRatio
+  };
+}) satisfies GalleryArtwork[];
+
+const paintingSource = [
+  { fileName: "painting-01.webp", title: "Painting 01", aspectRatio: "1273 / 1800", year: 2026 },
+  { fileName: "painting-02.webp", title: "Painting 02", aspectRatio: "1044 / 1501", year: 2026 },
+  { fileName: "painting-03.webp", title: "Painting 03", aspectRatio: "1055 / 1510", year: 2026 },
+  { fileName: "painting-08.webp", title: "Painting 08", aspectRatio: "1130 / 1412", year: 2026 },
+  { fileName: "painting-09.webp", title: "Painting 09", aspectRatio: "1297 / 1800", year: 2026 },
+  { fileName: "painting-04.webp", title: "Kererū", aspectRatio: "1 / 1", year: 2022 },
+  { fileName: "painting-05.webp", title: "Kākā", aspectRatio: "1 / 1", year: 2022 },
+  { fileName: "painting-06.webp", title: "Tūī", aspectRatio: "1 / 1", year: 2022 },
+  { fileName: "painting-07.webp", title: "Bird studies", aspectRatio: "1800 / 1273", year: 2022 }
+] as const;
+
+const paintingArtwork = paintingSource.map(({ fileName, title, aspectRatio, year }) => ({
+  fileName,
+  imagePath: "/src/assets/artwork/paintings/" + fileName,
+  title,
+  aspectRatio,
+  year
+})) satisfies GalleryArtwork[];
+
+export const galleryCategories = [
+  { id: "tattoo", label: "Tattoo", items: tattooArtwork },
+  { id: "drawings", label: "Drawings", items: drawingArtwork },
+  { id: "paintings", label: "Paintings", items: paintingArtwork }
+] as const satisfies readonly GalleryCategory[];

@@ -1,0 +1,93 @@
+---
+import type { ImageMetadata } from "astro";
+import { getImage, Image } from "astro:assets";
+import { galleryCategories } from "../data/artwork";
+
+const imageLoaders = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/artwork/**/*.webp"
+);
+
+async function resolveImage(path: string) {
+  const load = imageLoaders[path];
+  if (!load) throw new Error("Artwork file is missing: " + path);
+  return (await load()).default;
+}
+
+const categories = await Promise.all(
+  galleryCategories.map(async (category) => ({
+    ...category,
+    items: await Promise.all(
+      category.items.map(async (item) => {
+        const image = await resolveImage(item.imagePath);
+        const lightbox = await getImage({
+          src: image,
+          width: Math.min(1800, image.width),
+          format: "webp",
+          quality: 90
+        });
+
+        return { ...item, image, lightboxSrc: lightbox.src };
+      })
+    )
+  }))
+);
+---
+
+<section id="work" class="sonia-gallery">
+  {
+    categories.map((category) => {
+      const yearBreakIndex = category.items.findIndex(
+        (item) => "year" in item && item.year === 2022
+      );
+
+      return (
+        <section
+          id={"gallery-" + category.id}
+          data-category-panel={category.id}
+          aria-label={category.label + " work"}
+          hidden={category.id !== "tattoo"}
+        >
+          {category.id === "paintings" && (
+            <h2 class="sonia-gallery-year-heading">2026</h2>
+          )}
+          <div
+            class="sonia-gallery-grid"
+            data-gallery-grid
+            data-year-break-index={yearBreakIndex >= 0 ? String(yearBreakIndex) : undefined}
+          >
+            {category.items.map((item, index) => (
+              <>
+                {category.id === "paintings" && index === yearBreakIndex && (
+                  <h2 class="sonia-gallery-year-divider" data-year-divider>2022</h2>
+                )}
+                <figure class="sonia-gallery-item">
+                  <button
+                    type="button"
+                    data-lightbox-open
+                    data-category={category.id}
+                    data-index={index}
+                    data-full-src={item.lightboxSrc}
+                    data-alt={item.title + ", artwork by Ruby Smythe"}
+                    aria-label={"View full image of " + item.title}
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.title + ", artwork by Ruby Smythe"}
+                      widths={[360, 720, 1080]}
+                      sizes="(max-width: 899px) 50vw, 33vw"
+                      quality={85}
+                      loading={category.id === "tattoo" && index < 7 ? "eager" : "lazy"}
+                      fetchpriority={category.id === "tattoo" && index === 0 ? "high" : "auto"}
+                      style={"aspect-ratio: " + item.aspectRatio}
+                    />
+                  </button>
+                  <figcaption>{item.title}</figcaption>
+                </figure>
+              </>
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
+</section>
