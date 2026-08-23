@@ -13,7 +13,8 @@ const transitionNames = {
   header: "portfolio-header",
   lightbox: "portfolio-lightbox",
   lightboxCaption: "portfolio-lightbox-caption",
-  lightboxImage: "portfolio-lightbox-image"
+  lightboxImage: "portfolio-lightbox-image",
+  menuButton: "portfolio-menu-button"
 } as const;
 
 function isCategoryId(value: string | undefined): value is CategoryId {
@@ -450,6 +451,7 @@ function openLightbox(button: HTMLButtonElement, animate = false) {
   preparePortfolioTransition(shouldAnimate ? "lightbox-open" : undefined);
 
   if (shouldAnimate && thumbnail) {
+    setTransitionName(menuButton, transitionNames.menuButton);
     setTransitionName(thumbnail, transitionNames.artwork);
   }
 
@@ -487,6 +489,7 @@ function closeLightbox(restoreFocus = true, animate = false) {
   if (shouldAnimate) {
     setTransitionName(lightbox, transitionNames.lightbox);
     setTransitionName(lightboxImage, transitionNames.artwork);
+    setTransitionName(menuButton, transitionNames.menuButton);
   }
 
   const transition = startPortfolioTransition(() => {

@@ -330,7 +330,7 @@ a {
   backdrop-filter: blur(16px);
 }
 
-.portfolio-view-transitions[data-portfolio-transition="lightbox-open"] .sonia-lightbox {
+.portfolio-view-transitions[data-portfolio-transition="lightbox-close"] .sonia-lightbox {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
@@ -672,6 +672,16 @@ a {
   .portfolio-view-transitions::view-transition-group(portfolio-artwork) {
     animation-duration: 280ms;
     animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+    z-index: 2;
+  }
+
+  .portfolio-view-transitions::view-transition-group(portfolio-lightbox) {
+    z-index: 1;
+  }
+
+  .portfolio-view-transitions::view-transition-group(portfolio-menu-button) {
+    animation: none;
+    z-index: 3;
   }
 
   .portfolio-view-transitions::view-transition-old(portfolio-artwork),
@@ -685,7 +695,9 @@ a {
   .portfolio-view-transitions::view-transition-old(portfolio-lightbox-image),
   .portfolio-view-transitions::view-transition-new(portfolio-lightbox-image),
   .portfolio-view-transitions::view-transition-old(portfolio-lightbox-caption),
-  .portfolio-view-transitions::view-transition-new(portfolio-lightbox-caption) {
+  .portfolio-view-transitions::view-transition-new(portfolio-lightbox-caption),
+  .portfolio-view-transitions::view-transition-old(portfolio-menu-button),
+  .portfolio-view-transitions::view-transition-new(portfolio-menu-button) {
     mix-blend-mode: normal;
   }
 
@@ -695,13 +707,15 @@ a {
   }
 
   .portfolio-view-transitions::view-transition-old(portfolio-header),
-  .portfolio-view-transitions::view-transition-old(portfolio-footer) {
+  .portfolio-view-transitions::view-transition-old(portfolio-footer),
+  .portfolio-view-transitions::view-transition-old(portfolio-menu-button) {
     animation: none;
     opacity: 0;
   }
 
   .portfolio-view-transitions::view-transition-new(portfolio-header),
-  .portfolio-view-transitions::view-transition-new(portfolio-footer) {
+  .portfolio-view-transitions::view-transition-new(portfolio-footer),
+  .portfolio-view-transitions::view-transition-new(portfolio-menu-button) {
     animation: none;
   }
 
