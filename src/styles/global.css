@@ -51,32 +51,6 @@ a {
   display: none;
 }
 
-.sonia-socials {
-  display: flex;
-  align-items: center;
-  gap: 23px;
-}
-
-.sonia-socials a,
-.sonia-socials span {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  color: #111;
-  transition: color 160ms ease, transform 160ms ease;
-}
-
-.sonia-socials a:hover {
-  color: #a64d49;
-  transform: translateY(-2px);
-}
-
-.sonia-socials svg {
-  width: 24px;
-  height: 24px;
-}
-
 .sonia-brand {
   position: absolute;
   top: 49px;
@@ -156,7 +130,7 @@ a {
 
 .sonia-main-nav a:hover,
 .sonia-main-nav button:hover {
-  color: #a64d49;
+  color: #90344c;
 }
 
 .sonia-main-nav .active {
@@ -264,6 +238,7 @@ a {
 
 .sonia-footer {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   gap: 24px;
   margin: 0 4.05%;
@@ -278,9 +253,33 @@ a {
   margin: 0;
 }
 
+.sonia-footer-content {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 24px;
+}
+
 .sonia-footer a {
   color: inherit;
   text-underline-offset: 4px;
+}
+
+.sonia-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  margin-left: auto;
+  justify-content: flex-end;
+  gap: 8px 24px;
+}
+
+.sonia-back-to-top {
+  align-self: center;
+  margin-top: 28px;
+  font-size: 14px;
+  line-height: 1;
+  text-decoration: none;
+  transform: rotate(-90deg);
 }
 
 .sonia-lightbox {
@@ -381,7 +380,6 @@ a {
     font-size: 24px;
   }
 
-  .sonia-socials,
   .sonia-main-nav {
     display: none;
   }
@@ -507,46 +505,6 @@ a {
     outline-offset: 6px;
   }
 
-  .sonia-mobile-socials {
-    align-self: end;
-    grid-row: 3;
-    display: flex;
-    justify-content: center;
-    gap: 21px;
-    padding-bottom: max(34px, env(safe-area-inset-bottom));
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 380ms cubic-bezier(0.65, 0, 0.35, 1), transform 380ms cubic-bezier(0.65, 0, 0.35, 1);
-  }
-
-  .sonia-mobile-menu.is-open .sonia-mobile-socials {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: 45ms;
-  }
-
-  .sonia-mobile-socials a {
-    display: grid;
-    width: 44px;
-    height: 44px;
-    place-items: center;
-    color: inherit;
-  }
-
-  .sonia-mobile-socials svg {
-    width: 23px;
-    height: 23px;
-  }
-
-  .sonia-mobile-socials a:active {
-    transform: scale(0.92);
-  }
-
-  .sonia-mobile-socials a:focus-visible {
-    outline: 2px solid #a64d49;
-    outline-offset: 2px;
-  }
-
   .sonia-gallery {
     padding: 32px 4.05% 86px;
   }
@@ -557,6 +515,14 @@ a {
 
   .sonia-footer {
     flex-direction: column;
+  }
+
+  .sonia-footer-content {
+    flex-direction: column;
+  }
+
+  .sonia-footer-links {
+    align-self: flex-end;
   }
 
   .sonia-lightbox {
@@ -604,8 +570,7 @@ a {
     transition-delay: 0s;
   }
 
-  .sonia-mobile-nav,
-  .sonia-mobile-socials {
+  .sonia-mobile-nav {
     transform: none;
     transition: opacity 160ms linear;
   }
