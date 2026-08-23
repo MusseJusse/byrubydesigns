@@ -742,6 +742,13 @@ a {
     animation: sonia-lightbox-backdrop-out 130ms cubic-bezier(0.23, 1, 0.32, 1) both;
   }
 
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-group(portfolio-lightbox-image),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-group(portfolio-lightbox-caption),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-previous"]::view-transition-group(portfolio-lightbox-image),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-previous"]::view-transition-group(portfolio-lightbox-caption) {
+    animation: none;
+  }
+
   .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-old(portfolio-lightbox-image),
   .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-old(portfolio-lightbox-caption) {
     animation: sonia-lightbox-image-next-out 100ms cubic-bezier(0.23, 1, 0.32, 1) both;
