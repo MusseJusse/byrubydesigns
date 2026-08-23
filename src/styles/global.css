@@ -272,9 +272,10 @@ a {
 .sonia-back-to-top {
   align-self: center;
   margin-top: 28px;
-  font-size: 24px;
+  font-size: 22px;
   line-height: 1;
   text-decoration: none;
+  transform: rotate(-90deg);
 }
 
 .sonia-lightbox {
@@ -514,6 +515,10 @@ a {
 
   .sonia-footer-content {
     flex-direction: column;
+  }
+
+  .sonia-footer-links {
+    align-self: flex-end;
   }
 
   .sonia-lightbox {
