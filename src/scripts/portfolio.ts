@@ -83,6 +83,7 @@ let activeTrigger: HTMLButtonElement | null = null;
 let mobileMenuOpen = false;
 let menuUnlockScroll: (() => void) | null = null;
 let lightboxUnlockScroll: (() => void) | null = null;
+let shouldCloseLightboxWhenMenuOpens = false;
 let layoutFrame = 0;
 let resizeObserver: ResizeObserver | null = null;
 
@@ -221,7 +222,7 @@ function setMobileMenuTabStops(enabled: boolean) {
 }
 
 function openMobileMenu() {
-  closeLightbox(false);
+  shouldCloseLightboxWhenMenuOpens = activeIndex !== null;
   mobileMenuOpen = true;
   menuButton.classList.add("is-open");
   menuButton.setAttribute("aria-label", "Close menu");
@@ -229,16 +230,18 @@ function openMobileMenu() {
   mobileMenu.classList.add("is-open");
   mobileMenu.setAttribute("aria-hidden", "false");
   setMobileMenuTabStops(true);
-  menuUnlockScroll = lockDocumentScroll();
 
-  requestAnimationFrame(() => {
-    mobileMenu.querySelector<HTMLElement>("button, a")?.focus();
-  });
+  if (!shouldCloseLightboxWhenMenuOpens) {
+    menuUnlockScroll = lockDocumentScroll();
+  }
+
+  if (!shouldCloseLightboxWhenMenuOpens) focusFirstMobileMenuItem();
 }
 
 function closeMobileMenu(restoreFocus: boolean) {
   if (!mobileMenuOpen) return;
   mobileMenuOpen = false;
+  shouldCloseLightboxWhenMenuOpens = false;
   menuButton.classList.remove("is-open");
   menuButton.setAttribute("aria-label", "Open menu");
   menuButton.setAttribute("aria-expanded", "false");
@@ -247,7 +250,32 @@ function closeMobileMenu(restoreFocus: boolean) {
   setMobileMenuTabStops(false);
   menuUnlockScroll?.();
   menuUnlockScroll = null;
-  if (restoreFocus) menuButton.focus();
+  if (restoreFocus) {
+    if (activeIndex === null) menuButton.focus();
+    else lightboxClose.focus();
+  }
+}
+
+function focusFirstMobileMenuItem() {
+  requestAnimationFrame(() => {
+    mobileMenu.querySelector<HTMLElement>("button, a")?.focus();
+  });
+}
+
+function finishOpeningMobileMenu(event: TransitionEvent) {
+  if (
+    event.target !== mobileMenu ||
+    event.propertyName !== "opacity" ||
+    !mobileMenuOpen ||
+    !shouldCloseLightboxWhenMenuOpens
+  ) {
+    return;
+  }
+
+  shouldCloseLightboxWhenMenuOpens = false;
+  closeLightbox(false);
+  menuUnlockScroll = lockDocumentScroll();
+  focusFirstMobileMenuItem();
 }
 
 function showActiveImage() {
@@ -311,6 +339,8 @@ menuButton.addEventListener("click", () => {
   if (mobileMenuOpen) closeMobileMenu(true);
   else openMobileMenu();
 });
+
+mobileMenu.addEventListener("transitionend", finishOpeningMobileMenu);
 
 for (const trigger of categoryTriggers) {
   trigger.addEventListener("click", () => {
