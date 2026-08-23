@@ -327,6 +327,10 @@ a {
   animation: sonia-lightbox-in 170ms ease-out;
 }
 
+.portfolio-view-transitions .sonia-lightbox {
+  animation: none;
+}
+
 .sonia-lightbox figure {
   display: grid;
   max-height: 100%;
@@ -588,6 +592,152 @@ a {
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes sonia-gallery-soften-out {
+  to {
+    opacity: 0;
+    transform: scale(0.992);
+  }
+}
+
+@keyframes sonia-gallery-soften-in {
+  from {
+    opacity: 0;
+    transform: scale(1.008);
+  }
+}
+
+@keyframes sonia-lightbox-backdrop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.995);
+  }
+}
+
+@keyframes sonia-lightbox-backdrop-out {
+  to {
+    opacity: 0;
+    transform: scale(0.998);
+  }
+}
+
+@keyframes sonia-lightbox-image-next-out {
+  to {
+    opacity: 0;
+    transform: translateX(-7px);
+  }
+}
+
+@keyframes sonia-lightbox-image-next-in {
+  from {
+    opacity: 0;
+    transform: translateX(7px);
+  }
+}
+
+@keyframes sonia-lightbox-image-previous-out {
+  to {
+    opacity: 0;
+    transform: translateX(7px);
+  }
+}
+
+@keyframes sonia-lightbox-image-previous-in {
+  from {
+    opacity: 0;
+    transform: translateX(-7px);
+  }
+}
+
+@supports (view-transition-name: none) {
+  .portfolio-view-transitions::view-transition-old(root) {
+    animation: none;
+    opacity: 0;
+  }
+
+  .portfolio-view-transitions::view-transition-new(root) {
+    animation: none;
+  }
+
+  .portfolio-view-transitions::view-transition-group(portfolio-artwork) {
+    animation-duration: 280ms;
+    animation-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+  }
+
+  .portfolio-view-transitions::view-transition-old(portfolio-artwork),
+  .portfolio-view-transitions::view-transition-new(portfolio-artwork),
+  .portfolio-view-transitions::view-transition-old(portfolio-footer),
+  .portfolio-view-transitions::view-transition-new(portfolio-footer),
+  .portfolio-view-transitions::view-transition-old(portfolio-header),
+  .portfolio-view-transitions::view-transition-new(portfolio-header),
+  .portfolio-view-transitions::view-transition-old(portfolio-lightbox),
+  .portfolio-view-transitions::view-transition-new(portfolio-lightbox),
+  .portfolio-view-transitions::view-transition-old(portfolio-lightbox-image),
+  .portfolio-view-transitions::view-transition-new(portfolio-lightbox-image),
+  .portfolio-view-transitions::view-transition-old(portfolio-lightbox-caption),
+  .portfolio-view-transitions::view-transition-new(portfolio-lightbox-caption) {
+    mix-blend-mode: normal;
+  }
+
+  .portfolio-view-transitions::view-transition-group(portfolio-header),
+  .portfolio-view-transitions::view-transition-group(portfolio-footer) {
+    animation: none;
+  }
+
+  .portfolio-view-transitions::view-transition-old(portfolio-header),
+  .portfolio-view-transitions::view-transition-old(portfolio-footer) {
+    animation: none;
+    opacity: 0;
+  }
+
+  .portfolio-view-transitions::view-transition-new(portfolio-header),
+  .portfolio-view-transitions::view-transition-new(portfolio-footer) {
+    animation: none;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="category"] .sonia-menu-button span,
+  .portfolio-view-transitions[data-portfolio-transition="category"] .sonia-mobile-menu,
+  .portfolio-view-transitions[data-portfolio-transition="category"] .sonia-mobile-nav {
+    transition: none;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="category"]::view-transition-old(root) {
+    animation: sonia-gallery-soften-out 100ms cubic-bezier(0.23, 1, 0.32, 1) both;
+    opacity: 1;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="category"]::view-transition-new(root) {
+    animation: sonia-gallery-soften-in 220ms 40ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-open"]::view-transition-new(portfolio-lightbox) {
+    animation: sonia-lightbox-backdrop-in 170ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-close"]::view-transition-old(portfolio-lightbox) {
+    animation: sonia-lightbox-backdrop-out 130ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-old(portfolio-lightbox-image),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-old(portfolio-lightbox-caption) {
+    animation: sonia-lightbox-image-next-out 100ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-new(portfolio-lightbox-image),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-next"]::view-transition-new(portfolio-lightbox-caption) {
+    animation: sonia-lightbox-image-next-in 160ms 25ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-previous"]::view-transition-old(portfolio-lightbox-image),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-previous"]::view-transition-old(portfolio-lightbox-caption) {
+    animation: sonia-lightbox-image-previous-out 100ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-previous"]::view-transition-new(portfolio-lightbox-image),
+  .portfolio-view-transitions[data-portfolio-transition="lightbox-previous"]::view-transition-new(portfolio-lightbox-caption) {
+    animation: sonia-lightbox-image-previous-in 160ms 25ms cubic-bezier(0.23, 1, 0.32, 1) both;
   }
 }
 
