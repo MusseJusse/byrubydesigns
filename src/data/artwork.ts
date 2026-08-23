@@ -107,6 +107,12 @@ const paintingSource = [
     aspectRatio: "1297 / 1800",
     year: 2026
   },
+  {
+    fileName: "painting-10.webp",
+    title: "Morning Glory",
+    aspectRatio: "2480 / 3508",
+    year: 2026
+  },
   { fileName: "painting-04.webp", title: "Kererū", aspectRatio: "1 / 1", year: 2022 },
   { fileName: "painting-05.webp", title: "Kākā", aspectRatio: "1 / 1", year: 2022 },
   { fileName: "painting-06.webp", title: "Tūī", aspectRatio: "1 / 1", year: 2022 },
