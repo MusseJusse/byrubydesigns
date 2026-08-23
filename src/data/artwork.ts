@@ -2,7 +2,7 @@ export type GalleryCategoryId = "tattoo" | "drawings" | "paintings";
 
 export type GalleryArtwork = {
   fileName: string;
-  imagePath: string;
+  imagePath: `/src/assets/artwork/${string}.webp`;
   title: string;
   aspectRatio: string;
   year?: 2022 | 2026;
@@ -32,7 +32,7 @@ const tattooSource = [
 
 const tattooArtwork = tattooSource.map(({ fileName, title, ...item }) => ({
   fileName,
-  imagePath: "/src/assets/artwork/tattoo/" + fileName,
+  imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
   title,
   aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
 })) satisfies GalleryArtwork[];
@@ -46,11 +46,11 @@ const drawingAspectRatios = [
 
 const drawingArtwork = drawingAspectRatios.map((aspectRatio, index) => {
   const number = String(index + 1).padStart(2, "0");
-  const fileName = "drawing-" + number + ".webp";
+  const fileName = `drawing-${number}.webp` as const;
 
   return {
     fileName,
-    imagePath: "/src/assets/artwork/drawings/" + fileName,
+    imagePath: `/src/assets/artwork/drawings/${fileName}` as const,
     title: "Drawing " + number,
     aspectRatio
   };
@@ -70,7 +70,7 @@ const paintingSource = [
 
 const paintingArtwork = paintingSource.map(({ fileName, title, aspectRatio, year }) => ({
   fileName,
-  imagePath: "/src/assets/artwork/paintings/" + fileName,
+  imagePath: `/src/assets/artwork/paintings/${fileName}` as const,
   title,
   aspectRatio,
   year

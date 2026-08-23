@@ -294,7 +294,7 @@ for (const trigger of categoryTriggers) {
 }
 
 for (const element of mobileMenu.querySelectorAll<HTMLElement>("[data-menu-close]")) {
-  element.addEventListener("click", () => closeMobileMenu(false));
+  element.addEventListener("click", () => closeMobileMenu(true));
 }
 
 for (const button of document.querySelectorAll<HTMLButtonElement>("[data-lightbox-open]")) {
