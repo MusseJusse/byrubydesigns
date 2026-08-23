@@ -330,6 +330,11 @@ a {
   backdrop-filter: blur(16px);
 }
 
+.portfolio-view-transitions[data-portfolio-transition="lightbox-open"] .sonia-lightbox {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
 .portfolio-view-transitions .sonia-lightbox {
   animation: none;
 }
