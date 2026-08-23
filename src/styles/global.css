@@ -507,7 +507,8 @@ a {
     align-items: center;
     gap: 17px;
     padding-top: 36px;
-    font-size: clamp(2.6rem, 12vw, 3.25rem);
+    font-size: clamp(2.3rem, 10vw, 2.9rem);
+    font-weight: 350;
     line-height: 1.18;
     letter-spacing: -0.025em;
     opacity: 0;
