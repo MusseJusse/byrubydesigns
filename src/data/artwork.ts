@@ -96,7 +96,6 @@ const paintingSource = [
   {
     fileName: "painting-08.webp",
     title: "Irises and Daffodils revisited",
-    medium: "Gouache on handmade cotton rag paper",
     dimensions: { width: 210, height: 296, unit: "mm" },
     aspectRatio: "1130 / 1412",
     year: 2026
