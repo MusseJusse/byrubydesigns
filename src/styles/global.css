@@ -151,12 +151,16 @@ html[data-motion="gallery-category"] {
   view-transition-name: none;
 }
 
+html[data-motion="gallery-category"]::view-transition-group(gallery-b) {
+  animation: none;
+}
+
 html[data-motion="gallery-category"]::view-transition-old(gallery-b) {
-  animation: sonia-gallery-soften-out 150ms ease-in both;
+  animation: sonia-gallery-dissolve-out 180ms ease-in-out both;
 }
 
 html[data-motion="gallery-category"]::view-transition-new(gallery-b) {
-  animation: sonia-gallery-soften-in 260ms 80ms ease-out both;
+  animation: sonia-gallery-dissolve-in 180ms ease-in-out both;
 }
 
 .sonia-gallery-intro {
@@ -620,17 +624,15 @@ html[data-motion="gallery-category"]::view-transition-new(gallery-b) {
   }
 }
 
-@keyframes sonia-gallery-soften-out {
+@keyframes sonia-gallery-dissolve-out {
   to {
     opacity: 0;
-    transform: scale(0.992);
   }
 }
 
-@keyframes sonia-gallery-soften-in {
+@keyframes sonia-gallery-dissolve-in {
   from {
     opacity: 0;
-    transform: scale(1.008);
   }
 }
 
