@@ -149,7 +149,7 @@ a {
 
 .sonia-gallery-intro {
   width: 100%;
-  max-width: 1180px;
+  max-width: 1800px;
   margin: 0 auto 30px;
   color: #383838;
   font-size: 16px;
@@ -210,8 +210,10 @@ a {
 }
 
 .sonia-gallery-year-divider {
+  width: 100%;
+  max-width: 1800px;
   grid-column: 1 / -1;
-  margin: 36px 0 0;
+  margin: 36px auto 0;
   border-top: 1px solid #dedbd5;
   padding-top: 18px;
   color: #383838;
@@ -272,11 +274,13 @@ a {
   flex-direction: column;
   justify-content: space-between;
   gap: 24px;
-  margin: 0 4.05%;
+  width: 100%;
+  max-width: 1800px;
+  margin: 0 auto;
   border-top: 1px solid #dedbd5;
   padding: 44px 0 58px;
   color: #383838;
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.7;
 }
 
@@ -564,6 +568,9 @@ a {
 
   .sonia-footer {
     flex-direction: column;
+    width: auto;
+    max-width: none;
+    margin-inline: 4.05%;
   }
 
   .sonia-footer-content {
