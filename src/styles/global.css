@@ -147,20 +147,24 @@ a {
   background: #fff;
 }
 
-html[data-motion="gallery-category"] {
+html[data-motion="gallery-category"],
+html[data-motion="lightbox-picture"] {
   view-transition-name: none;
 }
 
-html[data-motion="gallery-category"]::view-transition-group(gallery-b) {
+html[data-motion="gallery-category"]::view-transition-group(gallery-b),
+html[data-motion="lightbox-picture"]::view-transition-group(lightbox-picture) {
   animation: none;
 }
 
-html[data-motion="gallery-category"]::view-transition-old(gallery-b) {
-  animation: sonia-gallery-dissolve-out 180ms ease-in-out both;
+html[data-motion="gallery-category"]::view-transition-old(gallery-b),
+html[data-motion="lightbox-picture"]::view-transition-old(lightbox-picture) {
+  animation: sonia-dissolve-out 180ms ease-in-out both;
 }
 
-html[data-motion="gallery-category"]::view-transition-new(gallery-b) {
-  animation: sonia-gallery-dissolve-in 180ms ease-in-out both;
+html[data-motion="gallery-category"]::view-transition-new(gallery-b),
+html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
+  animation: sonia-dissolve-in 180ms ease-in-out both;
 }
 
 .sonia-gallery-intro {
@@ -624,13 +628,13 @@ html[data-motion="gallery-category"]::view-transition-new(gallery-b) {
   }
 }
 
-@keyframes sonia-gallery-dissolve-out {
+@keyframes sonia-dissolve-out {
   to {
     opacity: 0;
   }
 }
 
-@keyframes sonia-gallery-dissolve-in {
+@keyframes sonia-dissolve-in {
   from {
     opacity: 0;
   }

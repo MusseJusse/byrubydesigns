@@ -83,6 +83,7 @@ const lightboxNext = requireElement<HTMLButtonElement>("[data-lightbox-next]");
 
 let selectedCategory: CategoryId = "tattoo";
 let activeIndex: number | null = null;
+let requestedLightboxIndex: number | null = null;
 let activeTrigger: HTMLButtonElement | null = null;
 let mobileMenuOpen = false;
 let menuUnlockScroll: (() => void) | null = null;
@@ -92,6 +93,7 @@ let shouldCloseLightboxWhenMenuOpens = false;
 let layoutFrame = 0;
 let resizeObserver: ResizeObserver | null = null;
 let categoryTransitionId = 0;
+let lightboxTransitionId = 0;
 
 function activePanel() {
   const panel = categoryPanels.find(
@@ -335,6 +337,24 @@ function showActiveImage() {
   lightbox.setAttribute("aria-label", "Full image of " + titleText);
 }
 
+function clearLightboxPictureTransition() {
+  lightboxImage.style.removeProperty("view-transition-name");
+  if (document.documentElement.dataset.motion === "lightbox-picture") {
+    delete document.documentElement.dataset.motion;
+  }
+}
+
+async function preloadImage(source: string) {
+  const image = new Image();
+  image.src = source;
+  try {
+    await image.decode();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function openLightbox(button: HTMLButtonElement) {
   const category = button.dataset.category;
   const index = Number.parseInt(button.dataset.index ?? "", 10);
@@ -349,6 +369,7 @@ function openLightbox(button: HTMLButtonElement) {
   }
 
   activeIndex = index;
+  requestedLightboxIndex = index;
   activeTrigger = button;
   showActiveImage();
   lightbox.inert = false;
@@ -362,8 +383,11 @@ function closeLightbox({
   animate = true,
 }: { restoreFocus?: boolean; animate?: boolean } = {}) {
   if (activeIndex === null) return;
+  lightboxTransitionId += 1;
+  clearLightboxPictureTransition();
   const trigger = activeTrigger;
   activeIndex = null;
+  requestedLightboxIndex = null;
   activeTrigger = null;
   lightbox.inert = true;
 
@@ -389,11 +413,45 @@ function closeLightbox({
   lightbox.addEventListener("animationend", finishClosing, { once: true });
 }
 
-function moveLightbox(direction: -1 | 1) {
+async function moveLightbox(direction: -1 | 1) {
   const buttons = activeImageButtons();
   if (activeIndex === null || buttons.length === 0) return;
-  activeIndex = (activeIndex + direction + buttons.length) % buttons.length;
-  showActiveImage();
+  const currentIndex = requestedLightboxIndex ?? activeIndex;
+  const nextIndex = (currentIndex + direction + buttons.length) % buttons.length;
+  requestedLightboxIndex = nextIndex;
+
+  if (prefersReducedMotion() || !document.startViewTransition) {
+    activeIndex = nextIndex;
+    showActiveImage();
+    return;
+  }
+
+  clearLightboxPictureTransition();
+  const transitionId = ++lightboxTransitionId;
+  const nextSource = buttons[nextIndex]?.dataset.fullSrc ?? "";
+  const imageReady = await preloadImage(nextSource);
+  if (transitionId !== lightboxTransitionId || activeIndex === null) return;
+  if (nextIndex === activeIndex) return;
+
+  if (!imageReady) {
+    activeIndex = nextIndex;
+    showActiveImage();
+    return;
+  }
+
+  lightboxImage.style.viewTransitionName = "lightbox-picture";
+  document.documentElement.dataset.motion = "lightbox-picture";
+
+  const transition = document.startViewTransition(() => {
+    activeIndex = nextIndex;
+    showActiveImage();
+  });
+
+  const clearTransitionState = () => {
+    if (transitionId !== lightboxTransitionId) return;
+    clearLightboxPictureTransition();
+  };
+  void transition.finished.then(clearTransitionState, clearTransitionState);
 }
 
 menuButton.addEventListener("click", () => {
