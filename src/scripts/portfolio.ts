@@ -74,7 +74,6 @@ const categoryTriggers = Array.from(
 const categoryPanels = Array.from(
   document.querySelectorAll<HTMLElement>("[data-category-panel]")
 );
-const galleryStage = requireElement<HTMLElement>(".sonia-gallery");
 const lightbox = requireElement<HTMLElement>("[data-lightbox]");
 const lightboxImage = requireElement<HTMLImageElement>("[data-lightbox-image]");
 const lightboxCaption = requireElement<HTMLElement>("[data-lightbox-caption]");
@@ -215,18 +214,24 @@ function selectCategory(category: CategoryId, animate = true) {
   }
 
   const transitionId = ++categoryTransitionId;
-  galleryStage.style.viewTransitionName = "gallery-b";
+  const outgoingPanel = activePanel();
+  let incomingPanel: HTMLElement | null = null;
+  outgoingPanel.style.viewTransitionName = "gallery-b";
   document.documentElement.dataset.motion = "gallery-category";
 
   const transition = document.startViewTransition(() => {
     updateSelectedCategory(category);
+    incomingPanel = activePanel();
+    outgoingPanel.style.removeProperty("view-transition-name");
+    incomingPanel.style.viewTransitionName = "gallery-b";
     cancelAnimationFrame(layoutFrame);
     layoutActiveGallery();
   });
 
   const clearTransitionState = () => {
     if (transitionId !== categoryTransitionId) return;
-    galleryStage.style.removeProperty("view-transition-name");
+    outgoingPanel.style.removeProperty("view-transition-name");
+    incomingPanel?.style.removeProperty("view-transition-name");
     delete document.documentElement.dataset.motion;
   };
   void transition.finished.then(clearTransitionState, clearTransitionState);
