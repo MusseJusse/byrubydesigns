@@ -218,9 +218,10 @@ function selectCategory(category: CategoryId, animate = true) {
   galleryStage.style.viewTransitionName = "gallery-b";
   document.documentElement.dataset.motion = "gallery-category";
 
-  const transition = document.startViewTransition(async () => {
+  const transition = document.startViewTransition(() => {
     updateSelectedCategory(category);
-    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    cancelAnimationFrame(layoutFrame);
+    layoutActiveGallery();
   });
 
   const clearTransitionState = () => {
