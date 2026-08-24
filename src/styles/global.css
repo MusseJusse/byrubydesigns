@@ -149,15 +149,15 @@ a {
 
 .sonia-gallery-intro {
   width: 100%;
-  max-width: 1800px;
+  max-width: 1180px;
   margin: 0 auto 30px;
   color: #383838;
-  font-size: 14px;
-  line-height: 1.6;
+  font-size: 16px;
+  line-height: 1.5;
 }
 
 .sonia-gallery-intro p {
-  max-width: 720px;
+  max-width: none;
   margin: 0;
 }
 
@@ -420,6 +420,11 @@ a {
 
   .sonia-main-nav {
     display: none;
+  }
+
+  .sonia-gallery-intro {
+    font-size: 14px;
+    line-height: 1.6;
   }
 
   .sonia-menu-button {
