@@ -152,6 +152,10 @@ html[data-motion="gallery-category"]::view-transition-new(root) {
   animation: none;
 }
 
+html[data-motion="gallery-category"]::view-transition-old(root) {
+  opacity: 0;
+}
+
 html[data-motion="gallery-category"]::view-transition-old(gallery-b) {
   animation: sonia-gallery-soften-out 150ms ease-in both;
 }
