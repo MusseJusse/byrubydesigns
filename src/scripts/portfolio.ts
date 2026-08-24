@@ -11,6 +11,10 @@ function categoryFromHash(): CategoryId | undefined {
   return isCategoryId(category) ? category : undefined;
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 function requireElement<T extends Element>(selector: string): T {
   const element = document.querySelector<T>(selector);
   if (!element) throw new Error("Portfolio element is missing: " + selector);
@@ -70,6 +74,7 @@ const categoryTriggers = Array.from(
 const categoryPanels = Array.from(
   document.querySelectorAll<HTMLElement>("[data-category-panel]")
 );
+const galleryStage = requireElement<HTMLElement>(".sonia-gallery");
 const lightbox = requireElement<HTMLElement>("[data-lightbox]");
 const lightboxImage = requireElement<HTMLImageElement>("[data-lightbox-image]");
 const lightboxCaption = requireElement<HTMLElement>("[data-lightbox-caption]");
@@ -87,6 +92,7 @@ let finishLightboxClose: (() => void) | null = null;
 let shouldCloseLightboxWhenMenuOpens = false;
 let layoutFrame = 0;
 let resizeObserver: ResizeObserver | null = null;
+let categoryTransitionId = 0;
 
 function activePanel() {
   const panel = categoryPanels.find(
@@ -179,12 +185,7 @@ function observeActiveGallery() {
   scheduleLayout();
 }
 
-function selectCategory(category: CategoryId) {
-  if (category === selectedCategory) {
-    if (mobileMenuOpen) closeMobileMenu(true);
-    return;
-  }
-
+function updateSelectedCategory(category: CategoryId) {
   closeLightbox({ restoreFocus: false, animate: false });
   selectedCategory = category;
 
@@ -200,6 +201,34 @@ function selectCategory(category: CategoryId) {
 
   observeActiveGallery();
   if (mobileMenuOpen) closeMobileMenu(true);
+}
+
+function selectCategory(category: CategoryId, animate = true) {
+  if (category === selectedCategory) {
+    if (mobileMenuOpen) closeMobileMenu(true);
+    return;
+  }
+
+  if (!animate || prefersReducedMotion() || !document.startViewTransition) {
+    updateSelectedCategory(category);
+    return;
+  }
+
+  const transitionId = ++categoryTransitionId;
+  galleryStage.style.viewTransitionName = "gallery-b";
+  document.documentElement.dataset.motion = "gallery-category";
+
+  const transition = document.startViewTransition(async () => {
+    updateSelectedCategory(category);
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+  });
+
+  const clearTransitionState = () => {
+    if (transitionId !== categoryTransitionId) return;
+    galleryStage.style.removeProperty("view-transition-name");
+    delete document.documentElement.dataset.motion;
+  };
+  void transition.finished.then(clearTransitionState, clearTransitionState);
 }
 
 function selectCategoryFromHash() {
@@ -345,7 +374,7 @@ function closeLightbox({
 
   if (restoreFocus) trigger?.focus();
 
-  if (!animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (!animate || prefersReducedMotion()) {
     finishClosing();
     return;
   }
@@ -420,5 +449,5 @@ window.addEventListener("hashchange", selectCategoryFromHash);
 
 document.documentElement.classList.add("portfolio-enhanced");
 const initialCategory = categoryFromHash();
-if (initialCategory && initialCategory !== selectedCategory) selectCategory(initialCategory);
+if (initialCategory && initialCategory !== selectedCategory) selectCategory(initialCategory, false);
 else observeActiveGallery();
