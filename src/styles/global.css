@@ -147,10 +147,8 @@ a {
   background: #fff;
 }
 
-html[data-motion="gallery-category"]::view-transition-old(root),
-html[data-motion="gallery-category"]::view-transition-new(root) {
-  animation: none;
-  display: none;
+html[data-motion="gallery-category"] {
+  view-transition-name: none;
 }
 
 html[data-motion="gallery-category"]::view-transition-old(gallery-b) {
