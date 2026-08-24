@@ -327,6 +327,11 @@ a {
   animation: sonia-lightbox-in 170ms ease-out;
 }
 
+.sonia-lightbox.is-closing {
+  pointer-events: none;
+  animation: sonia-lightbox-out 170ms ease-out forwards;
+}
+
 .sonia-lightbox figure {
   display: grid;
   max-height: 100%;
@@ -593,6 +598,16 @@ a {
 
   to {
     opacity: 1;
+  }
+}
+
+@keyframes sonia-lightbox-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
   }
 }
 

@@ -83,6 +83,7 @@ let activeTrigger: HTMLButtonElement | null = null;
 let mobileMenuOpen = false;
 let menuUnlockScroll: (() => void) | null = null;
 let lightboxUnlockScroll: (() => void) | null = null;
+let finishLightboxClose: (() => void) | null = null;
 let shouldCloseLightboxWhenMenuOpens = false;
 let layoutFrame = 0;
 let resizeObserver: ResizeObserver | null = null;
@@ -187,7 +188,7 @@ function selectCategory(category: CategoryId) {
     return;
   }
 
-  closeLightbox(false);
+  closeLightbox({ restoreFocus: false, animate: false });
   selectedCategory = category;
 
   for (const trigger of categoryTriggers) {
@@ -273,7 +274,7 @@ function finishOpeningMobileMenu(event: TransitionEvent) {
   }
 
   shouldCloseLightboxWhenMenuOpens = false;
-  closeLightbox(false);
+  closeLightbox({ restoreFocus: false, animate: false });
   menuUnlockScroll = lockDocumentScroll();
   focusFirstMobileMenuItem();
 }
@@ -308,24 +309,52 @@ function openLightbox(button: HTMLButtonElement) {
   if (!isCategoryId(category) || category !== selectedCategory || !Number.isFinite(index)) return;
 
   closeMobileMenu(false);
+
+  if (finishLightboxClose) {
+    lightbox.removeEventListener("animationend", finishLightboxClose);
+    finishLightboxClose = null;
+    lightbox.classList.remove("is-closing");
+  }
+
   activeIndex = index;
   activeTrigger = button;
   showActiveImage();
+  lightbox.inert = false;
   lightbox.hidden = false;
-  lightboxUnlockScroll = lockDocumentScroll();
+  lightboxUnlockScroll ??= lockDocumentScroll();
   requestAnimationFrame(() => lightboxClose.focus());
 }
 
-function closeLightbox(restoreFocus = true) {
+function closeLightbox({
+  restoreFocus = true,
+  animate = true,
+}: { restoreFocus?: boolean; animate?: boolean } = {}) {
   if (activeIndex === null) return;
   const trigger = activeTrigger;
   activeIndex = null;
   activeTrigger = null;
-  lightbox.hidden = true;
-  lightboxImage.removeAttribute("src");
-  lightboxUnlockScroll?.();
-  lightboxUnlockScroll = null;
+  lightbox.inert = true;
+
+  const finishClosing = () => {
+    if (finishLightboxClose !== finishClosing) return;
+    finishLightboxClose = null;
+    lightbox.classList.remove("is-closing");
+    lightbox.hidden = true;
+    lightboxImage.removeAttribute("src");
+    lightboxUnlockScroll?.();
+    lightboxUnlockScroll = null;
+  };
+  finishLightboxClose = finishClosing;
+
   if (restoreFocus) trigger?.focus();
+
+  if (!animate || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    finishClosing();
+    return;
+  }
+
+  lightbox.classList.add("is-closing");
+  lightbox.addEventListener("animationend", finishClosing, { once: true });
 }
 
 function moveLightbox(direction: -1 | 1) {
