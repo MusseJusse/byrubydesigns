@@ -231,11 +231,6 @@ a {
     max-height: none;
     aspect-ratio: var(--carousel-aspect-ratio);
   }
-
-  .sonia-carousel-slide img {
-    object-fit: contain;
-    object-position: center;
-  }
 }
 
 .sonia-carousel-drag {
