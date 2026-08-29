@@ -142,6 +142,11 @@ a {
   border-bottom: 1px solid currentColor;
 }
 
+.sonia-main-nav .active,
+.sonia-mobile-nav .active {
+  color: #90344c;
+}
+
 .sonia-socials {
   display: flex;
   align-items: center;
