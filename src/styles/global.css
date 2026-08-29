@@ -320,15 +320,6 @@ a {
   transition: flex-grow 90ms linear, background-color 90ms linear;
 }
 
-.sonia-landing-footer {
-  flex-direction: row;
-  margin-inline: 4.05%;
-  width: auto;
-  max-width: none;
-  border-top: 0;
-  font-size: 12px;
-}
-
 .sonia-gallery {
   padding: 48px 16px 44px;
   background: #fff;
@@ -775,10 +766,6 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
 
   .sonia-carousel-under {
     min-height: 76px;
-  }
-
-  .sonia-landing-footer {
-    flex-direction: column;
   }
 
   .sonia-mobile-nav {
