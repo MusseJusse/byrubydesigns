@@ -1,0 +1,32 @@
+---
+import BrandHeader from "../components/BrandHeader.astro";
+import Gallery from "../components/Gallery.astro";
+import Lightbox from "../components/Lightbox.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Gallery | Ruby Smythe"
+  description="Tattoo, painting, and drawing work by New Zealand-born artist Ruby Smythe in Edinburgh."
+>
+  <main id="top" class="portfolio-root">
+    <BrandHeader page="gallery" />
+    <Gallery />
+    <footer id="about" class="sonia-footer">
+      <div class="sonia-footer-content">
+        <p>Ruby Smythe is a New Zealand-born painter and tattoo artist based in Edinburgh.</p>
+        <div class="sonia-footer-links" aria-label="External links">
+          <a href="https://www.instagram.com/byrubydesigns" target="_blank" rel="noreferrer">
+            Instagram
+          </a>
+        </div>
+      </div>
+      <a class="sonia-back-to-top" href="#top" aria-label="Back to top">&gt;</a>
+    </footer>
+    <Lightbox />
+  </main>
+</BaseLayout>
+
+<script>
+  import "../scripts/portfolio";
+</script>
