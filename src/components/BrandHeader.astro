@@ -2,6 +2,12 @@
 import { Image } from "astro:assets";
 import rubyMark from "../assets/brand/ruby-mark.webp";
 import { galleryCategories } from "../data/artwork";
+
+type Props = {
+  page: "home" | "gallery";
+};
+
+const { page } = Astro.props;
 ---
 
 <header class="sonia-header" aria-label="Primary">
@@ -19,7 +25,11 @@ import { galleryCategories } from "../data/artwork";
   </button>
 
   <div class="sonia-brand">
-    <a class="sonia-brand-mark" href="#top" aria-label="Ruby Smythe, back to top">
+    <a
+      class="sonia-brand-mark"
+      href={page === "home" ? "/" : "#top"}
+      aria-label={page === "home" ? "Ruby Smythe, home" : "Ruby Smythe, back to top"}
+    >
       <span class="sonia-brand-image">
         <Image src={rubyMark} width={180} alt="" loading="eager" />
       </span>
@@ -28,20 +38,27 @@ import { galleryCategories } from "../data/artwork";
     </a>
 
     <nav class="sonia-main-nav" aria-label="Portfolio sections">
+      <a class:list={[{ active: page === "home" }]} href="/" aria-current={page === "home" ? "page" : undefined}>
+        Home
+      </a>
       {
-        galleryCategories.map((category) => (
-          <button
-            class={category.id === "tattoo" ? "active" : undefined}
-            type="button"
-            data-category-trigger={category.id}
-            aria-controls={"gallery-" + category.id}
-            aria-pressed={category.id === "tattoo" ? "true" : "false"}
-          >
-            {category.label}
-          </button>
-        ))
+        galleryCategories.map((category) =>
+          page === "gallery" ? (
+            <button
+              class={category.id === "tattoo" ? "active" : undefined}
+              type="button"
+              data-category-trigger={category.id}
+              aria-controls={"gallery-" + category.id}
+              aria-pressed={category.id === "tattoo" ? "true" : "false"}
+            >
+              {category.label}
+            </button>
+          ) : (
+            <a href={`/gallery#${category.id}`}>{category.label}</a>
+          )
+        )
       }
-      <a href="#about">About</a>
+      <a href={page === "home" ? "/#about" : "#about"}>About</a>
     </nav>
   </div>
 
@@ -55,21 +72,71 @@ import { galleryCategories } from "../data/artwork";
     data-mobile-menu
   >
     <nav class="sonia-mobile-nav" aria-label="Portfolio sections">
+      <a
+        class:list={[{ active: page === "home" }]}
+        href="/"
+        aria-current={page === "home" ? "page" : undefined}
+        tabindex="-1"
+        data-menu-close
+      >
+        Home
+      </a>
       {
-        galleryCategories.map((category) => (
-          <button
-            class={category.id === "tattoo" ? "active" : undefined}
-            type="button"
-            tabindex="-1"
-            data-category-trigger={category.id}
-            aria-controls={"gallery-" + category.id}
-            aria-pressed={category.id === "tattoo" ? "true" : "false"}
-          >
-            {category.label}
-          </button>
-        ))
+        galleryCategories.map((category) =>
+          page === "gallery" ? (
+            <button
+              class={category.id === "tattoo" ? "active" : undefined}
+              type="button"
+              tabindex="-1"
+              data-category-trigger={category.id}
+              aria-controls={"gallery-" + category.id}
+              aria-pressed={category.id === "tattoo" ? "true" : "false"}
+            >
+              {category.label}
+            </button>
+          ) : (
+            <a href={`/gallery#${category.id}`} tabindex="-1" data-menu-close>
+              {category.label}
+            </a>
+          )
+        )
       }
-      <a href="#about" tabindex="-1" data-menu-close>About</a>
+      <a href={page === "home" ? "/#about" : "#about"} tabindex="-1" data-menu-close>
+        About
+      </a>
     </nav>
+    {
+      page === "home" && (
+        <div class="sonia-mobile-socials" role="group" aria-label="Social links">
+          <a
+            href="https://www.instagram.com/byrubydesigns"
+            target="_blank"
+            rel="noreferrer"
+            tabindex="-1"
+            data-menu-close
+            aria-label="Ruby Smythe on Instagram"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8"></rect>
+              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"></circle>
+              <circle cx="17.4" cy="6.8" r="1.15" fill="currentColor"></circle>
+            </svg>
+          </a>
+          <a
+            href="https://inkdependent.eu/"
+            target="_blank"
+            rel="noreferrer"
+            tabindex="-1"
+            data-menu-close
+            aria-label="Inkdependent Studio"
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+              <path d="M4 10.5 12 4l8 6.5V20H4v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
+              <path d="M9.5 20v-6h5v6" stroke="currentColor" stroke-width="1.7"></path>
+            </svg>
+          </a>
+        </div>
+      )
+    }
   </div>
 </header>

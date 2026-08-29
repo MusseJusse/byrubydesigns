@@ -1,8 +1,54 @@
 ---
+import type { ImageMetadata } from "astro";
+import { Image } from "astro:assets";
+import AboutFooter from "../components/AboutFooter.astro";
 import BrandHeader from "../components/BrandHeader.astro";
-import Gallery from "../components/Gallery.astro";
-import Lightbox from "../components/Lightbox.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const imageLoaders = import.meta.glob<{ default: ImageMetadata }>(
+  "/src/assets/artwork/**/*.webp"
+);
+
+async function resolveImage(path: `/src/assets/artwork/${string}.webp`) {
+  const load = imageLoaders[path];
+  if (!load) throw new Error("Landing-page artwork is missing: " + path);
+  return (await load()).default;
+}
+
+type CarouselItemSource = {
+  imagePath: `/src/assets/artwork/${string}.webp`;
+  title: string;
+};
+
+const carouselItemSources = [
+  {
+    imagePath: "/src/assets/artwork/tattoo/IMG_6601.webp",
+    title: "Tattoo 13"
+  },
+  {
+    imagePath: "/src/assets/artwork/paintings/painting-01.webp",
+    title: "Painting 01"
+  },
+  {
+    imagePath: "/src/assets/artwork/tattoo/IMG_3554.webp",
+    title: "Tattoo 12"
+  },
+  {
+    imagePath: "/src/assets/artwork/paintings/painting-02.webp",
+    title: "Painting 02"
+  },
+  {
+    imagePath: "/src/assets/artwork/tattoo/7 kererū.webp",
+    title: "Kererū"
+  }
+] as const satisfies readonly CarouselItemSource[];
+
+const carouselItems = await Promise.all(
+  carouselItemSources.map(async (item) => ({
+    ...item,
+    image: await resolveImage(item.imagePath)
+  }))
+);
 ---
 
 <BaseLayout
@@ -10,23 +56,76 @@ import BaseLayout from "../layouts/BaseLayout.astro";
   description="Tattoo, painting, and drawing work by New Zealand-born artist Ruby Smythe in Edinburgh."
 >
   <main id="top" class="portfolio-root">
-    <BrandHeader />
-    <Gallery />
-    <footer id="about" class="sonia-footer">
-      <div class="sonia-footer-content">
-        <p>Ruby Smythe is a New Zealand-born painter and tattoo artist based in Edinburgh.</p>
-        <div class="sonia-footer-links" aria-label="External links">
-          <a href="https://www.instagram.com/byrubydesigns" target="_blank" rel="noreferrer">
-            Instagram
-          </a>
+    <BrandHeader page="home" />
+
+    <section class="sonia-landing-carousel" aria-labelledby="selected-work-title">
+      <div class="sonia-carousel-heading">
+        <h1 id="selected-work-title">Highlighted pieces</h1>
+        <span data-carousel-count>01 / 05</span>
+      </div>
+      <div class="sonia-art-carousel">
+        <div
+          class="sonia-carousel-stage"
+          style={`--carousel-aspect-ratio: ${carouselItems[0].image.width} / ${carouselItems[0].image.height}`}
+        >
+          <ol class="sonia-carousel-slides">
+            {
+              carouselItems.map((item, index) => (
+                <li
+                  class="sonia-carousel-slide"
+                  data-carousel-slide
+                  style={`opacity: ${index === 0 ? 1 : 0}; transform: scale(${index === 0 ? 1 : 0.985})`}
+                >
+                  <Image
+                    src={item.image}
+                    alt={`${item.title}, artwork by Ruby Smythe`}
+                    widths={[640, 960, 1280, 1600]}
+                    sizes="(max-width: 640px) 92vw, 504px"
+                    quality={88}
+                    loading={index < 2 ? "eager" : "lazy"}
+                    fetchpriority={index === 0 ? "high" : "auto"}
+                  />
+                </li>
+              ))
+            }
+          </ol>
+          <div
+            class="sonia-carousel-drag"
+            role="group"
+            tabindex="0"
+            aria-label="Selected tattoos and paintings. Swipe, drag, or use arrow keys to browse."
+            data-carousel-track
+          >
+            {carouselItems.map(() => <span class="sonia-carousel-stop"></span>)}
+          </div>
+        </div>
+        <div class="sonia-carousel-under">
+          <p aria-live="polite" data-carousel-title>{carouselItems[0].title}</p>
+          <div class="sonia-carousel-tools">
+            <div class="sonia-carousel-markers" aria-label="Choose artwork">
+              {
+                carouselItems.map((item, index) => (
+                  <button
+                    aria-current={index === 0 ? "true" : undefined}
+                    aria-label={`Show ${item.title}`}
+                    class="sonia-carousel-marker"
+                    style={`flex-grow: ${index === 0 ? 4 : 1}; background-color: rgba(144, 52, 76, ${index === 0 ? 1 : 0.22})`}
+                    type="button"
+                    data-carousel-marker
+                    data-carousel-title={item.title}
+                  />
+                ))
+              }
+            </div>
+          </div>
         </div>
       </div>
-      <a class="sonia-back-to-top" href="#top" aria-label="Back to top">&gt;</a>
-    </footer>
-    <Lightbox />
+    </section>
+
+    <AboutFooter />
   </main>
 </BaseLayout>
 
 <script>
-  import "../scripts/portfolio";
+  import "../scripts/landing";
 </script>

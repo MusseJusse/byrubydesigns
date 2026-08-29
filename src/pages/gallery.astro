@@ -1,0 +1,23 @@
+---
+import AboutFooter from "../components/AboutFooter.astro";
+import BrandHeader from "../components/BrandHeader.astro";
+import Gallery from "../components/Gallery.astro";
+import Lightbox from "../components/Lightbox.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout
+  title="Gallery | Ruby Smythe"
+  description="Tattoo, painting, and drawing work by New Zealand-born artist Ruby Smythe in Edinburgh."
+>
+  <main id="top" class="portfolio-root">
+    <BrandHeader page="gallery" />
+    <Gallery />
+    <AboutFooter />
+    <Lightbox />
+  </main>
+</BaseLayout>
+
+<script>
+  import "../scripts/portfolio";
+</script>

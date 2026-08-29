@@ -242,7 +242,10 @@ function selectCategory(category: CategoryId, animate = true) {
 function selectCategoryFromHash() {
   const category = categoryFromHash();
   if (category) selectCategory(category);
-  else if (!window.location.hash) selectCategory("tattoo");
+  else if (!window.location.hash) {
+    selectCategory("tattoo");
+    window.history.replaceState(null, "", "#tattoo");
+  }
 }
 
 function updateCategoryHash(category: CategoryId) {
@@ -514,4 +517,7 @@ window.addEventListener("hashchange", selectCategoryFromHash);
 document.documentElement.classList.add("portfolio-enhanced");
 const initialCategory = categoryFromHash();
 if (initialCategory && initialCategory !== selectedCategory) selectCategory(initialCategory, false);
-else observeActiveGallery();
+else {
+  observeActiveGallery();
+  if (!window.location.hash) window.history.replaceState(null, "", "#tattoo");
+}
