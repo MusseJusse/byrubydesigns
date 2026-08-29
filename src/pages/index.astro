@@ -64,20 +64,25 @@ const carouselItems = await Promise.all(
         <span data-carousel-count>01 / 05</span>
       </div>
       <div class="sonia-art-carousel">
-        <div class="sonia-carousel-stage">
+        <div
+          class="sonia-carousel-stage"
+          data-carousel-stage
+          style={`--carousel-aspect-ratio: ${carouselItems[0].image.width} / ${carouselItems[0].image.height}`}
+        >
           <ol class="sonia-carousel-slides">
             {
               carouselItems.map((item, index) => (
                 <li
                   class="sonia-carousel-slide"
                   data-carousel-slide
+                  data-carousel-aspect-ratio={`${item.image.width} / ${item.image.height}`}
                   style={`opacity: ${index === 0 ? 1 : 0}; transform: scale(${index === 0 ? 1 : 0.985})`}
                 >
                   <Image
                     src={item.image}
                     alt={`${item.title}, artwork by Ruby Smythe`}
                     widths={[640, 960, 1280, 1600]}
-                    sizes="(max-width: 640px) 92vw, 1120px"
+                    sizes="(max-width: 640px) 92vw, 504px"
                     quality={88}
                     loading={index < 2 ? "eager" : "lazy"}
                     fetchpriority={index === 0 ? "high" : "auto"}

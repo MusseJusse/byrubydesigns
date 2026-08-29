@@ -92,6 +92,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 const track = requireElement<HTMLElement>("[data-carousel-track]");
+const stage = requireElement<HTMLElement>("[data-carousel-stage]");
 const slides = Array.from(document.querySelectorAll<HTMLElement>("[data-carousel-slide]"));
 const markers = Array.from(
   document.querySelectorAll<HTMLButtonElement>("[data-carousel-marker]")
@@ -112,6 +113,8 @@ function scrollToCarouselItem(index: number) {
 function updateCarousel() {
   const progress = track.scrollLeft / Math.max(track.clientWidth, 1);
   activeIndex = Math.min(slides.length - 1, Math.max(0, Math.round(progress)));
+  const aspectRatio = slides[activeIndex]?.dataset.carouselAspectRatio;
+  if (aspectRatio) stage.style.setProperty("--carousel-aspect-ratio", aspectRatio);
 
   slides.forEach((slide, index) => {
     const activeAmount = Math.max(0, 1 - Math.abs(progress - index));
