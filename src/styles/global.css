@@ -221,6 +221,13 @@ a {
   object-position: center 42%;
 }
 
+@media (min-width: 641px) {
+  .sonia-carousel-slide img {
+    object-fit: contain;
+    object-position: center;
+  }
+}
+
 .sonia-carousel-drag {
   position: absolute;
   inset: 0;
