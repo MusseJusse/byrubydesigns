@@ -147,31 +147,6 @@ a {
   color: #90344c;
 }
 
-.sonia-socials {
-  display: flex;
-  align-items: center;
-  gap: 23px;
-}
-
-.sonia-socials a {
-  display: grid;
-  width: 32px;
-  height: 32px;
-  place-items: center;
-  color: #111;
-  transition: color 160ms ease, transform 160ms ease;
-}
-
-.sonia-socials a:hover {
-  color: #90344c;
-  transform: translateY(-2px);
-}
-
-.sonia-socials svg {
-  width: 24px;
-  height: 24px;
-}
-
 .sonia-landing-carousel {
   padding: 48px 16px 0;
 }
@@ -626,10 +601,6 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   }
 
   .sonia-main-nav {
-    display: none;
-  }
-
-  .sonia-socials {
     display: none;
   }
 
