@@ -31,6 +31,7 @@ const categories = await Promise.all(
     )
   }))
 );
+
 ---
 
 <section id="work" class="sonia-gallery">
@@ -47,10 +48,13 @@ const categories = await Promise.all(
           aria-label={category.label + " work"}
           hidden={category.id !== "tattoo"}
         >
-          <div class="sonia-gallery-intro">
-            {category.intro.map((paragraph) => <p>{paragraph}</p>)}
-          </div>
-          <hr class="sonia-gallery-separator" />
+          <header class="sonia-gallery-intro">
+            <h1>{category.label}</h1>
+            <p class="sonia-gallery-summary">{category.summary}</p>
+            <p class="sonia-gallery-mobile-summary">
+              {"mobileSummary" in category ? category.mobileSummary : category.summary}
+            </p>
+          </header>
           {category.id === "paintings" && (
             <h2 class="sonia-gallery-year-heading">2026</h2>
           )}
@@ -59,43 +63,54 @@ const categories = await Promise.all(
             data-gallery-grid
             data-year-break-index={yearBreakIndex >= 0 ? String(yearBreakIndex) : undefined}
           >
-            {category.items.map((item, index) => (
-              <>
-                {category.id === "paintings" && index === yearBreakIndex && (
-                  <h2 class="sonia-gallery-year-divider" data-year-divider>2022</h2>
-                )}
-                <figure class="sonia-gallery-item">
-                  <button
-                    type="button"
-                    data-lightbox-open
-                    data-category={category.id}
-                    data-index={index}
-                    data-full-src={item.lightboxSrc}
-                    data-title={item.title}
-                    data-medium={"medium" in item ? item.medium : undefined}
-                    data-dimensions={
-                      "dimensions" in item
-                        ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
-                        : undefined
-                    }
-                    data-alt={item.title + ", artwork by Ruby Smythe"}
-                    aria-label={"View full image of " + item.title}
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.title + ", artwork by Ruby Smythe"}
-                      widths={[360, 720, 1080]}
-                      sizes="(max-width: 899px) 50vw, 33vw"
-                      quality={85}
-                      loading={category.id === "tattoo" && index < 7 ? "eager" : "lazy"}
-                      fetchpriority={category.id === "tattoo" && index === 0 ? "high" : "auto"}
-                      style={"aspect-ratio: " + item.aspectRatio}
-                    />
-                  </button>
-                  <figcaption>{item.title}</figcaption>
-                </figure>
-              </>
-            ))}
+            {category.items.map((item, index) => {
+              const detail = "detail" in item
+                ? item.detail
+                : "year" in item
+                  ? String(item.year)
+                  : "";
+
+              return (
+                <>
+                  {category.id === "paintings" && index === yearBreakIndex && (
+                    <h2 class="sonia-gallery-year-divider" data-year-divider>2022</h2>
+                  )}
+                  <figure class="sonia-gallery-item">
+                    <button
+                      type="button"
+                      data-lightbox-open
+                      data-category={category.id}
+                      data-index={index}
+                      data-full-src={item.lightboxSrc}
+                      data-title={item.title}
+                      data-medium={"medium" in item ? item.medium : undefined}
+                      data-dimensions={
+                        "dimensions" in item
+                          ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
+                          : undefined
+                      }
+                      data-alt={item.title + ", artwork by Ruby Smythe"}
+                      aria-label={"View full image of " + item.title}
+                    >
+                      <Image
+                        src={item.image}
+                        alt={item.title + ", artwork by Ruby Smythe"}
+                        widths={[360, 720, 1080]}
+                        sizes="(max-width: 640px) 50vw, (max-width: 899px) 50vw, 33vw"
+                        quality={85}
+                        loading={category.id === "tattoo" && index < 7 ? "eager" : "lazy"}
+                        fetchpriority={category.id === "tattoo" && index === 0 ? "high" : "auto"}
+                        style={"aspect-ratio: " + item.aspectRatio}
+                      />
+                    </button>
+                    <figcaption>
+                      <span>{item.title}</span>
+                      {detail && <span>{detail}</span>}
+                    </figcaption>
+                  </figure>
+                </>
+              );
+            })}
           </div>
         </section>
       );

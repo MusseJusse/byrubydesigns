@@ -30,10 +30,7 @@ function lockDocumentScroll() {
 
   document.body.style.overflow = "hidden";
   document.documentElement.style.overflow = "hidden";
-
-  if (scrollbarWidth > 0) {
-    document.body.style.paddingRight = scrollbarWidth + "px";
-  }
+  if (scrollbarWidth > 0) document.body.style.paddingRight = scrollbarWidth + "px";
 
   return () => {
     if (!locked) return;
@@ -49,10 +46,9 @@ function trapFocus(event: KeyboardEvent, container: HTMLElement) {
 
   const focusable = Array.from(
     container.querySelectorAll<HTMLElement>(
-      'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
+      'button:not([disabled]):not([tabindex="-1"]), a[href]:not([tabindex="-1"])'
     )
-  ).filter((element) => !element.hasAttribute("hidden"));
-
+  );
   const first = focusable.at(0);
   const last = focusable.at(-1);
   if (!first || !last) return;
@@ -66,8 +62,6 @@ function trapFocus(event: KeyboardEvent, container: HTMLElement) {
   }
 }
 
-const menuButton = requireElement<HTMLButtonElement>("[data-menu-button]");
-const mobileMenu = requireElement<HTMLElement>("[data-mobile-menu]");
 const categoryTriggers = Array.from(
   document.querySelectorAll<HTMLButtonElement>("[data-category-trigger]")
 );
@@ -83,17 +77,10 @@ const lightboxNext = requireElement<HTMLButtonElement>("[data-lightbox-next]");
 
 let selectedCategory: CategoryId = "tattoo";
 let activeIndex: number | null = null;
-let requestedLightboxIndex: number | null = null;
 let activeTrigger: HTMLButtonElement | null = null;
-let mobileMenuOpen = false;
-let menuUnlockScroll: (() => void) | null = null;
-let lightboxUnlockScroll: (() => void) | null = null;
-let finishLightboxClose: (() => void) | null = null;
-let shouldCloseLightboxWhenMenuOpens = false;
+let unlockLightboxScroll: (() => void) | null = null;
 let layoutFrame = 0;
 let resizeObserver: ResizeObserver | null = null;
-let categoryTransitionId = 0;
-let lightboxTransitionId = 0;
 
 function activePanel() {
   const panel = categoryPanels.find(
@@ -106,7 +93,7 @@ function activePanel() {
 function activeImageButtons() {
   return Array.from(
     activePanel().querySelectorAll<HTMLButtonElement>("[data-lightbox-open]")
-  );
+  ).filter((button) => button.getClientRects().length > 0);
 }
 
 function scheduleLayout() {
@@ -114,31 +101,59 @@ function scheduleLayout() {
   layoutFrame = requestAnimationFrame(layoutActiveGallery);
 }
 
+function clearDesktopLayout(gallery: HTMLElement) {
+  gallery.style.removeProperty("height");
+  for (const item of gallery.querySelectorAll<HTMLElement>(".sonia-gallery-item")) {
+    item.style.removeProperty("width");
+    item.style.removeProperty("transform");
+  }
+  const divider = gallery.querySelector<HTMLElement>("[data-year-divider]");
+  divider?.style.removeProperty("width");
+  divider?.style.removeProperty("transform");
+  gallery.classList.add("is-ready");
+}
+
 function layoutActiveGallery() {
-  const panel = activePanel();
-  const gallery = panel.querySelector<HTMLElement>("[data-gallery-grid]");
+  const gallery = activePanel().querySelector<HTMLElement>("[data-gallery-grid]");
   if (!gallery) throw new Error("The active gallery grid is missing");
 
-  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".sonia-gallery-item"));
-  const isMobile = window.innerWidth <= 640;
-  const columnCount = window.innerWidth >= 900 ? 3 : 2;
-  const horizontalGap = isMobile ? 2 : 11;
-  const verticalGap = 28;
-  const itemWidth = (gallery.clientWidth - horizontalGap * (columnCount - 1)) / columnCount;
-
-  for (const item of items) {
-    item.style.width = itemWidth + "px";
+  if (window.innerWidth <= 640) {
+    clearDesktopLayout(gallery);
+    return;
   }
+
+  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".sonia-gallery-item"));
+  const columnCount = window.innerWidth >= 900 ? 3 : 2;
+  const columnRatios = columnCount === 3 ? [1.18, 0.82, 1] : [1, 1];
+  const horizontalGap = Math.min(22, Math.max(12, window.innerWidth * 0.015));
+  const verticalGap = Math.min(42, Math.max(26, window.innerWidth * 0.03));
+  const galleryStyle = getComputedStyle(gallery);
+  const paddingLeft = Number.parseFloat(galleryStyle.paddingLeft);
+  const paddingRight = Number.parseFloat(galleryStyle.paddingRight);
+  const paddingTop = Number.parseFloat(galleryStyle.paddingTop);
+  const paddingBottom = Number.parseFloat(galleryStyle.paddingBottom);
+  const contentWidth = gallery.clientWidth - paddingLeft - paddingRight;
+  const ratioTotal = columnRatios.reduce((total, ratio) => total + ratio, 0);
+  const widthUnit = (contentWidth - horizontalGap * (columnCount - 1)) / ratioTotal;
+  const columnWidths = columnRatios.map((ratio) => widthUnit * ratio);
+  const columnOffsets = columnWidths.map((_, index) =>
+    columnWidths
+      .slice(0, index)
+      .reduce((offset, width) => offset + width + horizontalGap, paddingLeft)
+  );
+
+  items.forEach((item, index) => {
+    item.style.width = columnWidths[index % columnCount] + "px";
+  });
 
   function layoutItems(group: HTMLElement[], startY: number) {
     const columnHeights = Array.from({ length: columnCount }, () => startY);
 
     group.forEach((item, index) => {
       const columnIndex = index % columnCount;
-      const x = columnIndex * (itemWidth + horizontalGap);
+      const x = columnOffsets[columnIndex] ?? paddingLeft;
       const y = columnHeights[columnIndex] ?? startY;
-
-      item.style.transform = "translate3d(" + x + "px, " + y + "px, 0)";
+      item.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       columnHeights[columnIndex] = y + item.offsetHeight + verticalGap;
     });
 
@@ -151,43 +166,38 @@ function layoutActiveGallery() {
   let galleryBottom: number;
 
   if (yearDivider && yearBreakIndex > 0) {
-    const firstYearBottom = layoutItems(items.slice(0, yearBreakIndex), 0);
-    const dividerY = firstYearBottom + (isMobile ? 48 : 64);
-
-    yearDivider.style.width = gallery.clientWidth + "px";
-    yearDivider.style.transform = "translate3d(0, " + dividerY + "px, 0)";
-
-    const secondYearStart = dividerY + yearDivider.offsetHeight + (isMobile ? 24 : 32);
-    galleryBottom = layoutItems(items.slice(yearBreakIndex), secondYearStart);
+    const firstYearBottom = layoutItems(items.slice(0, yearBreakIndex), paddingTop);
+    const dividerY = firstYearBottom + 64;
+    yearDivider.style.width = contentWidth + "px";
+    yearDivider.style.transform = `translate3d(${paddingLeft}px, ${dividerY}px, 0)`;
+    galleryBottom = layoutItems(
+      items.slice(yearBreakIndex),
+      dividerY + yearDivider.offsetHeight + 32
+    );
   } else {
-    galleryBottom = layoutItems(items, 0);
+    galleryBottom = layoutItems(items, paddingTop);
   }
 
-  gallery.style.height = Math.max(0, galleryBottom) + "px";
+  gallery.style.height = Math.max(0, galleryBottom + paddingBottom) + "px";
   gallery.classList.add("is-ready");
 }
 
 function observeActiveGallery() {
   resizeObserver?.disconnect();
-
   const gallery = activePanel().querySelector<HTMLElement>("[data-gallery-grid]");
   if (!gallery) throw new Error("The active gallery grid is missing");
 
   gallery.classList.remove("is-ready");
   resizeObserver = new ResizeObserver(scheduleLayout);
   resizeObserver.observe(gallery);
-
   for (const item of gallery.querySelectorAll<HTMLElement>(".sonia-gallery-item")) {
     resizeObserver.observe(item);
   }
-
-  const divider = gallery.querySelector<HTMLElement>("[data-year-divider]");
-  if (divider) resizeObserver.observe(divider);
   scheduleLayout();
 }
 
-function updateSelectedCategory(category: CategoryId) {
-  closeLightbox({ restoreFocus: false, animate: false });
+function selectCategory(category: CategoryId) {
+  closeLightbox(false);
   selectedCategory = category;
 
   for (const trigger of categoryTriggers) {
@@ -201,132 +211,24 @@ function updateSelectedCategory(category: CategoryId) {
   }
 
   observeActiveGallery();
-  if (mobileMenuOpen) closeMobileMenu(true);
 }
 
-function selectCategory(category: CategoryId, animate = true) {
-  if (category === selectedCategory) {
-    if (mobileMenuOpen) closeMobileMenu(true);
-    return;
-  }
-
-  if (!animate || prefersReducedMotion() || !document.startViewTransition) {
-    updateSelectedCategory(category);
-    return;
-  }
-
-  const transitionId = ++categoryTransitionId;
-  const outgoingPanel = activePanel();
-  let incomingPanel: HTMLElement | null = null;
-  outgoingPanel.style.viewTransitionName = "gallery-b";
-  document.documentElement.dataset.motion = "gallery-category";
-
-  const transition = document.startViewTransition(() => {
-    updateSelectedCategory(category);
-    incomingPanel = activePanel();
-    outgoingPanel.style.removeProperty("view-transition-name");
-    incomingPanel.style.viewTransitionName = "gallery-b";
-    cancelAnimationFrame(layoutFrame);
-    layoutActiveGallery();
-  });
-
-  const clearTransitionState = () => {
-    if (transitionId !== categoryTransitionId) return;
-    outgoingPanel.style.removeProperty("view-transition-name");
-    incomingPanel?.style.removeProperty("view-transition-name");
-    delete document.documentElement.dataset.motion;
-  };
-  void transition.finished.then(clearTransitionState, clearTransitionState);
-}
-
-function selectCategoryFromHash() {
+function updateCategoryFromHash() {
   const category = categoryFromHash();
-  if (category) selectCategory(category);
-  else if (!window.location.hash) {
-    selectCategory("tattoo");
-    window.history.replaceState(null, "", "#tattoo");
-  }
-}
-
-function updateCategoryHash(category: CategoryId) {
-  if (categoryFromHash() === category) return;
-  window.history.pushState(null, "", "#" + category);
-}
-
-function setMobileMenuTabStops(enabled: boolean) {
-  for (const element of mobileMenu.querySelectorAll<HTMLElement>("a, button")) {
-    element.tabIndex = enabled ? 0 : -1;
-  }
-}
-
-function openMobileMenu() {
-  shouldCloseLightboxWhenMenuOpens = activeIndex !== null;
-  mobileMenuOpen = true;
-  menuButton.classList.add("is-open");
-  menuButton.setAttribute("aria-label", "Close menu");
-  menuButton.setAttribute("aria-expanded", "true");
-  mobileMenu.classList.add("is-open");
-  mobileMenu.setAttribute("aria-hidden", "false");
-  setMobileMenuTabStops(true);
-
-  if (!shouldCloseLightboxWhenMenuOpens) {
-    menuUnlockScroll = lockDocumentScroll();
-  }
-
-  if (!shouldCloseLightboxWhenMenuOpens) focusFirstMobileMenuItem();
-}
-
-function closeMobileMenu(restoreFocus: boolean) {
-  if (!mobileMenuOpen) return;
-  mobileMenuOpen = false;
-  shouldCloseLightboxWhenMenuOpens = false;
-  menuButton.classList.remove("is-open");
-  menuButton.setAttribute("aria-label", "Open menu");
-  menuButton.setAttribute("aria-expanded", "false");
-  mobileMenu.classList.remove("is-open");
-  mobileMenu.setAttribute("aria-hidden", "true");
-  setMobileMenuTabStops(false);
-  menuUnlockScroll?.();
-  menuUnlockScroll = null;
-  if (restoreFocus) {
-    if (activeIndex === null) menuButton.focus();
-    else lightboxClose.focus();
-  }
-}
-
-function focusFirstMobileMenuItem() {
-  requestAnimationFrame(() => {
-    mobileMenu.querySelector<HTMLElement>("button, a")?.focus();
-  });
-}
-
-function finishOpeningMobileMenu(event: TransitionEvent) {
-  if (
-    event.target !== mobileMenu ||
-    event.propertyName !== "opacity" ||
-    !mobileMenuOpen ||
-    !shouldCloseLightboxWhenMenuOpens
-  ) {
-    return;
-  }
-
-  shouldCloseLightboxWhenMenuOpens = false;
-  closeLightbox({ restoreFocus: false, animate: false });
-  menuUnlockScroll = lockDocumentScroll();
-  focusFirstMobileMenuItem();
+  if (category && category !== selectedCategory) selectCategory(category);
 }
 
 function showActiveImage() {
   const buttons = activeImageButtons();
-  if (activeIndex === null || buttons.length === 0) return;
-
+  if (activeIndex === null) return;
   const button = buttons[activeIndex];
   if (!button) return;
-  const titleText = button.dataset.title ?? "Artwork";
-  const title = document.createElement("cite");
-  title.textContent = titleText;
 
+  const title = document.createElement("cite");
+  const titleText = button.dataset.title ?? "Artwork";
+  title.textContent = titleText;
   const captionLines: HTMLElement[] = [title];
+
   for (const detail of [button.dataset.medium, button.dataset.dimensions]) {
     if (!detail) continue;
     const line = document.createElement("span");
@@ -340,142 +242,47 @@ function showActiveImage() {
   lightbox.setAttribute("aria-label", "Full image of " + titleText);
 }
 
-function clearLightboxPictureTransition() {
-  lightboxImage.style.removeProperty("view-transition-name");
-  if (document.documentElement.dataset.motion === "lightbox-picture") {
-    delete document.documentElement.dataset.motion;
-  }
-}
-
-async function preloadImage(source: string) {
-  const image = new Image();
-  image.src = source;
-  try {
-    await image.decode();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
 function openLightbox(button: HTMLButtonElement) {
   const category = button.dataset.category;
   const index = Number.parseInt(button.dataset.index ?? "", 10);
   if (!isCategoryId(category) || category !== selectedCategory || !Number.isFinite(index)) return;
 
-  closeMobileMenu(false);
-
-  if (finishLightboxClose) {
-    lightbox.removeEventListener("animationend", finishLightboxClose);
-    finishLightboxClose = null;
-    lightbox.classList.remove("is-closing");
-  }
-
   activeIndex = index;
-  requestedLightboxIndex = index;
   activeTrigger = button;
   showActiveImage();
   lightbox.inert = false;
   lightbox.hidden = false;
-  lightboxUnlockScroll ??= lockDocumentScroll();
+  unlockLightboxScroll ??= lockDocumentScroll();
   requestAnimationFrame(() => lightboxClose.focus());
 }
 
-function closeLightbox({
-  restoreFocus = true,
-  animate = true,
-}: { restoreFocus?: boolean; animate?: boolean } = {}) {
+function closeLightbox(restoreFocus = true) {
   if (activeIndex === null) return;
-  lightboxTransitionId += 1;
-  clearLightboxPictureTransition();
   const trigger = activeTrigger;
   activeIndex = null;
-  requestedLightboxIndex = null;
   activeTrigger = null;
   lightbox.inert = true;
-
-  const finishClosing = () => {
-    if (finishLightboxClose !== finishClosing) return;
-    finishLightboxClose = null;
-    lightbox.classList.remove("is-closing");
-    lightbox.hidden = true;
-    lightboxImage.removeAttribute("src");
-    lightboxUnlockScroll?.();
-    lightboxUnlockScroll = null;
-  };
-  finishLightboxClose = finishClosing;
-
+  lightbox.hidden = true;
+  lightboxImage.removeAttribute("src");
+  unlockLightboxScroll?.();
+  unlockLightboxScroll = null;
   if (restoreFocus) trigger?.focus();
-
-  if (!animate || prefersReducedMotion()) {
-    finishClosing();
-    return;
-  }
-
-  lightbox.classList.add("is-closing");
-  lightbox.addEventListener("animationend", finishClosing, { once: true });
 }
 
-async function moveLightbox(direction: -1 | 1) {
+function moveLightbox(direction: -1 | 1) {
   const buttons = activeImageButtons();
   if (activeIndex === null || buttons.length === 0) return;
-  const currentIndex = requestedLightboxIndex ?? activeIndex;
-  const nextIndex = (currentIndex + direction + buttons.length) % buttons.length;
-  requestedLightboxIndex = nextIndex;
-
-  if (prefersReducedMotion() || !document.startViewTransition) {
-    activeIndex = nextIndex;
-    showActiveImage();
-    return;
-  }
-
-  clearLightboxPictureTransition();
-  const transitionId = ++lightboxTransitionId;
-  const nextSource = buttons[nextIndex]?.dataset.fullSrc ?? "";
-  const imageReady = await preloadImage(nextSource);
-  if (transitionId !== lightboxTransitionId || activeIndex === null) return;
-  if (nextIndex === activeIndex) return;
-
-  if (!imageReady) {
-    activeIndex = nextIndex;
-    showActiveImage();
-    return;
-  }
-
-  lightboxImage.style.viewTransitionName = "lightbox-picture";
-  document.documentElement.dataset.motion = "lightbox-picture";
-
-  const transition = document.startViewTransition(() => {
-    activeIndex = nextIndex;
-    showActiveImage();
-  });
-
-  const clearTransitionState = () => {
-    if (transitionId !== lightboxTransitionId) return;
-    clearLightboxPictureTransition();
-  };
-  void transition.finished.then(clearTransitionState, clearTransitionState);
+  activeIndex = (activeIndex + direction + buttons.length) % buttons.length;
+  showActiveImage();
 }
-
-menuButton.addEventListener("click", () => {
-  if (mobileMenuOpen) closeMobileMenu(true);
-  else openMobileMenu();
-});
-
-mobileMenu.addEventListener("transitionend", finishOpeningMobileMenu);
 
 for (const trigger of categoryTriggers) {
   trigger.addEventListener("click", () => {
     const category = trigger.dataset.categoryTrigger;
-    if (isCategoryId(category)) {
-      selectCategory(category);
-      updateCategoryHash(category);
-    }
+    if (!isCategoryId(category)) return;
+    selectCategory(category);
+    window.history.pushState(null, "", "#" + category);
   });
-}
-
-for (const element of mobileMenu.querySelectorAll<HTMLElement>("[data-menu-close]")) {
-  element.addEventListener("click", () => closeMobileMenu(true));
 }
 
 for (const button of document.querySelectorAll<HTMLButtonElement>("[data-lightbox-open]")) {
@@ -490,34 +297,27 @@ lightbox.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (activeIndex !== null) {
-    if (event.key === "Escape") closeLightbox();
-    else if (event.key === "ArrowLeft") moveLightbox(-1);
-    else if (event.key === "ArrowRight") moveLightbox(1);
-    else trapFocus(event, lightbox);
-    return;
-  }
-
-  if (mobileMenuOpen) {
-    if (event.key === "Escape") closeMobileMenu(true);
-    else trapFocus(event, mobileMenu);
-  }
+  if (activeIndex === null) return;
+  if (event.key === "Escape") closeLightbox();
+  else if (event.key === "ArrowLeft") moveLightbox(-1);
+  else if (event.key === "ArrowRight") moveLightbox(1);
+  else trapFocus(event, lightbox);
 });
 
 window.addEventListener("pagehide", () => {
   cancelAnimationFrame(layoutFrame);
   resizeObserver?.disconnect();
-  menuUnlockScroll?.();
-  lightboxUnlockScroll?.();
+  unlockLightboxScroll?.();
 });
-
-window.addEventListener("popstate", selectCategoryFromHash);
-window.addEventListener("hashchange", selectCategoryFromHash);
+window.addEventListener("popstate", updateCategoryFromHash);
+window.addEventListener("hashchange", updateCategoryFromHash);
 
 document.documentElement.classList.add("portfolio-enhanced");
 const initialCategory = categoryFromHash();
-if (initialCategory && initialCategory !== selectedCategory) selectCategory(initialCategory, false);
+if (initialCategory) selectCategory(initialCategory);
 else {
   observeActiveGallery();
-  if (!window.location.hash) window.history.replaceState(null, "", "#tattoo");
+  window.history.replaceState(null, "", "#tattoo");
 }
+
+if (prefersReducedMotion()) document.documentElement.dataset.reducedMotion = "true";

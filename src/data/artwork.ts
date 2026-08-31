@@ -4,6 +4,7 @@ export type GalleryArtwork = {
   fileName: string;
   imagePath: `/src/assets/artwork/${string}.webp`;
   title: string;
+  detail?: string;
   aspectRatio: string;
   year?: 2022 | 2026;
   medium?: string;
@@ -17,24 +18,25 @@ export type GalleryArtwork = {
 export type GalleryCategory = {
   id: GalleryCategoryId;
   label: string;
-  intro: readonly string[];
+  summary: string;
+  mobileSummary?: string;
   items: readonly GalleryArtwork[];
 };
 
 const tattooSource = [
-  { fileName: "IMG_6601.webp" },
-  { fileName: "IMG_3554.webp" },
-  { fileName: "IMG_3112.webp" },
+  { fileName: "IMG_6601.webp", title: "Rose and skull", detail: "Hip" },
+  { fileName: "IMG_3554.webp", title: "Moth and botanicals", detail: "Thigh" },
+  { fileName: "IMG_3112.webp", title: "Fine-line moth", detail: "Calf" },
+  { fileName: "IMG_0502.webp", title: "Peonies", detail: "Back" },
+  { fileName: "7 kererū.webp", title: "Kererū", detail: "Shoulder" },
+  { fileName: "1 floral forearm piece.webp", title: "Floral sleeve", detail: "Forearm" },
   { fileName: "IMG_2526.webp" },
   { fileName: "IMG_2522.webp" },
   { fileName: "IMG_2233.webp" },
   { fileName: "IMG_1356.webp" },
   { fileName: "IMG_1220.webp" },
   { fileName: "IMG_1163.webp", aspectRatio: "2 / 3" },
-  { fileName: "IMG_0545.webp", aspectRatio: "1 / 1" },
-  { fileName: "IMG_0502.webp", aspectRatio: "2 / 3" },
-  { fileName: "7 kererū.webp" },
-  { fileName: "1 floral forearm piece.webp" }
+  { fileName: "IMG_0545.webp", aspectRatio: "1 / 1" }
 ] as const;
 
 function numberedTitle(label: "Tattoo" | "Drawing", index: number) {
@@ -45,7 +47,8 @@ const tattooArtwork = tattooSource.map(({ fileName, ...item }, index) => {
   return {
     fileName,
     imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
-    title: numberedTitle("Tattoo", index),
+    title: "title" in item ? item.title : numberedTitle("Tattoo", index),
+    detail: "detail" in item ? item.detail : undefined,
     aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
   };
 }) satisfies GalleryArtwork[];
@@ -134,25 +137,20 @@ export const galleryCategories = [
   {
     id: "tattoo",
     label: "Tattoos",
-    intro: [
-      "Originally trained in Auckland, New Zealand, I have been tattooing since 2022 and now work out of Inkdependent Studio near Edinburgh’s Haymarket station.",
-      "Fully licensed, I do custom and my own original designs with a focus on fine-line black-and-grey."
-    ],
+    summary: "Custom and original fine-line black-and-grey work, made at Inkdependent Studio in Edinburgh.",
+    mobileSummary: "Custom work and original flash.",
     items: tattooArtwork
   },
   {
     id: "drawings",
     label: "Drawings",
-    intro: [
-      "A series of hand-sized flash designs rendered in ballpoint pen, available for tattooing.",
-      "These pieces explore core themes in my work—from delicate flora and pollinators to skulls and wildlife—all balanced with soft shading and natural placement in mind."
-    ],
+    summary: "Hand-sized flash designs in ballpoint pen, available for tattooing.",
     items: drawingArtwork
   },
   {
     id: "paintings",
     label: "Paintings",
-    intro: ["“It's all there, the strangeness, colour, exhilaration.” Rita Angus"],
+    summary: "Gouache paintings shaped by flora, wildlife, and close observation.",
     items: paintingArtwork
   }
 ] as const satisfies readonly GalleryCategory[];
