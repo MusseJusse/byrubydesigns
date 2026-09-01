@@ -433,10 +433,6 @@ a {
 }
 
 .editorial-category-nav {
-  display: none;
-}
-
-.editorial-category-nav-gallery {
   position: sticky;
   z-index: 2;
   top: 0;
@@ -451,14 +447,13 @@ a {
   font-size: 13px;
 }
 
-.editorial-category-nav-gallery::after {
+.editorial-category-nav::after {
   margin-left: auto;
   color: #777;
   content: "Custom work in Edinburgh";
   font-size: 11px;
 }
 
-.editorial-category-nav a,
 .editorial-category-nav button {
   border: 0;
   padding: 0;
@@ -821,8 +816,7 @@ a {
     padding: 10px 0 4px;
   }
 
-  .editorial-category-nav,
-  .editorial-category-nav-gallery {
+  .editorial-category-nav {
     position: sticky;
     z-index: 2;
     top: 0;
@@ -838,13 +832,13 @@ a {
     text-align: center;
   }
 
-  .editorial-category-nav-gallery {
+  .editorial-category-nav {
     min-height: 44px;
     padding: 0;
     font-size: 11px;
   }
 
-  .editorial-category-nav-gallery::after {
+  .editorial-category-nav::after {
     content: none;
   }
 

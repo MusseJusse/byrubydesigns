@@ -37,13 +37,10 @@ const { page } = Astro.props;
   >Book</a>
 </header>
 
-<nav
-  class:list={["editorial-category-nav", { "editorial-category-nav-gallery": page === "gallery" }]}
-  aria-label="Portfolio sections"
->
-  {
-    galleryCategories.map((category) =>
-      page === "gallery" ? (
+{
+  page === "gallery" && (
+    <nav class="editorial-category-nav" aria-label="Portfolio sections">
+      {galleryCategories.map((category) => (
         <button
           class={category.id === "tattoo" ? "active" : undefined}
           type="button"
@@ -53,11 +50,7 @@ const { page } = Astro.props;
         >
           {category.label}
         </button>
-      ) : (
-        <a class={category.id === "tattoo" ? "active" : undefined} href={`/gallery#${category.id}`}>
-          {category.label}
-        </a>
-      )
-    )
-  }
-</nav>
+      ))}
+    </nav>
+  )
+}
