@@ -18,8 +18,7 @@ export type GalleryArtwork = {
 export type GalleryCategory = {
   id: GalleryCategoryId;
   label: string;
-  summary: string;
-  mobileSummary?: string;
+  intro: readonly string[];
   items: readonly GalleryArtwork[];
 };
 
@@ -136,20 +135,25 @@ export const galleryCategories = [
   {
     id: "tattoo",
     label: "Tattoos",
-    summary: "Custom and original fine-line black-and-grey work, made at Inkdependent Studio in Edinburgh.",
-    mobileSummary: "Custom work and original flash.",
+    intro: [
+      "Originally trained in Auckland, New Zealand, I have been tattooing since 2022 and now work out of Inkdependent Studio near Edinburgh’s Haymarket station.",
+      "Fully licensed, I do custom and my own original designs with a focus on fine-line black-and-grey."
+    ],
     items: tattooArtwork
   },
   {
     id: "drawings",
     label: "Drawings",
-    summary: "Hand-sized flash designs in ballpoint pen, available for tattooing.",
+    intro: [
+      "A series of hand-sized flash designs rendered in ballpoint pen, available for tattooing.",
+      "These pieces explore core themes in my work—from delicate flora and pollinators to skulls and wildlife—all balanced with soft shading and natural placement in mind."
+    ],
     items: drawingArtwork
   },
   {
     id: "paintings",
     label: "Paintings",
-    summary: "Gouache paintings shaped by flora, wildlife, and close observation.",
+    intro: ["“It's all there, the strangeness, colour, exhilaration.” Rita Angus"],
     items: paintingArtwork
   }
 ] as const satisfies readonly GalleryCategory[];

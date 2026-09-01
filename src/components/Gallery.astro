@@ -50,10 +50,7 @@ const categories = await Promise.all(
         >
           <header class="sonia-gallery-intro">
             <h1>{category.label}</h1>
-            <p class="sonia-gallery-summary">{category.summary}</p>
-            <p class="sonia-gallery-mobile-summary">
-              {"mobileSummary" in category ? category.mobileSummary : category.summary}
-            </p>
+            {category.intro.map((paragraph) => <p>{paragraph}</p>)}
           </header>
           {category.id === "paintings" && (
             <h2 class="sonia-gallery-year-heading">2026</h2>

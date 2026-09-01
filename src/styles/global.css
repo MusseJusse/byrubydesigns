@@ -704,10 +704,6 @@ a {
   line-height: 1.55;
 }
 
-.sonia-gallery-mobile-summary {
-  display: none;
-}
-
 .sonia-gallery-grid {
   width: auto;
   max-width: none;
@@ -1012,14 +1008,6 @@ a {
   .sonia-gallery-intro p + p {
     margin-top: 9px;
     font-size: 13px;
-  }
-
-  .sonia-gallery-summary {
-    display: none;
-  }
-
-  .sonia-gallery-mobile-summary {
-    display: block;
   }
 
   .portfolio-enhanced .sonia-gallery-grid,
