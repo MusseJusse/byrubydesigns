@@ -59,7 +59,7 @@ const categories = await Promise.all(
             <h2 class="sonia-gallery-year-heading">2026</h2>
           )}
           <div
-            class:list={["sonia-gallery-grid", { "sonia-gallery-grid-tattoo": category.id === "tattoo" }]}
+            class="sonia-gallery-grid"
             data-gallery-grid
             data-year-break-index={yearBreakIndex >= 0 ? String(yearBreakIndex) : undefined}
           >
@@ -103,10 +103,12 @@ const categories = await Promise.all(
                         style={"aspect-ratio: " + item.aspectRatio}
                       />
                     </button>
-                    <figcaption>
-                      <span>{item.title}</span>
-                      {detail && <span>{detail}</span>}
-                    </figcaption>
+                    {category.id === "paintings" && (
+                      <figcaption>
+                        <span>{item.title}</span>
+                        {detail && <span>{detail}</span>}
+                      </figcaption>
+                    )}
                   </figure>
                 </>
               );
