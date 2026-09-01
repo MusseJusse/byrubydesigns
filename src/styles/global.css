@@ -45,9 +45,7 @@
   --accent: #d17c91;
   --accent-contrast: #000;
   --image-placeholder: #292927;
-  --header-overlay:
-    linear-gradient(to right, rgb(0 0 0 / 0.86), rgb(0 0 0 / 0.54) 42%, transparent 68%),
-    linear-gradient(to bottom, rgb(0 0 0 / 0.5), transparent);
+  --header-overlay: linear-gradient(to bottom, rgb(0 0 0 / 0.84), transparent);
   --lightbox-bg: rgb(0 0 0 / 0.84);
   --lightbox-fg: #f7f7f5;
 }
