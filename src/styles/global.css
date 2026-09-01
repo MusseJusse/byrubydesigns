@@ -545,13 +545,6 @@ a {
   font-size: 13px;
 }
 
-.editorial-category-nav::after {
-  margin-left: auto;
-  color: var(--subtle-fg);
-  content: "Custom work in Edinburgh";
-  font-size: 11px;
-}
-
 .editorial-category-nav button {
   border: 0;
   padding: 0;
