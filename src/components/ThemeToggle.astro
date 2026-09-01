@@ -1,0 +1,23 @@
+---
+type Props = {
+  class?: string;
+};
+
+const className = Astro.props.class;
+---
+
+<button
+  class:list={["editorial-theme-toggle", className]}
+  type="button"
+  data-theme-toggle
+  aria-label="Dark mode"
+  aria-pressed="false"
+>
+  <svg class="editorial-theme-icon editorial-theme-icon-moon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M20.5 14.4A8.5 8.5 0 0 1 9.6 3.5a8.5 8.5 0 1 0 10.9 10.9Z"></path>
+  </svg>
+  <svg class="editorial-theme-icon editorial-theme-icon-sun" viewBox="0 0 24 24" aria-hidden="true">
+    <circle cx="12" cy="12" r="3.5"></circle>
+    <path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"></path>
+  </svg>
+</button>

@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 import rubyMark from "../assets/brand/ruby-mark.webp";
 import { galleryCategories } from "../data/artwork";
+import ThemeToggle from "./ThemeToggle.astro";
 
 type Props = {
   page: "home" | "gallery";
@@ -21,6 +22,7 @@ const { page } = Astro.props;
     {page === "gallery" && <a href="/">Home</a>}
     <a class:list={[{ active: page === "gallery" }]} href="/gallery">Work</a>
     <a href="#about">About</a>
+    <ThemeToggle class="editorial-theme-toggle-desktop" />
     <a
       class="editorial-book-link"
       href="https://www.instagram.com/byrubydesigns"
@@ -29,12 +31,15 @@ const { page } = Astro.props;
     >Book</a>
   </nav>
 
-  <a
-    class="editorial-mobile-book"
-    href="https://www.instagram.com/byrubydesigns"
-    target="_blank"
-    rel="noreferrer"
-  >Book</a>
+  <div class="editorial-mobile-actions">
+    <ThemeToggle class="editorial-theme-toggle-mobile" />
+    <a
+      class="editorial-mobile-book"
+      href="https://www.instagram.com/byrubydesigns"
+      target="_blank"
+      rel="noreferrer"
+    >Book</a>
+  </div>
 </header>
 
 {
