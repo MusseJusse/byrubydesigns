@@ -763,6 +763,11 @@ a {
   align-items: center;
 }
 
+.sonia-footer-home .sonia-footer-content p {
+  max-width: 55ch;
+  line-height: 1.5;
+}
+
 .sonia-footer-links {
   gap: 24px;
 }
@@ -1008,6 +1013,14 @@ a {
   .sonia-gallery-intro p + p {
     margin-top: 9px;
     font-size: 13px;
+  }
+
+  .sonia-gallery-intro h1 + p {
+    margin-top: 14px;
+  }
+
+  .sonia-gallery-intro p + p {
+    margin-top: 10px;
   }
 
   .portfolio-enhanced .sonia-gallery-grid,
