@@ -392,6 +392,8 @@ a {
   top: 0;
   right: 0;
   left: 0;
+  width: 100vw;
+  max-width: none;
   display: flex;
   min-height: 84px;
   align-items: center;
