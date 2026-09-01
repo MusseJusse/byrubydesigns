@@ -975,10 +975,6 @@ a {
     height: 248px;
   }
 
-  #gallery-tattoo .sonia-gallery-item:nth-child(n + 7) {
-    display: none;
-  }
-
   #gallery-tattoo .sonia-gallery-item:nth-child(1) {
     order: 1;
   }
@@ -1001,6 +997,10 @@ a {
 
   #gallery-tattoo .sonia-gallery-item:nth-child(6) {
     order: 6;
+  }
+
+  #gallery-tattoo .sonia-gallery-item:nth-child(n + 7) {
+    order: 7;
   }
 
   #gallery-tattoo .sonia-gallery-item:nth-child(2) button,
