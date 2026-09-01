@@ -748,13 +748,13 @@ a {
   display: flex;
   width: 100%;
   max-width: none;
-  min-height: 72px;
+  min-height: 112px;
   justify-content: center;
   border-top: 1px solid var(--line);
   margin: 0;
-  padding: 16px 14px;
+  padding: 24px clamp(22px, 3vw, 48px);
   color: var(--muted-fg);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -763,7 +763,8 @@ a {
 }
 
 .sonia-footer-home .sonia-footer-content {
-  display: block;
+  display: flex;
+  align-items: center;
 }
 
 .sonia-footer-links {
