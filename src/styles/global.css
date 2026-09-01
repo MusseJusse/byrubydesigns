@@ -472,6 +472,11 @@ a {
   padding-bottom: 4px;
 }
 
+.editorial-main-nav .editorial-book-link {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
 .editorial-theme-toggle {
   display: grid;
   width: 32px;
@@ -896,8 +901,7 @@ a {
 
   .editorial-mobile-book {
     display: block;
-    border-bottom: 1px solid currentColor;
-    padding: 10px 0 4px;
+    padding: 10px 0 0;
   }
 
   .editorial-category-nav {
