@@ -224,7 +224,7 @@ a {
 }
 
 .sonia-footer.sonia-footer-home {
-  display: none;
+  display: flex;
 }
 
 .sonia-footer p {
@@ -748,17 +748,18 @@ a {
   display: flex;
   width: 100%;
   max-width: none;
-  min-height: 112px;
+  min-height: 72px;
   justify-content: center;
   border-top: 1px solid var(--line);
-  padding: 24px clamp(22px, 3vw, 48px);
+  margin: 0;
+  padding: 16px 14px;
   color: var(--muted-fg);
-  font-size: 12px;
+  font-size: 10px;
   line-height: 1.5;
 }
 
 .sonia-footer-content {
-  align-items: center;
+  display: none;
 }
 
 .sonia-footer-links {
@@ -766,7 +767,19 @@ a {
 }
 
 .sonia-mobile-footer {
-  display: none;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  color: var(--muted-fg);
+}
+
+.sonia-mobile-footer a {
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 4px;
+  color: var(--accent);
+  text-decoration: none;
 }
 
 @media (max-width: 900px) {
