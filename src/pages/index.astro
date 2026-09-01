@@ -3,8 +3,8 @@ import { Image } from "astro:assets";
 import AboutFooter from "../components/AboutFooter.astro";
 import BrandHeader from "../components/BrandHeader.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import landingImage from "../assets/artwork/landing/1000389578.webp";
 import painting from "../assets/artwork/paintings/painting-03.webp";
-import featureTattoo from "../assets/artwork/tattoo/IMG_2522.webp";
 import leadTattoo from "../assets/artwork/tattoo/IMG_6601.webp";
 ---
 
@@ -41,16 +41,16 @@ import leadTattoo from "../assets/artwork/tattoo/IMG_6601.webp";
 
       <figure class="editorial-home-image editorial-home-image-feature">
         <Image
-          src={featureTattoo}
-          alt="Fine-line moth tattoo by Ruby Smythe"
+          src={landingImage}
+          alt="Botanical painting in progress by Ruby Smythe"
           widths={[420, 640, 860]}
           sizes="(max-width: 640px) 100vw, 26vw"
           quality={88}
           loading="eager"
         />
         <figcaption>
-          <span>Fine-line tattoos</span>
-          <span>Custom and original flash</span>
+          <span>Painting in progress</span>
+          <span>Watercolour and botanical studies</span>
         </figcaption>
       </figure>
 
