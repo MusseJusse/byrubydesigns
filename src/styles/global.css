@@ -762,6 +762,10 @@ a {
   display: none;
 }
 
+.sonia-footer-home .sonia-footer-content {
+  display: block;
+}
+
 .sonia-footer-links {
   gap: 24px;
 }
@@ -1074,6 +1078,10 @@ a {
     margin: 0;
     padding: 16px 14px;
     font-size: 10px;
+  }
+
+  .sonia-footer.sonia-footer-home {
+    display: none;
   }
 
   .sonia-footer-content {
