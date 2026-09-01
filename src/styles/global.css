@@ -223,6 +223,10 @@ a {
   line-height: 1.7;
 }
 
+.sonia-footer-home {
+  display: none;
+}
+
 .sonia-footer p {
   margin: 0;
 }
@@ -1055,10 +1059,6 @@ a {
     margin: 0;
     padding: 16px 14px;
     font-size: 10px;
-  }
-
-  .sonia-footer-home {
-    display: none;
   }
 
   .sonia-footer-content {
