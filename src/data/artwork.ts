@@ -24,12 +24,12 @@ export type GalleryCategory = {
 };
 
 const tattooSource = [
-  { fileName: "IMG_6601.webp", title: "Rose and skull", detail: "Hip" },
-  { fileName: "IMG_3554.webp", title: "Moth and botanicals", detail: "Thigh" },
-  { fileName: "IMG_3112.webp", title: "Fine-line moth", detail: "Calf" },
-  { fileName: "IMG_0502.webp", title: "Peonies", detail: "Back" },
-  { fileName: "7 kererū.webp", title: "Kererū", detail: "Shoulder" },
-  { fileName: "1 floral forearm piece.webp", title: "Floral sleeve", detail: "Forearm" },
+  { fileName: "IMG_6601.webp", title: "Rose and skull" },
+  { fileName: "IMG_3554.webp", title: "Moth and botanicals" },
+  { fileName: "IMG_3112.webp", title: "Fine-line moth" },
+  { fileName: "IMG_0502.webp", title: "Peonies" },
+  { fileName: "7 kererū.webp", title: "Kererū" },
+  { fileName: "1 floral forearm piece.webp", title: "Floral sleeve" },
   { fileName: "IMG_2526.webp" },
   { fileName: "IMG_2522.webp" },
   { fileName: "IMG_2233.webp" },
@@ -48,7 +48,6 @@ const tattooArtwork = tattooSource.map(({ fileName, ...item }, index) => {
     fileName,
     imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
     title: "title" in item ? item.title : numberedTitle("Tattoo", index),
-    detail: "detail" in item ? item.detail : undefined,
     aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
   };
 }) satisfies GalleryArtwork[];
