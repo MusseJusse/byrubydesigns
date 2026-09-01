@@ -1071,6 +1071,10 @@ a {
     font-size: 10px;
   }
 
+  .sonia-footer-home {
+    display: none;
+  }
+
   .sonia-footer-content {
     display: none;
   }
