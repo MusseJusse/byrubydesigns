@@ -1030,6 +1030,10 @@ a {
     font-size: 11px;
   }
 
+  .sonia-gallery-grid-tattoo .sonia-gallery-item figcaption {
+    align-content: start;
+  }
+
   .sonia-gallery-item figcaption span:last-child {
     font-size: 9px;
     text-align: left;
