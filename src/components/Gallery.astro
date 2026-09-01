@@ -98,8 +98,8 @@ const categories = await Promise.all(
                         widths={[360, 720, 1080]}
                         sizes="(max-width: 640px) 50vw, (max-width: 899px) 50vw, 33vw"
                         quality={85}
-                        loading={category.id === "tattoo" && index < 7 ? "eager" : "lazy"}
-                        fetchpriority={category.id === "tattoo" && index === 0 ? "high" : "auto"}
+                        loading="lazy"
+                        fetchpriority="auto"
                         style={"aspect-ratio: " + item.aspectRatio}
                       />
                     </button>
