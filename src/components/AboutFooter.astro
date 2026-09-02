@@ -1,11 +1,24 @@
-<footer id="about" class="sonia-footer">
+---
+type Props = {
+  page: "home" | "gallery";
+};
+
+const { page } = Astro.props;
+---
+
+<footer id="about" class:list={["sonia-footer", { "sonia-footer-home": page === "home" }]}>
   <div class="sonia-footer-content">
-    <p>Ruby Smythe is a New Zealand-born painter and tattoo artist based in Edinburgh.</p>
-    <div class="sonia-footer-links" aria-label="External links">
-      <a href="https://www.instagram.com/byrubydesigns" target="_blank" rel="noreferrer">
-        Instagram
-      </a>
-    </div>
+    {page === "home" && (
+      <>
+        <p>Ruby Smythe is a New Zealand-born painter and tattoo artist based in Edinburgh.</p>
+        <a href="#about">About Ruby</a>
+      </>
+    )}
   </div>
-  <a class="sonia-back-to-top" href="#top" aria-label="Back to top">&gt;</a>
+  {page === "gallery" && (
+    <div class="sonia-mobile-footer" aria-label="Site information">
+      <span>Ruby Smythe, Edinburgh</span>
+      <a href="https://www.instagram.com/byrubydesigns" target="_blank" rel="noreferrer">Instagram</a>
+    </div>
+  )}
 </footer>

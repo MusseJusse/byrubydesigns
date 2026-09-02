@@ -4,6 +4,7 @@ export type GalleryArtwork = {
   fileName: string;
   imagePath: `/src/assets/artwork/${string}.webp`;
   title: string;
+  detail?: string;
   aspectRatio: string;
   year?: 2022 | 2026;
   medium?: string;
@@ -22,19 +23,19 @@ export type GalleryCategory = {
 };
 
 const tattooSource = [
-  { fileName: "IMG_6601.webp" },
-  { fileName: "IMG_3554.webp" },
-  { fileName: "IMG_3112.webp" },
+  { fileName: "IMG_6601.webp", title: "Rose and skull" },
+  { fileName: "IMG_3554.webp", title: "Moth and botanicals" },
+  { fileName: "IMG_3112.webp", title: "Fine-line moth" },
+  { fileName: "IMG_0502.webp", title: "Peonies" },
+  { fileName: "7 kererū.webp", title: "Kererū" },
+  { fileName: "1 floral forearm piece.webp", title: "Floral sleeve" },
   { fileName: "IMG_2526.webp" },
   { fileName: "IMG_2522.webp" },
   { fileName: "IMG_2233.webp" },
   { fileName: "IMG_1356.webp" },
   { fileName: "IMG_1220.webp" },
   { fileName: "IMG_1163.webp", aspectRatio: "2 / 3" },
-  { fileName: "IMG_0545.webp", aspectRatio: "1 / 1" },
-  { fileName: "IMG_0502.webp", aspectRatio: "2 / 3" },
-  { fileName: "7 kererū.webp" },
-  { fileName: "1 floral forearm piece.webp" }
+  { fileName: "IMG_0545.webp", aspectRatio: "1 / 1" }
 ] as const;
 
 function numberedTitle(label: "Tattoo" | "Drawing", index: number) {
@@ -45,7 +46,7 @@ const tattooArtwork = tattooSource.map(({ fileName, ...item }, index) => {
   return {
     fileName,
     imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
-    title: numberedTitle("Tattoo", index),
+    title: "title" in item ? item.title : numberedTitle("Tattoo", index),
     aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
   };
 }) satisfies GalleryArtwork[];

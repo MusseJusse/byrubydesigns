@@ -18,6 +18,27 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#ffffff" />
+    <script is:inline>
+      (() => {
+        const storageKey = "ruby-theme";
+        let savedTheme = null;
+        try {
+          savedTheme = window.localStorage.getItem(storageKey);
+        } catch {}
+        const theme = savedTheme === "light" || savedTheme === "dark"
+          ? savedTheme
+          : window.matchMedia("(prefers-color-scheme: dark)").matches
+            ? "dark"
+            : "light";
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        document.querySelector('meta[name="theme-color"]')?.setAttribute(
+          "content",
+          theme === "dark" ? "#1b1b1a" : "#ffffff"
+        );
+      })();
+    </script>
     <link rel="icon" type="image/webp" href="/favicon.webp" />
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
@@ -25,5 +46,8 @@ const { title, description } = Astro.props;
   <body>
     <slot />
     <Analytics />
+    <script>
+      import "../scripts/theme";
+    </script>
   </body>
 </html>

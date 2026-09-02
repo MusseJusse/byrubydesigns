@@ -1,131 +1,73 @@
 ---
-import type { ImageMetadata } from "astro";
 import { Image } from "astro:assets";
 import AboutFooter from "../components/AboutFooter.astro";
 import BrandHeader from "../components/BrandHeader.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-const imageLoaders = import.meta.glob<{ default: ImageMetadata }>(
-  "/src/assets/artwork/**/*.webp"
-);
-
-async function resolveImage(path: `/src/assets/artwork/${string}.webp`) {
-  const load = imageLoaders[path];
-  if (!load) throw new Error("Landing-page artwork is missing: " + path);
-  return (await load()).default;
-}
-
-type CarouselItemSource = {
-  imagePath: `/src/assets/artwork/${string}.webp`;
-  title: string;
-};
-
-const carouselItemSources = [
-  {
-    imagePath: "/src/assets/artwork/tattoo/IMG_6601.webp",
-    title: "Tattoo 13"
-  },
-  {
-    imagePath: "/src/assets/artwork/paintings/painting-01.webp",
-    title: "Painting 01"
-  },
-  {
-    imagePath: "/src/assets/artwork/tattoo/IMG_3554.webp",
-    title: "Tattoo 12"
-  },
-  {
-    imagePath: "/src/assets/artwork/paintings/painting-02.webp",
-    title: "Painting 02"
-  },
-  {
-    imagePath: "/src/assets/artwork/tattoo/7 kererū.webp",
-    title: "Kererū"
-  }
-] as const satisfies readonly CarouselItemSource[];
-
-const carouselItems = await Promise.all(
-  carouselItemSources.map(async (item) => ({
-    ...item,
-    image: await resolveImage(item.imagePath)
-  }))
-);
+import landingImage from "../assets/artwork/landing/1000389578.webp";
+import painting from "../assets/artwork/paintings/painting-03.webp";
+import leadTattoo from "../assets/artwork/tattoo/1 floral forearm piece.webp";
 ---
 
 <BaseLayout
   title="Ruby Smythe | Tattoo artist and painter in Edinburgh"
   description="Tattoo, painting, and drawing work by New Zealand-born artist Ruby Smythe in Edinburgh."
 >
-  <main id="top" class="portfolio-root">
+  <main id="top" class="portfolio-root editorial-home">
     <BrandHeader page="home" />
 
-    <section class="sonia-landing-carousel" aria-labelledby="selected-work-title">
-      <div class="sonia-carousel-heading">
-        <h1 id="selected-work-title">Highlighted pieces</h1>
-        <span data-carousel-count>01 / 05</span>
-      </div>
-      <div class="sonia-art-carousel">
-        <div
-          class="sonia-carousel-stage"
-          style={`--carousel-aspect-ratio: ${carouselItems[0].image.width} / ${carouselItems[0].image.height}`}
-        >
-          <ol class="sonia-carousel-slides">
-            {
-              carouselItems.map((item, index) => (
-                <li
-                  class="sonia-carousel-slide"
-                  data-carousel-slide
-                  style={`opacity: ${index === 0 ? 1 : 0}; transform: scale(${index === 0 ? 1 : 0.985})`}
-                >
-                  <Image
-                    src={item.image}
-                    alt={`${item.title}, artwork by Ruby Smythe`}
-                    widths={[640, 960, 1280, 1600]}
-                    sizes="(max-width: 640px) 92vw, 504px"
-                    quality={88}
-                    loading={index < 2 ? "eager" : "lazy"}
-                    fetchpriority={index === 0 ? "high" : "auto"}
-                  />
-                </li>
-              ))
-            }
-          </ol>
-          <div
-            class="sonia-carousel-drag"
-            role="group"
-            tabindex="0"
-            aria-label="Selected tattoos and paintings. Swipe, drag, or use arrow keys to browse."
-            data-carousel-track
-          >
-            {carouselItems.map(() => <span class="sonia-carousel-stop"></span>)}
-          </div>
-        </div>
-        <div class="sonia-carousel-under">
-          <p aria-live="polite" data-carousel-title>{carouselItems[0].title}</p>
-          <div class="sonia-carousel-tools">
-            <div class="sonia-carousel-markers" aria-label="Choose artwork">
-              {
-                carouselItems.map((item, index) => (
-                  <button
-                    aria-current={index === 0 ? "true" : undefined}
-                    aria-label={`Show ${item.title}`}
-                    class="sonia-carousel-marker"
-                    style={`flex-grow: ${index === 0 ? 4 : 1}; background-color: rgba(144, 52, 76, ${index === 0 ? 1 : 0.22})`}
-                    type="button"
-                    data-carousel-marker
-                    data-carousel-title={item.title}
-                  />
-                ))
-              }
-            </div>
-          </div>
+    <section class="editorial-home-grid" aria-labelledby="home-title">
+      <figure class="editorial-home-image editorial-home-image-lead">
+        <Image
+          src={leadTattoo}
+          alt="Floral forearm tattoo by Ruby Smythe"
+          widths={[540, 760, 980]}
+          sizes="(max-width: 640px) 61vw, 30vw"
+          quality={88}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </figure>
+
+      <figure class="editorial-home-image editorial-home-image-painting">
+        <Image
+          src={painting}
+          alt="Peony painting by Ruby Smythe"
+          widths={[360, 540, 760]}
+          sizes="(max-width: 640px) 39vw, 44vw"
+          quality={88}
+          loading="eager"
+        />
+      </figure>
+
+      <figure class="editorial-home-image editorial-home-image-feature">
+        <Image
+          src={landingImage}
+          alt="Botanical painting in progress by Ruby Smythe"
+          widths={[420, 640, 860]}
+          sizes="(max-width: 640px) 100vw, 26vw"
+          quality={88}
+          loading="eager"
+        />
+        <figcaption>
+          <span>Painting in progress</span>
+          <span>Watercolour and botanical studies</span>
+        </figcaption>
+      </figure>
+
+      <div class="editorial-home-message">
+        <h1 id="home-title">Ruby Smythe. <span>Skin &amp; paper.</span></h1>
+        <div class="editorial-home-message-bottom">
+          <p>Fine-line tattoos, drawings and paintings by Ruby Smythe in Edinburgh.</p>
+          <a href="/gallery">Explore the work</a>
         </div>
       </div>
     </section>
 
-    <AboutFooter />
+    <section class="editorial-home-about" aria-label="About Ruby">
+      <p>Ruby is a New Zealand-born painter and tattoo artist working at Inkdependent Studio near Haymarket.</p>
+      <a href="#about">About Ruby</a>
+    </section>
+
+    <AboutFooter page="home" />
   </main>
 </BaseLayout>
-
-<script>
-  import "../scripts/landing";
-</script>
