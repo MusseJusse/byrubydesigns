@@ -637,6 +637,7 @@ a {
 }
 
 .editorial-home-message h1 span {
+  display: block;
   color: var(--accent);
 }
 
