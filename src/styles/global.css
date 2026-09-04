@@ -249,6 +249,10 @@ a {
     min-height: 146px;
   }
 
+  .portfolio-gallery-page .sonia-header {
+    min-height: 125px;
+  }
+
   .sonia-header .sonia-brand {
     top: 24px;
     width: min(1160px, calc(100% - 48px));
@@ -289,6 +293,7 @@ a {
   .portfolio-root .sonia-gallery {
     width: min(1160px, calc(100% - 48px));
     margin-inline: auto;
+    padding-top: 30px;
     padding-right: 0;
     padding-left: 0;
   }
