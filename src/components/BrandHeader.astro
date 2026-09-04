@@ -10,7 +10,7 @@ type Props = {
 const { page } = Astro.props;
 ---
 
-<header class="sonia-header" aria-label="Primary">
+<header class:list={["sonia-header", { "sonia-header--home": page === "home" }]} aria-label="Primary">
   <button
     class="sonia-menu-button"
     type="button"
@@ -33,8 +33,10 @@ const { page } = Astro.props;
       <span class="sonia-brand-image">
         <Image src={rubyMark} width={180} alt="" loading="eager" />
       </span>
-      <span class="sonia-brand-name">ruby smythe</span>
-      <span class="sonia-brand-subtitle">tattoo, drawing &amp; painting</span>
+      <span class="sonia-brand-copy">
+        <span class="sonia-brand-name">ruby smythe</span>
+        <span class="sonia-brand-subtitle">tattoo, drawing &amp; painting</span>
+      </span>
     </a>
 
     <nav class="sonia-main-nav" aria-label="Portfolio sections">
