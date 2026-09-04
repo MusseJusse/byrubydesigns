@@ -293,6 +293,10 @@ a {
     padding-left: 0;
   }
 
+  .portfolio-root .sonia-gallery-intro p {
+    max-width: 52ch;
+  }
+
   .sonia-landing-carousel {
     display: grid;
     width: min(1160px, calc(100% - 48px));
