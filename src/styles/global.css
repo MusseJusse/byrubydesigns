@@ -286,6 +286,13 @@ a {
     margin-top: 0;
   }
 
+  .portfolio-root .sonia-gallery {
+    width: min(1160px, calc(100% - 48px));
+    margin-inline: auto;
+    padding-right: 0;
+    padding-left: 0;
+  }
+
   .sonia-landing-carousel {
     display: grid;
     width: min(1160px, calc(100% - 48px));
@@ -361,7 +368,7 @@ a {
     display: block;
   }
 
-  .portfolio-home .sonia-footer {
+  .portfolio-root .sonia-footer {
     width: min(1160px, calc(100% - 48px));
   }
 }
