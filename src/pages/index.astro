@@ -58,12 +58,21 @@ const carouselItems = await Promise.all(
   <main id="top" class="portfolio-root">
     <BrandHeader page="home" />
 
-    <section class="sonia-landing-carousel" aria-labelledby="selected-work-title">
-      <div class="sonia-carousel-heading">
-        <h1 id="selected-work-title">Highlighted pieces</h1>
-        <span data-carousel-count>01 / 05</span>
+    <section class="sonia-landing-carousel" aria-label="Selected artwork">
+      <div class="sonia-landing-intro">
+        <h1>Selected work</h1>
+        <p class="sonia-landing-title" aria-live="polite" data-carousel-title>
+          {carouselItems[0].title}
+        </p>
+        <p class="sonia-landing-summary">
+          Tattoo, painting, and drawing work by Ruby Smythe. Based in Edinburgh.
+        </p>
       </div>
       <div class="sonia-art-carousel">
+        <div class="sonia-carousel-heading">
+          <h1>Highlighted pieces</h1>
+          <span data-carousel-count>01 / 05</span>
+        </div>
         <div
           class="sonia-carousel-stage"
           style={`--carousel-aspect-ratio: ${carouselItems[0].image.width} / ${carouselItems[0].image.height}`}
@@ -80,7 +89,7 @@ const carouselItems = await Promise.all(
                     src={item.image}
                     alt={`${item.title}, artwork by Ruby Smythe`}
                     widths={[640, 960, 1280, 1600]}
-                    sizes="(max-width: 640px) 92vw, 504px"
+                    sizes="(max-width: 640px) 92vw, (max-width: 899px) 504px, (max-width: 1280px) 58vw, 700px"
                     quality={88}
                     loading={index < 2 ? "eager" : "lazy"}
                     fetchpriority={index === 0 ? "high" : "auto"}
@@ -100,7 +109,13 @@ const carouselItems = await Promise.all(
           </div>
         </div>
         <div class="sonia-carousel-under">
-          <p aria-live="polite" data-carousel-title>{carouselItems[0].title}</p>
+          <p class="sonia-carousel-mobile-title" aria-live="polite" data-carousel-title>
+            {carouselItems[0].title}
+          </p>
+          <p class="sonia-carousel-desktop-label">
+            <span>Highlighted pieces</span>
+            <span data-carousel-count>01 / 05</span>
+          </p>
           <div class="sonia-carousel-tools">
             <div class="sonia-carousel-markers" aria-label="Choose artwork">
               {

@@ -96,8 +96,14 @@ const slides = Array.from(document.querySelectorAll<HTMLElement>("[data-carousel
 const markers = Array.from(
   document.querySelectorAll<HTMLButtonElement>("[data-carousel-marker]")
 );
-const count = requireElement<HTMLElement>("[data-carousel-count]");
-const title = requireElement<HTMLElement>("[data-carousel-title]:not(button)");
+const counts = Array.from(
+  document.querySelectorAll<HTMLElement>("[data-carousel-count]")
+);
+const titles = Array.from(
+  document.querySelectorAll<HTMLElement>("[data-carousel-title]:not(button)")
+);
+if (counts.length === 0) throw new Error("Landing-page carousel count is missing");
+if (titles.length === 0) throw new Error("Landing-page carousel title is missing");
 let activeIndex = 0;
 let drag: { pointerId: number; pointerX: number; scrollLeft: number } | null = null;
 
@@ -127,8 +133,10 @@ function updateCarousel() {
     else marker.removeAttribute("aria-current");
   });
 
-  count.textContent = `${String(activeIndex + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
-  title.textContent = markers[activeIndex]?.dataset.carouselTitle ?? "";
+  const nextCount = `${String(activeIndex + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
+  const nextTitle = markers[activeIndex]?.dataset.carouselTitle ?? "";
+  counts.forEach((count) => (count.textContent = nextCount));
+  titles.forEach((title) => (title.textContent = nextTitle));
 }
 
 track.addEventListener("scroll", updateCarousel, { passive: true });
