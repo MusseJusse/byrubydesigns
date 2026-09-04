@@ -311,7 +311,6 @@ a {
     min-height: 100%;
     flex-direction: column;
     padding-top: 2px;
-    padding-bottom: 76px;
   }
 
   .sonia-landing-intro h1 {
@@ -338,13 +337,6 @@ a {
     line-height: 1.55;
   }
 
-  .sonia-landing-intro [data-carousel-count] {
-    margin-top: auto;
-    color: #555;
-    font-size: 12px;
-    line-height: 1.4;
-  }
-
   .sonia-art-carousel {
     width: 100%;
     max-width: 700px;
@@ -369,7 +361,12 @@ a {
   }
 
   .sonia-carousel-desktop-label {
-    display: block;
+    display: flex;
+    gap: 12px;
+  }
+
+  .sonia-carousel-desktop-label [data-carousel-count] {
+    color: #777;
   }
 
   .portfolio-root .sonia-footer {

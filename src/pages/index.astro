@@ -67,7 +67,6 @@ const carouselItems = await Promise.all(
         <p class="sonia-landing-summary">
           Tattoo, painting, and drawing work by Ruby Smythe. Based in Edinburgh.
         </p>
-        <span data-carousel-count>01 / 05</span>
       </div>
       <div class="sonia-art-carousel">
         <div class="sonia-carousel-heading">
@@ -113,7 +112,10 @@ const carouselItems = await Promise.all(
           <p class="sonia-carousel-mobile-title" aria-live="polite" data-carousel-title>
             {carouselItems[0].title}
           </p>
-          <p class="sonia-carousel-desktop-label">Highlighted pieces</p>
+          <p class="sonia-carousel-desktop-label">
+            <span>Highlighted pieces</span>
+            <span data-carousel-count>01 / 05</span>
+          </p>
           <div class="sonia-carousel-tools">
             <div class="sonia-carousel-markers" aria-label="Choose artwork">
               {
