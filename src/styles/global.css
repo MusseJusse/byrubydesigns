@@ -245,11 +245,11 @@ a {
 }
 
 @media (min-width: 900px) {
-  .sonia-header--home {
+  .sonia-header {
     min-height: 146px;
   }
 
-  .sonia-header--home .sonia-brand {
+  .sonia-header .sonia-brand {
     top: 24px;
     width: min(1160px, calc(100% - 48px));
     flex-direction: row;
@@ -258,31 +258,31 @@ a {
     padding-bottom: 22px;
   }
 
-  .sonia-header--home .sonia-brand-mark {
+  .sonia-header .sonia-brand-mark {
     min-width: 0;
     flex-direction: row;
   }
 
-  .sonia-header--home .sonia-brand-image {
+  .sonia-header .sonia-brand-image {
     width: 78px;
     height: 78px;
   }
 
-  .sonia-header--home .sonia-brand-copy {
+  .sonia-header .sonia-brand-copy {
     align-items: flex-start;
     margin-top: 0;
     margin-left: 15px;
   }
 
-  .sonia-header--home .sonia-brand-name {
+  .sonia-header .sonia-brand-name {
     font-size: 22px;
   }
 
-  .sonia-header--home .sonia-brand-subtitle {
+  .sonia-header .sonia-brand-subtitle {
     font-size: 12px;
   }
 
-  .sonia-header--home .sonia-main-nav {
+  .sonia-header .sonia-main-nav {
     margin-top: 0;
   }
 
