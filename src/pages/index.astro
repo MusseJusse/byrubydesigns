@@ -49,6 +49,10 @@ const carouselItems = await Promise.all(
     image: await resolveImage(item.imagePath)
   }))
 );
+
+const contactPhoto = await resolveImage(
+  "/src/assets/artwork/contact/IMG_1155.webp"
+);
 ---
 
 <BaseLayout
@@ -64,9 +68,15 @@ const carouselItems = await Promise.all(
         <p class="sonia-landing-title" aria-live="polite" data-carousel-title>
           {carouselItems[0].title}
         </p>
-        <p class="sonia-landing-summary">
-          Tattoo, painting, and drawing work by Ruby Smythe. Based in Edinburgh.
-        </p>
+        <Image
+          class="sonia-contact-photo"
+          src={contactPhoto}
+          alt="Ruby Smythe painting at a table beside a bouquet of flowers"
+          widths={[320, 480, 640]}
+          sizes="(min-width: 900px) min(32vw, 380px), 0px"
+          quality={88}
+          loading="lazy"
+        />
       </div>
       <div class="sonia-art-carousel">
         <div class="sonia-carousel-heading">

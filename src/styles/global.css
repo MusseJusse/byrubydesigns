@@ -162,6 +162,10 @@ a {
   display: none;
 }
 
+.sonia-contact-photo {
+  display: none;
+}
+
 .sonia-carousel-heading {
   display: flex;
   width: 100%;
@@ -334,12 +338,13 @@ a {
     letter-spacing: -0.045em;
   }
 
-  .sonia-landing-summary {
-    max-width: 290px;
-    margin: 22px 0 0;
-    color: #5d5d5d;
-    font-size: 15px;
-    line-height: 1.55;
+  .sonia-contact-photo {
+    display: block;
+    width: min(100%, 380px);
+    height: auto;
+    aspect-ratio: 3 / 4;
+    margin-top: 32px;
+    object-fit: cover;
   }
 
   .sonia-art-carousel {
