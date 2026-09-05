@@ -80,6 +80,12 @@ button:focus-visible {
 }
 a span[aria-hidden] {
   font-family: system-ui, sans-serif;
+  color: var(--ruby);
+  transition: transform 160ms ease;
+}
+.collection a:hover span[aria-hidden],
+.collection a:focus-visible span[aria-hidden] {
+  transform: translate(2px, -2px);
 }
 .collection-header {
   display: flex;
@@ -194,8 +200,8 @@ a span[aria-hidden] {
   cursor: pointer;
 }
 .filter-controls > input:checked + label {
-  color: var(--ink);
-  box-shadow: inset 0 -1px currentColor;
+  color: var(--ruby);
+  box-shadow: inset 0 -1px var(--ruby);
 }
 .filter-controls > input:focus-visible + label {
   outline: 2px solid var(--ink);
@@ -372,6 +378,8 @@ html[data-gallery-scroll]::view-transition-new(root) {
   border-radius: 0.5vw;
 }
 .wall-about h2 {
+  border-left: 2px solid var(--ruby);
+  padding-left: 1vw;
   font-size: clamp(22px, 2.2vw, 40px);
   font-weight: 450;
   letter-spacing: -0.025em;
@@ -584,6 +592,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
     flex: 1;
   }
   .wall-about h2 {
+    padding-left: 14px;
     font-size: 22px;
     line-height: 1.2;
     margin-bottom: 12px;
