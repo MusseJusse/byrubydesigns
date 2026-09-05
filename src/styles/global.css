@@ -216,6 +216,73 @@ a span[aria-hidden] {
 .collection-grid {
   columns: 2;
   column-gap: 4vw;
+  view-transition-name: artwork;
+}
+.collection-count {
+  view-transition-name: artwork-count;
+}
+.collection-aside-intros {
+  view-transition-name: artwork-intro;
+}
+.collection-mobile-intros {
+  view-transition-name: artwork-intro-mobile;
+}
+
+/* Only the changing artwork moves; keep the page and its controls still. */
+::view-transition {
+  pointer-events: none;
+}
+::view-transition-group(*) {
+  animation-duration: 220ms;
+  animation-timing-function: cubic-bezier(.22, 1, .36, 1);
+}
+::view-transition-group(root) {
+  animation: none;
+}
+::view-transition-old(root) {
+  display: none;
+}
+::view-transition-new(root) {
+  animation: none;
+}
+::view-transition-old(artwork),
+::view-transition-old(artwork-count),
+::view-transition-old(artwork-intro),
+::view-transition-old(artwork-intro-mobile) {
+  animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) both;
+  mix-blend-mode: normal;
+}
+::view-transition-new(artwork),
+::view-transition-new(artwork-intro),
+::view-transition-new(artwork-intro-mobile) {
+  animation: artwork-lift-in 220ms cubic-bezier(.22, 1, .36, 1) both;
+  mix-blend-mode: normal;
+}
+::view-transition-new(artwork-count) {
+  animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) reverse both;
+  mix-blend-mode: normal;
+}
+@keyframes artwork-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes artwork-lift-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
 }
 .collection-grid > figure {
   break-inside: avoid;
@@ -310,7 +377,7 @@ a span[aria-hidden] {
   place-items: center;
 }
 .lightbox::backdrop {
-  background: var(--paper);
+  background: transparent;
 }
 .lightbox figure {
   display: grid;
