@@ -22,6 +22,8 @@ let closingLightbox = false;
 let activeIndex = 0;
 let activeButtons: HTMLButtonElement[] = [];
 let unlockScroll: (() => void) | undefined;
+let imageRequest = 0;
+let loadingIndicatorTimer: number | undefined;
 
 function selectFilter(
   filter: HTMLInputElement,
@@ -112,6 +114,11 @@ function animateLightbox(opening: boolean) {
 function cleanupLightbox() {
   stopLightboxMotion();
   closingLightbox = false;
+  imageRequest += 1;
+  window.clearTimeout(loadingIndicatorTimer);
+  loadingIndicatorTimer = undefined;
+  lightboxFigure.removeAttribute("aria-busy");
+  lightboxFigure.removeAttribute("data-image-state");
   unlockScroll?.();
   unlockScroll = undefined;
   lightboxImage.removeAttribute("src");
@@ -136,8 +143,26 @@ function showImage() {
   const button = activeButtons[activeIndex];
   if (!button) return;
   const title = button.dataset.title ?? "Artwork";
-  lightboxImage.src = button.dataset.fullSrc ?? "";
+  const request = ++imageRequest;
+  window.clearTimeout(loadingIndicatorTimer);
+  lightboxFigure.setAttribute("aria-busy", "true");
+  lightboxFigure.dataset.imageState = "pending";
+  lightboxImage.width = Number(button.dataset.fullWidth);
+  lightboxImage.height = Number(button.dataset.fullHeight);
   lightboxImage.alt = button.querySelector("img")?.alt ?? title;
+  lightboxImage.src = button.dataset.fullSrc ?? "";
+  loadingIndicatorTimer = window.setTimeout(() => {
+    if (request !== imageRequest) return;
+    lightboxFigure.dataset.imageState = "loading";
+    loadingIndicatorTimer = undefined;
+  }, 150);
+  void lightboxImage.decode().catch(() => {}).finally(() => {
+    if (request !== imageRequest) return;
+    window.clearTimeout(loadingIndicatorTimer);
+    loadingIndicatorTimer = undefined;
+    lightboxFigure.removeAttribute("aria-busy");
+    lightboxFigure.removeAttribute("data-image-state");
+  });
   lightboxCaption.replaceChildren();
   for (const text of [
     title,

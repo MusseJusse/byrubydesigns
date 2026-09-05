@@ -329,6 +329,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
   ::view-transition-new(*) {
     animation: none !important;
   }
+  .lightbox-image-stage img {
+    transition: none;
+  }
+  .lightbox figure[data-image-state="loading"]
+    .lightbox-image-stage::after {
+    visibility: hidden;
+  }
 }
 .collection-grid > figure {
   break-inside: avoid;
@@ -435,11 +442,42 @@ html[data-gallery-scroll]::view-transition-new(root) {
   gap: 12px;
   cursor: default;
 }
-.lightbox figure img {
+.lightbox-image-stage {
+  display: grid;
+  place-items: center;
+}
+.lightbox-image-stage > *,
+.lightbox-image-stage::after {
+  grid-area: 1 / 1;
+}
+.lightbox-image-stage::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0;
+}
+.lightbox-image-stage img {
   display: block;
   max-width: min(76vw, 1100px);
   max-height: calc(100dvh - 210px);
   object-fit: contain;
+  opacity: 1;
+  transition: opacity 160ms cubic-bezier(.22, 1, .36, 1);
+}
+.lightbox figure[data-image-state] img {
+  opacity: 0;
+}
+.lightbox figure[data-image-state="loading"] .lightbox-image-stage::after {
+  opacity: 0.55;
+  animation: lightbox-spin 700ms linear infinite;
+}
+@keyframes lightbox-spin {
+  to {
+    transform: rotate(1turn);
+  }
 }
 .lightbox figcaption {
   display: grid;
@@ -610,7 +648,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .lightbox {
     padding: 70px 20px 80px;
   }
-  .lightbox figure img {
+  .lightbox-image-stage img {
     max-width: calc(100vw - 40px);
     max-height: calc(100dvh - 250px);
   }

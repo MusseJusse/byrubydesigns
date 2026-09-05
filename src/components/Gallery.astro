@@ -50,15 +50,22 @@ const items = await Promise.all(
       dimensions: undefined,
     },
     ...artwork.filter((item) => !item.selected),
-  ].map(async (item) => ({
-    ...item,
-    lightbox: await getImage({
-      src: item.image,
-      width: Math.min(1800, item.image.width),
-      format: "webp",
-      quality: 90,
-    }),
-  })),
+  ].map(async (item) => {
+    const lightboxWidth = Math.min(1800, item.image.width);
+    return {
+      ...item,
+      lightboxWidth,
+      lightboxHeight: Math.round(
+        (lightboxWidth * item.image.height) / item.image.width,
+      ),
+      lightbox: await getImage({
+        src: item.image,
+        width: lightboxWidth,
+        format: "webp",
+        quality: 90,
+      }),
+    };
+  }),
 );
 const filters = [
   { id: "selected", label: "Selected work", count: "4 favourites" },
@@ -120,6 +127,8 @@ const filters = [
             type="button"
             data-lightbox-open
             data-full-src={item.lightbox.src}
+            data-full-width={item.lightboxWidth}
+            data-full-height={item.lightboxHeight}
             data-title={item.title}
             data-medium={item.medium ?? item.caption}
             data-dimensions={
