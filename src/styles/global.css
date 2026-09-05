@@ -92,12 +92,22 @@ a span[aria-hidden] {
   font-size: inherit;
   font-weight: inherit;
 }
+.collection-header .brand-lockup {
+  gap: 1.1vw;
+}
+.brand-mark {
+  display: block;
+  flex: none;
+  width: min(6.95vw, 128px);
+  height: auto;
+}
 .collection-header .wordmark {
   display: block;
   font-size: clamp(31px, 3.5vw, 64px);
   font-weight: 500;
   letter-spacing: -0.055em;
   line-height: 1.05;
+  white-space: nowrap;
 }
 .wordmark > span {
   display: block;
@@ -476,10 +486,16 @@ html[data-gallery-scroll]::view-transition-new(root) {
     margin-bottom: 27px;
   }
   .collection-header .wordmark {
-    font-size: 31px;
+    font-size: clamp(24px, 7.44vw, 31px);
+  }
+  .collection-header .brand-lockup {
+    gap: 8px;
+  }
+  .brand-mark {
+    width: clamp(36px, 11.28vw, 44px);
   }
   .wordmark > span {
-    font-size: 12px;
+    font-size: clamp(10px, 3.08vw, 12px);
     margin-top: 6px;
   }
   .collection a {

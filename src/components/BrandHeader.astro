@@ -1,7 +1,23 @@
+---
+import { Image } from "astro:assets";
+import rubyMark from "../assets/brand/ruby-mark.webp";
+---
+
 <header class="collection-header">
   <h1>
-    <a class="wordmark" href="/">
-      ruby smythe<span>Tattoo artist &amp; painter</span>
+    <a class="brand-lockup" href="/">
+      <Image
+        class="brand-mark"
+        src={rubyMark}
+        alt=""
+        widths={[44, 88, 128, 200, 256]}
+        sizes="(max-width: 767px) 44px, (min-width: 1842px) 128px, 6.95vw"
+        quality={88}
+        loading="eager"
+      />
+      <span class="wordmark">
+        ruby smythe<span>Tattoo artist &amp; painter</span>
+      </span>
     </a>
   </h1>
   <a
