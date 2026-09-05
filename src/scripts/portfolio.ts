@@ -23,30 +23,46 @@ let activeIndex = 0;
 let activeButtons: HTMLButtonElement[] = [];
 let unlockScroll: (() => void) | undefined;
 
-function selectFilter(filter: HTMLInputElement, animate = true) {
+function selectFilter(
+  filter: HTMLInputElement,
+  { animate = true, resetScroll = false } = {},
+) {
   if (filter === requestedFilter) return;
   requestedFilter = filter;
   categoryTransition?.skipTransition();
+  const scrollToGallery = resetScroll && gallery.getBoundingClientRect().top < 0;
   const update = () => {
     // A skipped transition can still run its callback. Always use the latest choice.
     requestedFilter.checked = true;
     renderedFilter = requestedFilter;
+    // Reset beneath the snapshot, so the outgoing artwork never jumps to its top.
+    if (scrollToGallery) gallery.scrollIntoView({ behavior: "instant" });
   };
   if (!animate || reducedMotion.matches || !document.startViewTransition) {
     update();
     return;
   }
-  categoryTransition = document.startViewTransition(update);
-  void categoryTransition.ready.catch(() => {
+  const root = document.documentElement;
+  if (scrollToGallery) root.setAttribute("data-gallery-scroll", "");
+  const transition = document.startViewTransition(update);
+  categoryTransition = transition;
+  void transition.ready.catch(() => {
     // Skipped or unavailable snapshots still apply the category update.
   });
+  void transition.finished
+    .finally(() => {
+      if (categoryTransition !== transition) return;
+      root.removeAttribute("data-gallery-scroll");
+      categoryTransition = undefined;
+    })
+    .catch(() => {});
 }
 
 function syncFromHash(animate = true) {
   const hash = window.location.hash.slice(1);
   // Keep existing /gallery#tattoo, #paintings, and #drawings links working.
   const filter = filters.find((input) => input.value === (hash || "selected"));
-  if (filter) selectFilter(filter, animate);
+  if (filter) selectFilter(filter, { animate });
 }
 
 for (const filter of filters) {
@@ -55,8 +71,7 @@ for (const filter of filters) {
     renderedFilter.checked = true;
     closeLightbox(true);
     window.history.pushState(null, "", "#" + filter.value);
-    if (gallery.getBoundingClientRect().top < 0) gallery.scrollIntoView();
-    selectFilter(filter);
+    selectFilter(filter, { resetScroll: true });
   });
 }
 

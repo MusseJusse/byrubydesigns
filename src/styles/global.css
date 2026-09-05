@@ -23,6 +23,11 @@ html {
   background: var(--paper);
   color: var(--ink);
 }
+@media (prefers-reduced-motion: no-preference) {
+  html:has(#about:target) {
+    scroll-behavior: smooth;
+  }
+}
 body {
   margin: 0;
   font:
@@ -265,6 +270,27 @@ a span[aria-hidden] {
 ::view-transition-new(artwork-count) {
   animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) reverse both;
   mix-blend-mode: normal;
+}
+/* A scroll reset fades between viewports instead of moving the entire tall grid. */
+html[data-gallery-scroll] :is(.collection-grid, .collection-count, .category-intros) {
+  view-transition-name: none;
+}
+html[data-gallery-scroll]::view-transition-old(root) {
+  display: block;
+  animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) both;
+  mix-blend-mode: plus-lighter;
+}
+html[data-gallery-scroll]::view-transition-new(root) {
+  animation: artwork-fade-in 220ms cubic-bezier(.22, 1, .36, 1) both;
+  mix-blend-mode: plus-lighter;
+}
+@keyframes artwork-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes artwork-fade-out {
   to {
