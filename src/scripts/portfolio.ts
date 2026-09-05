@@ -1,9 +1,9 @@
-type CategoryId = "tattoo" | "drawings" | "paintings";
-
-const categoryIds: readonly CategoryId[] = ["tattoo", "drawings", "paintings"];
+import type { GalleryCategoryId as CategoryId } from "../data/artwork";
+import { lockDocumentScroll, prefersReducedMotion, requireElement, trapFocus } from "./dom";
+import { createMobileMenu } from "./mobile-menu";
 
 function isCategoryId(value: string | undefined): value is CategoryId {
-  return value !== undefined && categoryIds.some((category) => category === value);
+  return categoryPanels.some((panel) => panel.dataset.categoryPanel === value);
 }
 
 function categoryFromHash(): CategoryId | undefined {
@@ -11,63 +11,6 @@ function categoryFromHash(): CategoryId | undefined {
   return isCategoryId(category) ? category : undefined;
 }
 
-function prefersReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function requireElement<T extends Element>(selector: string): T {
-  const element = document.querySelector<T>(selector);
-  if (!element) throw new Error("Portfolio element is missing: " + selector);
-  return element;
-}
-
-function lockDocumentScroll() {
-  const previousBodyOverflow = document.body.style.overflow;
-  const previousBodyPaddingRight = document.body.style.paddingRight;
-  const previousHtmlOverflow = document.documentElement.style.overflow;
-  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-  let locked = true;
-
-  document.body.style.overflow = "hidden";
-  document.documentElement.style.overflow = "hidden";
-
-  if (scrollbarWidth > 0) {
-    document.body.style.paddingRight = scrollbarWidth + "px";
-  }
-
-  return () => {
-    if (!locked) return;
-    locked = false;
-    document.body.style.overflow = previousBodyOverflow;
-    document.body.style.paddingRight = previousBodyPaddingRight;
-    document.documentElement.style.overflow = previousHtmlOverflow;
-  };
-}
-
-function trapFocus(event: KeyboardEvent, container: HTMLElement) {
-  if (event.key !== "Tab") return;
-
-  const focusable = Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])'
-    )
-  ).filter((element) => !element.hasAttribute("hidden"));
-
-  const first = focusable.at(0);
-  const last = focusable.at(-1);
-  if (!first || !last) return;
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-const menuButton = requireElement<HTMLButtonElement>("[data-menu-button]");
-const mobileMenu = requireElement<HTMLElement>("[data-mobile-menu]");
 const categoryTriggers = Array.from(
   document.querySelectorAll<HTMLButtonElement>("[data-category-trigger]")
 );
@@ -85,15 +28,19 @@ let selectedCategory: CategoryId = "tattoo";
 let activeIndex: number | null = null;
 let requestedLightboxIndex: number | null = null;
 let activeTrigger: HTMLButtonElement | null = null;
-let mobileMenuOpen = false;
-let menuUnlockScroll: (() => void) | null = null;
 let lightboxUnlockScroll: (() => void) | null = null;
 let finishLightboxClose: (() => void) | null = null;
-let shouldCloseLightboxWhenMenuOpens = false;
 let layoutFrame = 0;
-let resizeObserver: ResizeObserver | null = null;
+const resizeObserver = new ResizeObserver(scheduleLayout);
 let categoryTransitionId = 0;
 let lightboxTransitionId = 0;
+
+const mobileMenu = createMobileMenu({
+  onOpened: () => closeLightbox({ restoreFocus: false, animate: false }),
+  restoreFocus: (button) => {
+    (activeIndex === null ? button : lightboxClose).focus();
+  }
+});
 
 function activePanel() {
   const panel = categoryPanels.find(
@@ -119,7 +66,7 @@ function layoutActiveGallery() {
   const gallery = panel.querySelector<HTMLElement>("[data-gallery-grid]");
   if (!gallery) throw new Error("The active gallery grid is missing");
 
-  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".sonia-gallery-item"));
+  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".gallery-item"));
   const isMobile = window.innerWidth <= 640;
   const columnCount = window.innerWidth >= 900 ? 3 : 2;
   const horizontalGap = isMobile ? 2 : 11;
@@ -168,16 +115,15 @@ function layoutActiveGallery() {
 }
 
 function observeActiveGallery() {
-  resizeObserver?.disconnect();
+  resizeObserver.disconnect();
 
   const gallery = activePanel().querySelector<HTMLElement>("[data-gallery-grid]");
   if (!gallery) throw new Error("The active gallery grid is missing");
 
   gallery.classList.remove("is-ready");
-  resizeObserver = new ResizeObserver(scheduleLayout);
   resizeObserver.observe(gallery);
 
-  for (const item of gallery.querySelectorAll<HTMLElement>(".sonia-gallery-item")) {
+  for (const item of gallery.querySelectorAll<HTMLElement>(".gallery-item")) {
     resizeObserver.observe(item);
   }
 
@@ -201,12 +147,12 @@ function updateSelectedCategory(category: CategoryId) {
   }
 
   observeActiveGallery();
-  if (mobileMenuOpen) closeMobileMenu(true);
+  mobileMenu.close();
 }
 
 function selectCategory(category: CategoryId, animate = true) {
   if (category === selectedCategory) {
-    if (mobileMenuOpen) closeMobileMenu(true);
+    mobileMenu.close();
     return;
   }
 
@@ -218,17 +164,19 @@ function selectCategory(category: CategoryId, animate = true) {
   const transitionId = ++categoryTransitionId;
   const outgoingPanel = activePanel();
   let incomingPanel: HTMLElement | null = null;
-  outgoingPanel.style.viewTransitionName = "gallery-b";
+  outgoingPanel.style.viewTransitionName = "gallery-category";
   document.documentElement.dataset.motion = "gallery-category";
 
   const transition = document.startViewTransition(() => {
     updateSelectedCategory(category);
     incomingPanel = activePanel();
     outgoingPanel.style.removeProperty("view-transition-name");
-    incomingPanel.style.viewTransitionName = "gallery-b";
+    incomingPanel.style.viewTransitionName = "gallery-category";
     cancelAnimationFrame(layoutFrame);
     layoutActiveGallery();
   });
+  // Rapid navigation can skip the animation while still completing the DOM update.
+  void transition.ready.catch(() => {});
 
   const clearTransitionState = () => {
     if (transitionId !== categoryTransitionId) return;
@@ -253,69 +201,6 @@ function updateCategoryHash(category: CategoryId) {
   window.history.pushState(null, "", "#" + category);
 }
 
-function setMobileMenuTabStops(enabled: boolean) {
-  for (const element of mobileMenu.querySelectorAll<HTMLElement>("a, button")) {
-    element.tabIndex = enabled ? 0 : -1;
-  }
-}
-
-function openMobileMenu() {
-  shouldCloseLightboxWhenMenuOpens = activeIndex !== null;
-  mobileMenuOpen = true;
-  menuButton.classList.add("is-open");
-  menuButton.setAttribute("aria-label", "Close menu");
-  menuButton.setAttribute("aria-expanded", "true");
-  mobileMenu.classList.add("is-open");
-  mobileMenu.setAttribute("aria-hidden", "false");
-  setMobileMenuTabStops(true);
-
-  if (!shouldCloseLightboxWhenMenuOpens) {
-    menuUnlockScroll = lockDocumentScroll();
-  }
-
-  if (!shouldCloseLightboxWhenMenuOpens) focusFirstMobileMenuItem();
-}
-
-function closeMobileMenu(restoreFocus: boolean) {
-  if (!mobileMenuOpen) return;
-  mobileMenuOpen = false;
-  shouldCloseLightboxWhenMenuOpens = false;
-  menuButton.classList.remove("is-open");
-  menuButton.setAttribute("aria-label", "Open menu");
-  menuButton.setAttribute("aria-expanded", "false");
-  mobileMenu.classList.remove("is-open");
-  mobileMenu.setAttribute("aria-hidden", "true");
-  setMobileMenuTabStops(false);
-  menuUnlockScroll?.();
-  menuUnlockScroll = null;
-  if (restoreFocus) {
-    if (activeIndex === null) menuButton.focus();
-    else lightboxClose.focus();
-  }
-}
-
-function focusFirstMobileMenuItem() {
-  requestAnimationFrame(() => {
-    mobileMenu.querySelector<HTMLElement>("button, a")?.focus();
-  });
-}
-
-function finishOpeningMobileMenu(event: TransitionEvent) {
-  if (
-    event.target !== mobileMenu ||
-    event.propertyName !== "opacity" ||
-    !mobileMenuOpen ||
-    !shouldCloseLightboxWhenMenuOpens
-  ) {
-    return;
-  }
-
-  shouldCloseLightboxWhenMenuOpens = false;
-  closeLightbox({ restoreFocus: false, animate: false });
-  menuUnlockScroll = lockDocumentScroll();
-  focusFirstMobileMenuItem();
-}
-
 function showActiveImage() {
   const buttons = activeImageButtons();
   if (activeIndex === null || buttons.length === 0) return;
@@ -335,7 +220,7 @@ function showActiveImage() {
   }
 
   lightboxImage.src = button.dataset.fullSrc ?? "";
-  lightboxImage.alt = button.dataset.alt ?? "";
+  lightboxImage.alt = button.querySelector("img")?.alt ?? "";
   lightboxCaption.replaceChildren(...captionLines);
   lightbox.setAttribute("aria-label", "Full image of " + titleText);
 }
@@ -359,11 +244,10 @@ async function preloadImage(source: string) {
 }
 
 function openLightbox(button: HTMLButtonElement) {
-  const category = button.dataset.category;
-  const index = Number.parseInt(button.dataset.index ?? "", 10);
-  if (!isCategoryId(category) || category !== selectedCategory || !Number.isFinite(index)) return;
+  const index = activeImageButtons().indexOf(button);
+  if (index < 0) return;
 
-  closeMobileMenu(false);
+  mobileMenu.close(false);
 
   if (finishLightboxClose) {
     lightbox.removeEventListener("animationend", finishLightboxClose);
@@ -396,6 +280,7 @@ function closeLightbox({
 
   const finishClosing = () => {
     if (finishLightboxClose !== finishClosing) return;
+    lightbox.removeEventListener("animationend", finishClosing);
     finishLightboxClose = null;
     lightbox.classList.remove("is-closing");
     lightbox.hidden = true;
@@ -446,9 +331,11 @@ async function moveLightbox(direction: -1 | 1) {
   document.documentElement.dataset.motion = "lightbox-picture";
 
   const transition = document.startViewTransition(() => {
+    if (transitionId !== lightboxTransitionId || activeIndex === null) return;
     activeIndex = nextIndex;
     showActiveImage();
   });
+  void transition.ready.catch(() => {});
 
   const clearTransitionState = () => {
     if (transitionId !== lightboxTransitionId) return;
@@ -456,13 +343,6 @@ async function moveLightbox(direction: -1 | 1) {
   };
   void transition.finished.then(clearTransitionState, clearTransitionState);
 }
-
-menuButton.addEventListener("click", () => {
-  if (mobileMenuOpen) closeMobileMenu(true);
-  else openMobileMenu();
-});
-
-mobileMenu.addEventListener("transitionend", finishOpeningMobileMenu);
 
 for (const trigger of categoryTriggers) {
   trigger.addEventListener("click", () => {
@@ -472,10 +352,6 @@ for (const trigger of categoryTriggers) {
       updateCategoryHash(category);
     }
   });
-}
-
-for (const element of mobileMenu.querySelectorAll<HTMLElement>("[data-menu-close]")) {
-  element.addEventListener("click", () => closeMobileMenu(true));
 }
 
 for (const button of document.querySelectorAll<HTMLButtonElement>("[data-lightbox-open]")) {
@@ -490,29 +366,25 @@ lightbox.addEventListener("click", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (activeIndex !== null) {
-    if (event.key === "Escape") closeLightbox();
-    else if (event.key === "ArrowLeft") moveLightbox(-1);
-    else if (event.key === "ArrowRight") moveLightbox(1);
-    else trapFocus(event, lightbox);
-    return;
-  }
-
-  if (mobileMenuOpen) {
-    if (event.key === "Escape") closeMobileMenu(true);
-    else trapFocus(event, mobileMenu);
-  }
+  if (mobileMenu.isOpen || event.defaultPrevented || activeIndex === null) return;
+  if (event.key === "Escape") closeLightbox();
+  else if (event.key === "ArrowLeft") moveLightbox(-1);
+  else if (event.key === "ArrowRight") moveLightbox(1);
+  else trapFocus(event, lightbox);
 });
 
 window.addEventListener("pagehide", () => {
   cancelAnimationFrame(layoutFrame);
-  resizeObserver?.disconnect();
-  menuUnlockScroll?.();
-  lightboxUnlockScroll?.();
+  resizeObserver.disconnect();
+  closeLightbox({ restoreFocus: false, animate: false });
+  finishLightboxClose?.();
 });
 
 window.addEventListener("popstate", selectCategoryFromHash);
 window.addEventListener("hashchange", selectCategoryFromHash);
+window.addEventListener("pageshow", (event) => {
+  if (event.persisted) observeActiveGallery();
+});
 
 document.documentElement.classList.add("portfolio-enhanced");
 const initialCategory = categoryFromHash();

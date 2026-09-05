@@ -10,13 +10,13 @@ type Props = {
 const { page } = Astro.props;
 ---
 
-<header class="sonia-header" aria-label="Primary">
+<header class="header" aria-label="Primary">
   <button
-    class="sonia-menu-button"
+    class="menu-button"
     type="button"
     aria-label="Open menu"
     aria-expanded="false"
-    aria-controls="sonia-mobile-menu"
+    aria-controls="mobile-menu"
     data-menu-button
   >
     <span aria-hidden="true"></span>
@@ -24,22 +24,22 @@ const { page } = Astro.props;
     <span aria-hidden="true"></span>
   </button>
 
-  <div class="sonia-brand">
+  <div class="brand">
     <a
-      class="sonia-brand-mark"
+      class="brand-mark"
       href={page === "home" ? "/" : "#top"}
       aria-label={page === "home" ? "Ruby Smythe, home" : "Ruby Smythe, back to top"}
     >
-      <span class="sonia-brand-image">
+      <span class="brand-image">
         <Image src={rubyMark} width={180} alt="" loading="eager" />
       </span>
-      <span class="sonia-brand-copy">
-        <span class="sonia-brand-name">ruby smythe</span>
-        <span class="sonia-brand-subtitle">tattoo, drawing &amp; painting</span>
+      <span class="brand-copy">
+        <span class="brand-name">ruby smythe</span>
+        <span class="brand-subtitle">tattoo, drawing &amp; painting</span>
       </span>
     </a>
 
-    <nav class="sonia-main-nav" aria-label="Portfolio sections">
+    <nav class="main-nav" aria-label="Portfolio sections">
       <a class:list={[{ active: page === "home" }]} href="/" aria-current={page === "home" ? "page" : undefined}>
         Home
       </a>
@@ -65,15 +65,15 @@ const { page } = Astro.props;
   </div>
 
   <div
-    id="sonia-mobile-menu"
-    class="sonia-mobile-menu"
+    id="mobile-menu"
+    class="mobile-menu"
     role="dialog"
     aria-modal="true"
     aria-hidden="true"
     aria-label="Site menu"
     data-mobile-menu
   >
-    <nav class="sonia-mobile-nav" aria-label="Portfolio sections">
+    <nav class="mobile-nav" aria-label="Portfolio sections">
       <a
         class:list={[{ active: page === "home" }]}
         href="/"
@@ -109,7 +109,7 @@ const { page } = Astro.props;
     </nav>
     {
       page === "home" && (
-        <div class="sonia-mobile-socials" role="group" aria-label="Social links">
+        <div class="mobile-socials" role="group" aria-label="Social links">
           <a
             href="https://www.instagram.com/byrubydesigns"
             target="_blank"

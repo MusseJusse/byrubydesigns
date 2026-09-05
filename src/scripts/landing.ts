@@ -1,95 +1,7 @@
-export {};
+import { prefersReducedMotion, requireElement } from "./dom";
+import { createMobileMenu } from "./mobile-menu";
 
-function requireElement<T extends Element>(selector: string): T {
-  const element = document.querySelector<T>(selector);
-  if (!element) throw new Error("Landing-page element is missing: " + selector);
-  return element;
-}
-
-function lockDocumentScroll() {
-  const previousBodyOverflow = document.body.style.overflow;
-  const previousHtmlOverflow = document.documentElement.style.overflow;
-  document.body.style.overflow = "hidden";
-  document.documentElement.style.overflow = "hidden";
-
-  return () => {
-    document.body.style.overflow = previousBodyOverflow;
-    document.documentElement.style.overflow = previousHtmlOverflow;
-  };
-}
-
-function trapFocus(event: KeyboardEvent, container: HTMLElement) {
-  if (event.key !== "Tab") return;
-
-  const focusable = Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"])'
-    )
-  );
-  const first = focusable.at(0);
-  const last = focusable.at(-1);
-  if (!first || !last) return;
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-}
-
-const menuButton = requireElement<HTMLButtonElement>("[data-menu-button]");
-const mobileMenu = requireElement<HTMLElement>("[data-mobile-menu]");
-let mobileMenuOpen = false;
-let unlockScroll: (() => void) | null = null;
-
-function setMobileMenuTabStops(enabled: boolean) {
-  for (const element of mobileMenu.querySelectorAll<HTMLElement>("a, button")) {
-    element.tabIndex = enabled ? 0 : -1;
-  }
-}
-
-function closeMobileMenu(restoreFocus: boolean) {
-  if (!mobileMenuOpen) return;
-  mobileMenuOpen = false;
-  menuButton.classList.remove("is-open");
-  menuButton.setAttribute("aria-label", "Open menu");
-  menuButton.setAttribute("aria-expanded", "false");
-  mobileMenu.classList.remove("is-open");
-  mobileMenu.setAttribute("aria-hidden", "true");
-  setMobileMenuTabStops(false);
-  unlockScroll?.();
-  unlockScroll = null;
-  if (restoreFocus) menuButton.focus();
-}
-
-function openMobileMenu() {
-  mobileMenuOpen = true;
-  menuButton.classList.add("is-open");
-  menuButton.setAttribute("aria-label", "Close menu");
-  menuButton.setAttribute("aria-expanded", "true");
-  mobileMenu.classList.add("is-open");
-  mobileMenu.setAttribute("aria-hidden", "false");
-  setMobileMenuTabStops(true);
-  unlockScroll = lockDocumentScroll();
-  requestAnimationFrame(() => mobileMenu.querySelector<HTMLElement>("a, button")?.focus());
-}
-
-menuButton.addEventListener("click", () => {
-  if (mobileMenuOpen) closeMobileMenu(true);
-  else openMobileMenu();
-});
-
-for (const link of mobileMenu.querySelectorAll<HTMLElement>("[data-menu-close]")) {
-  link.addEventListener("click", () => closeMobileMenu(false));
-}
-
-document.addEventListener("keydown", (event) => {
-  if (!mobileMenuOpen) return;
-  if (event.key === "Escape") closeMobileMenu(true);
-  else trapFocus(event, mobileMenu);
-});
+createMobileMenu();
 
 const track = requireElement<HTMLElement>("[data-carousel-track]");
 const slides = Array.from(document.querySelectorAll<HTMLElement>("[data-carousel-slide]"));
@@ -108,16 +20,15 @@ let activeIndex = 0;
 let drag: { pointerId: number; pointerX: number; scrollLeft: number } | null = null;
 
 function scrollToCarouselItem(index: number) {
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   track.scrollTo({
     left: index * track.clientWidth,
-    behavior: reducedMotion ? "auto" : "smooth"
+    behavior: prefersReducedMotion() ? "auto" : "smooth"
   });
 }
 
 function updateCarousel() {
   const progress = track.scrollLeft / Math.max(track.clientWidth, 1);
-  activeIndex = Math.min(slides.length - 1, Math.max(0, Math.round(progress)));
+  const nextIndex = Math.min(slides.length - 1, Math.max(0, Math.round(progress)));
 
   slides.forEach((slide, index) => {
     const activeAmount = Math.max(0, 1 - Math.abs(progress - index));
@@ -129,9 +40,12 @@ function updateCarousel() {
     const activeAmount = Math.max(0, 1 - Math.abs(progress - index));
     marker.style.flexGrow = String(1 + activeAmount * 3);
     marker.style.backgroundColor = `rgba(144, 52, 76, ${0.22 + activeAmount * 0.78})`;
-    if (index === activeIndex) marker.setAttribute("aria-current", "true");
+    if (index === nextIndex) marker.setAttribute("aria-current", "true");
     else marker.removeAttribute("aria-current");
   });
+
+  if (nextIndex === activeIndex) return;
+  activeIndex = nextIndex;
 
   const nextCount = `${String(activeIndex + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
   const nextTitle = markers[activeIndex]?.dataset.carouselTitle ?? "";
