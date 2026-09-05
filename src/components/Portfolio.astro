@@ -1,0 +1,27 @@
+---
+import AboutFooter from "./AboutFooter.astro";
+import BrandHeader from "./BrandHeader.astro";
+import CategoryIntros from "./CategoryIntros.astro";
+import Gallery from "./Gallery.astro";
+import Lightbox from "./Lightbox.astro";
+---
+
+<a class="skip-link" href="#work">Skip to artwork</a>
+<main id="top" class="collection">
+  <BrandHeader />
+  <div class="collection-body">
+    <aside class="collection-aside">
+      <p>Edinburgh, Scotland<br />Inkdependent Studio</p>
+      <a href="#about">About Ruby <span aria-hidden="true">↗</span></a>
+      <CategoryIntros className="collection-aside-intros" />
+    </aside>
+    <Gallery />
+    <CategoryIntros className="collection-mobile-intros" />
+  </div>
+  <AboutFooter />
+</main>
+<Lightbox />
+
+<script>
+  import "../scripts/portfolio";
+</script>

@@ -1,14 +1,14 @@
-<div
-  class="lightbox"
-  data-lightbox
-  hidden
-  role="dialog"
-  aria-modal="true"
-  aria-label="Artwork viewer"
->
-  <button class="lightbox-close" data-lightbox-close type="button" aria-label="Close full image">
+<dialog class="lightbox" data-lightbox aria-label="Artwork viewer">
+  <button
+    class="lightbox-close"
+    data-lightbox-close
+    type="button"
+    aria-label="Close full image"
+    autofocus
+  >
     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-      <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.5"></path>
+      <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.5"
+      ></path>
     </svg>
   </button>
   <button
@@ -23,7 +23,7 @@
   </button>
   <figure>
     <img data-lightbox-image alt="" />
-    <figcaption data-lightbox-caption></figcaption>
+    <figcaption data-lightbox-caption aria-live="polite"></figcaption>
   </figure>
   <button
     class="lightbox-arrow lightbox-next"
@@ -35,4 +35,4 @@
       <path d="m9 4 8 8-8 8" stroke="currentColor" stroke-width="1.5"></path>
     </svg>
   </button>
-</div>
+</dialog>

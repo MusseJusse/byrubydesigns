@@ -4,21 +4,18 @@ export function requireElement<T extends Element>(selector: string): T {
   return element;
 }
 
-export function prefersReducedMotion() {
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
 let scrollLocks = 0;
 let restoreScroll: (() => void) | undefined;
 
-// The menu and lightbox can overlap. Restore scrolling after both release it.
+// Keep the page in place while the artwork viewer is open.
 export function lockDocumentScroll() {
   if (scrollLocks === 0) {
     const body = document.body.style;
     const html = document.documentElement.style;
     const { overflow, paddingRight } = body;
     const htmlOverflow = html.overflow;
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    const scrollbarWidth =
+      window.innerWidth - document.documentElement.clientWidth;
 
     body.overflow = "hidden";
     html.overflow = "hidden";
@@ -42,25 +39,4 @@ export function lockDocumentScroll() {
       restoreScroll = undefined;
     }
   };
-}
-
-export function trapFocus(event: KeyboardEvent, container: HTMLElement) {
-  if (event.key !== "Tab") return;
-
-  const focusable = Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"])'
-    )
-  ).filter((element) => element.getClientRects().length > 0);
-  const first = focusable.at(0);
-  const last = focusable.at(-1);
-  if (!first || !last) return;
-
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
 }
