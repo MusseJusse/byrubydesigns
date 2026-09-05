@@ -227,6 +227,10 @@ a span[aria-hidden] {
 .collection-mobile-intros {
   view-transition-name: artwork-intro-mobile;
 }
+/* With no destination snapshot, the outgoing intro fades at its original position. */
+.collection-body:has(input[value="selected"]:checked) .category-intros {
+  view-transition-name: none;
+}
 
 /* Only the changing artwork moves; keep the page and its controls still. */
 ::view-transition {
