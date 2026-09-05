@@ -369,6 +369,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   display: block;
   width: 15vw;
   height: auto;
+  border-radius: 0.5vw;
 }
 .wall-about h2 {
   font-size: clamp(22px, 2.2vw, 40px);
@@ -577,6 +578,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .wall-about > img {
     width: 30%;
     margin-top: 3px;
+    border-radius: 3px;
   }
   .wall-about > div {
     flex: 1;
