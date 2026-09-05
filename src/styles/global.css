@@ -383,6 +383,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
   letter-spacing: -0.025em;
   margin-bottom: 1.2vw;
 }
+.wall-about h2 .ruby-accent {
+  color: var(--ruby);
+}
 .wall-about p {
   font-size: clamp(13px, 1.1vw, 20px);
   margin-bottom: 2vw;
