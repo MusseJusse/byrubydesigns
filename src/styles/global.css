@@ -46,17 +46,17 @@ a {
   display: none !important;
 }
 
-.sonia-header {
+.header {
   position: relative;
   min-height: 326px;
 }
 
-.sonia-menu-button,
-.sonia-mobile-menu {
+.menu-button,
+.mobile-menu {
   display: none;
 }
 
-.sonia-brand {
+.brand {
   position: absolute;
   top: 49px;
   left: 50%;
@@ -66,7 +66,7 @@ a {
   align-items: center;
 }
 
-.sonia-brand-mark {
+.brand-mark {
   display: flex;
   min-width: 230px;
   flex-direction: column;
@@ -75,17 +75,15 @@ a {
   text-decoration: none;
 }
 
-.sonia-brand-image {
+.brand-image {
   position: relative;
   display: block;
   width: 180px;
   height: 180px;
   overflow: hidden;
-  border: 0;
-  border-radius: 0;
 }
 
-.sonia-brand-image img {
+.brand-image img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -94,25 +92,23 @@ a {
   object-fit: contain;
 }
 
-.sonia-brand-name {
-  position: relative;
+.brand-name {
   font-size: 27px;
   line-height: 1;
   letter-spacing: 0.065em;
   white-space: nowrap;
 }
 
-.sonia-brand-copy {
+.brand-copy {
   display: flex;
   flex-direction: column;
   align-items: center;
   margin-top: 12px;
 }
 
-.sonia-brand-subtitle {
+.brand-subtitle {
   margin-top: 5px;
   color: #90344c;
-  font-family: "TikTok Sans Variable", Arial, sans-serif;
   font-size: 14px;
   font-style: oblique 6deg;
   font-variation-settings: "slnt" -6;
@@ -120,7 +116,7 @@ a {
   letter-spacing: 0.04em;
 }
 
-.sonia-main-nav {
+.main-nav {
   display: flex;
   align-items: center;
   gap: 27px;
@@ -128,8 +124,8 @@ a {
   font-size: 16px;
 }
 
-.sonia-main-nav a,
-.sonia-main-nav button {
+.main-nav a,
+.main-nav button {
   border: 0;
   padding: 0;
   background: transparent;
@@ -139,34 +135,31 @@ a {
   cursor: pointer;
 }
 
-.sonia-main-nav a:hover,
-.sonia-main-nav button:hover {
+.main-nav a:hover,
+.main-nav button:hover {
   color: #90344c;
 }
 
-.sonia-main-nav .active {
+.main-nav .active {
   border-bottom: 1px solid currentColor;
 }
 
-.sonia-main-nav .active,
-.sonia-mobile-nav .active {
+.main-nav .active,
+.mobile-nav .active {
   color: #90344c;
 }
 
-.sonia-landing-carousel {
+.landing-carousel {
   padding: 48px 16px 0;
 }
 
-.sonia-landing-intro,
-.sonia-carousel-desktop-label {
+.landing-intro,
+.carousel-desktop-label,
+.contact-photo {
   display: none;
 }
 
-.sonia-contact-photo {
-  display: none;
-}
-
-.sonia-carousel-heading {
+.carousel-heading {
   display: flex;
   width: 100%;
   max-width: 1120px;
@@ -178,18 +171,18 @@ a {
   line-height: 1.4;
 }
 
-.sonia-carousel-heading h1 {
+.carousel-heading h1 {
   margin: 0;
   font: inherit;
 }
 
-.sonia-art-carousel {
+.art-carousel {
   width: 100%;
   max-width: 1120px;
   margin-inline: auto;
 }
 
-.sonia-carousel-stage {
+.carousel-stage {
   position: relative;
   width: 100%;
   max-height: 760px;
@@ -199,7 +192,7 @@ a {
   isolation: isolate;
 }
 
-.sonia-carousel-slides {
+.carousel-slides {
   position: absolute;
   inset: 0;
   margin: 0;
@@ -207,57 +200,52 @@ a {
   list-style: none;
 }
 
-.sonia-carousel-slide {
+.carousel-slide {
   position: absolute;
   inset: 0;
   transition: opacity 90ms linear, transform 90ms linear;
 }
 
-.sonia-carousel-slide img {
+.carousel-slide img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.sonia-carousel-slide:nth-child(1) img {
+.carousel-slide:nth-child(1) img {
   object-position: 50% 52%;
 }
 
-.sonia-carousel-slide:nth-child(2) img,
-.sonia-carousel-slide:nth-child(5) img {
-  object-position: center;
-}
-
-.sonia-carousel-slide:nth-child(3) img {
+.carousel-slide:nth-child(3) img {
   object-position: 52% center;
 }
 
-.sonia-carousel-slide:nth-child(4) img {
+.carousel-slide:nth-child(4) img {
   object-position: center 42%;
 }
 
 @media (min-width: 641px) and (max-width: 899px) {
-  .sonia-carousel-heading,
-  .sonia-art-carousel {
+  .carousel-heading,
+  .art-carousel {
     max-width: 504px;
   }
 
-  .sonia-carousel-stage {
+  .carousel-stage {
     max-height: none;
     aspect-ratio: var(--carousel-aspect-ratio);
   }
 }
 
 @media (min-width: 900px) {
-  .sonia-header {
+  .header {
     min-height: 146px;
   }
 
-  .portfolio-gallery-page .sonia-header {
+  .portfolio-gallery-page .header {
     min-height: 125px;
   }
 
-  .sonia-header .sonia-brand {
+  .header .brand {
     top: 24px;
     width: min(1160px, calc(100% - 48px));
     flex-direction: row;
@@ -266,35 +254,35 @@ a {
     padding-bottom: 22px;
   }
 
-  .sonia-header .sonia-brand-mark {
+  .header .brand-mark {
     min-width: 0;
     flex-direction: row;
   }
 
-  .sonia-header .sonia-brand-image {
+  .header .brand-image {
     width: 78px;
     height: 78px;
   }
 
-  .sonia-header .sonia-brand-copy {
+  .header .brand-copy {
     align-items: flex-start;
     margin-top: 0;
     margin-left: 15px;
   }
 
-  .sonia-header .sonia-brand-name {
+  .header .brand-name {
     font-size: 22px;
   }
 
-  .sonia-header .sonia-brand-subtitle {
+  .header .brand-subtitle {
     font-size: 12px;
   }
 
-  .sonia-header .sonia-main-nav {
+  .header .main-nav {
     margin-top: 0;
   }
 
-  .portfolio-root .sonia-gallery {
+  .portfolio-root .gallery {
     width: min(1160px, calc(100% - 48px));
     margin-inline: auto;
     padding-top: 30px;
@@ -302,11 +290,11 @@ a {
     padding-left: 0;
   }
 
-  .portfolio-root .sonia-gallery-intro p {
+  .portfolio-root .gallery-intro p {
     max-width: 52ch;
   }
 
-  .sonia-landing-carousel {
+  .landing-carousel {
     display: grid;
     width: min(1160px, calc(100% - 48px));
     grid-template-columns: minmax(230px, 0.68fr) minmax(0, 1.32fr);
@@ -315,14 +303,14 @@ a {
     padding: 42px 0 0;
   }
 
-  .sonia-landing-intro {
+  .landing-intro {
     display: flex;
     min-height: 100%;
     flex-direction: column;
     padding-top: 2px;
   }
 
-  .sonia-landing-intro h1 {
+  .landing-intro h1 {
     margin: 0;
     color: #474747;
     font-size: 12px;
@@ -330,7 +318,7 @@ a {
     line-height: 1.4;
   }
 
-  .sonia-landing-title {
+  .landing-title {
     margin: 14px 0 0;
     font-size: clamp(34px, 3.3vw, 48px);
     font-weight: 400;
@@ -338,7 +326,7 @@ a {
     letter-spacing: -0.045em;
   }
 
-  .sonia-contact-photo {
+  .contact-photo {
     display: block;
     width: min(100%, 380px);
     height: auto;
@@ -347,44 +335,43 @@ a {
     object-fit: cover;
   }
 
-  .sonia-art-carousel {
-    width: 100%;
+  .art-carousel {
     max-width: 700px;
     justify-self: end;
   }
 
-  .sonia-carousel-heading {
+  .carousel-heading {
     display: none;
   }
 
-  .sonia-carousel-stage {
+  .carousel-stage {
     max-height: none;
     aspect-ratio: 1.08 / 1;
   }
 
-  .sonia-carousel-under {
+  .carousel-under {
     min-height: 76px;
   }
 
-  .sonia-carousel-mobile-title {
+  .carousel-mobile-title {
     display: none;
   }
 
-  .sonia-carousel-desktop-label {
+  .carousel-desktop-label {
     display: flex;
     gap: 12px;
   }
 
-  .sonia-carousel-desktop-label [data-carousel-count] {
+  .carousel-desktop-label [data-carousel-count] {
     color: #777;
   }
 
-  .portfolio-root .sonia-footer {
+  .portfolio-root .footer {
     width: min(1160px, calc(100% - 48px));
   }
 }
 
-.sonia-carousel-drag {
+.carousel-drag {
   position: absolute;
   inset: 0;
   z-index: 2;
@@ -394,25 +381,24 @@ a {
   overscroll-behavior-x: contain;
   scrollbar-width: none;
   cursor: grab;
-  touch-action: auto;
 }
 
-.sonia-carousel-drag::-webkit-scrollbar {
+.carousel-drag::-webkit-scrollbar {
   display: none;
 }
 
-.sonia-carousel-drag.is-dragging {
+.carousel-drag.is-dragging {
   cursor: grabbing;
   scroll-snap-type: none;
 }
 
-.sonia-carousel-stop {
+.carousel-stop {
   flex: 0 0 100%;
   height: 100%;
   scroll-snap-align: center;
 }
 
-.sonia-carousel-under {
+.carousel-under {
   display: grid;
   min-height: 72px;
   grid-template-columns: 1fr auto;
@@ -422,14 +408,14 @@ a {
   padding: 14px 0 17px;
 }
 
-.sonia-carousel-under p {
+.carousel-under p {
   margin: 0;
   color: #353535;
   font-size: 14px;
   line-height: 1.45;
 }
 
-.sonia-carousel-tools {
+.carousel-tools {
   display: grid;
   justify-items: end;
   gap: 10px;
@@ -438,7 +424,7 @@ a {
   line-height: 1.4;
 }
 
-.sonia-carousel-markers {
+.carousel-markers {
   display: flex;
   width: min(42vw, 210px);
   align-items: center;
@@ -446,7 +432,7 @@ a {
   gap: 5px;
 }
 
-.sonia-carousel-marker {
+.carousel-marker {
   appearance: none;
   width: 7px;
   min-width: 7px;
@@ -458,7 +444,7 @@ a {
   transition: flex-grow 90ms linear, background-color 90ms linear;
 }
 
-.sonia-gallery {
+.gallery {
   padding: 48px 16px 44px;
   background: #fff;
 }
@@ -468,22 +454,22 @@ html[data-motion="lightbox-picture"] {
   view-transition-name: none;
 }
 
-html[data-motion="gallery-category"]::view-transition-group(gallery-b),
+html[data-motion="gallery-category"]::view-transition-group(gallery-category),
 html[data-motion="lightbox-picture"]::view-transition-group(lightbox-picture) {
   animation: none;
 }
 
-html[data-motion="gallery-category"]::view-transition-old(gallery-b),
+html[data-motion="gallery-category"]::view-transition-old(gallery-category),
 html[data-motion="lightbox-picture"]::view-transition-old(lightbox-picture) {
-  animation: sonia-dissolve-out 180ms ease-in-out both;
+  animation: fade-out 180ms ease-in-out both;
 }
 
-html[data-motion="gallery-category"]::view-transition-new(gallery-b),
+html[data-motion="gallery-category"]::view-transition-new(gallery-category),
 html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
-  animation: sonia-dissolve-in 180ms ease-in-out both;
+  animation: fade-in 180ms ease-in-out both;
 }
 
-.sonia-gallery-intro {
+.gallery-intro {
   width: 100%;
   max-width: 1800px;
   margin: 0 auto 30px;
@@ -492,16 +478,16 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   line-height: 1.5;
 }
 
-.sonia-gallery-intro p {
+.gallery-intro p {
   max-width: none;
   margin: 0;
 }
 
-.sonia-gallery-intro p + p {
+.gallery-intro p + p {
   margin-top: 16px;
 }
 
-.sonia-gallery-separator {
+.gallery-separator {
   width: 100%;
   max-width: 1800px;
   margin: 0 auto 22px;
@@ -509,7 +495,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   border-top: 1px solid #dedbd5;
 }
 
-.sonia-gallery-grid {
+.gallery-grid {
   display: grid;
   width: 100%;
   max-width: 1800px;
@@ -519,23 +505,23 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   margin-inline: auto;
 }
 
-.portfolio-enhanced .sonia-gallery-grid {
+.portfolio-enhanced .gallery-grid {
   position: relative;
   display: block;
 }
 
-.sonia-gallery-item {
+.gallery-item {
   margin: 0;
 }
 
-.portfolio-enhanced .sonia-gallery-item {
+.portfolio-enhanced .gallery-item {
   position: absolute;
   top: 0;
   left: 0;
   opacity: 0;
 }
 
-.sonia-gallery-year-heading {
+.gallery-year-heading {
   width: 100%;
   max-width: 1800px;
   margin: 0 auto 22px;
@@ -545,7 +531,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   line-height: 1.25;
 }
 
-.sonia-gallery-year-divider {
+.gallery-year-divider {
   width: 100%;
   max-width: 1800px;
   grid-column: 1 / -1;
@@ -558,7 +544,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   line-height: 1.25;
 }
 
-.portfolio-enhanced .sonia-gallery-year-divider {
+.portfolio-enhanced .gallery-year-divider {
   position: absolute;
   top: 0;
   left: 0;
@@ -566,12 +552,12 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   opacity: 0;
 }
 
-.sonia-gallery-grid.is-ready .sonia-gallery-item,
-.sonia-gallery-grid.is-ready .sonia-gallery-year-divider {
+.gallery-grid.is-ready .gallery-item,
+.gallery-grid.is-ready .gallery-year-divider {
   opacity: 1;
 }
 
-.sonia-gallery-item button {
+.gallery-item button {
   display: block;
   width: 100%;
   overflow: hidden;
@@ -581,31 +567,31 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   cursor: zoom-in;
 }
 
-.sonia-gallery-item img {
+.gallery-item img {
   display: block;
   width: 100%;
   height: auto;
   transition: transform 500ms cubic-bezier(0.2, 0.7, 0.2, 1), filter 300ms ease;
 }
 
-.sonia-gallery-item button:hover img {
+.gallery-item button:hover img {
   transform: scale(1.018);
   filter: saturate(1.04);
 }
 
-.sonia-gallery-item button:focus-visible {
+.gallery-item button:focus-visible {
   outline: 2px solid #a64d49;
   outline-offset: 3px;
 }
 
-.sonia-gallery-item figcaption {
+.gallery-item figcaption {
   padding-top: 14px;
   color: #353535;
   font-size: 14px;
   line-height: 1.25;
 }
 
-.sonia-footer {
+.footer {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -620,23 +606,23 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   line-height: 1.7;
 }
 
-.sonia-footer p {
+.footer p {
   margin: 0;
 }
 
-.sonia-footer-content {
+.footer-content {
   display: flex;
   width: 100%;
   justify-content: space-between;
   gap: 24px;
 }
 
-.sonia-footer a {
+.footer a {
   color: inherit;
   text-underline-offset: 4px;
 }
 
-.sonia-footer-links {
+.footer-links {
   display: flex;
   flex-wrap: wrap;
   margin-left: auto;
@@ -644,7 +630,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   gap: 8px 24px;
 }
 
-.sonia-back-to-top {
+.back-to-top {
   align-self: center;
   margin-top: 28px;
   font-size: 14px;
@@ -653,7 +639,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   transform: rotate(-90deg);
 }
 
-.sonia-lightbox {
+.lightbox {
   position: fixed;
   inset: 0;
   z-index: 95;
@@ -664,15 +650,15 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   cursor: zoom-out;
-  animation: sonia-lightbox-in 170ms ease-out;
+  animation: fade-in 170ms ease-out;
 }
 
-.sonia-lightbox.is-closing {
+.lightbox.is-closing {
   pointer-events: none;
-  animation: sonia-lightbox-out 170ms ease-out forwards;
+  animation: fade-out 170ms ease-out forwards;
 }
 
-.sonia-lightbox figure {
+.lightbox figure {
   display: grid;
   max-height: 100%;
   margin: 0;
@@ -681,13 +667,13 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   cursor: default;
 }
 
-.sonia-lightbox figure img {
+.lightbox figure img {
   max-width: min(76vw, 860px);
   max-height: calc(100dvh - 108px);
   object-fit: contain;
 }
 
-.sonia-lightbox figcaption {
+.lightbox figcaption {
   display: grid;
   gap: 3px;
   color: #333;
@@ -696,12 +682,12 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   text-align: center;
 }
 
-.sonia-lightbox figcaption cite {
+.lightbox figcaption cite {
   font-style: italic;
 }
 
-.sonia-lightbox-close,
-.sonia-lightbox-arrow {
+.lightbox-close,
+.lightbox-arrow {
   position: absolute;
   display: grid;
   width: 44px;
@@ -713,69 +699,69 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   cursor: pointer;
 }
 
-.sonia-lightbox-close {
+.lightbox-close {
   top: 22px;
   right: 24px;
 }
 
-.sonia-lightbox-arrow {
+.lightbox-arrow {
   top: 50%;
   transform: translateY(-50%);
 }
 
-.sonia-lightbox-previous {
+.lightbox-previous {
   left: 22px;
 }
 
-.sonia-lightbox-next {
+.lightbox-next {
   right: 22px;
 }
 
-.sonia-lightbox-close svg,
-.sonia-lightbox-arrow svg {
+.lightbox-close svg,
+.lightbox-arrow svg {
   width: 25px;
   height: 25px;
 }
 
 @media (max-width: 899px) {
-  .sonia-gallery-grid {
+  .gallery-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
-  .sonia-header {
+  .header {
     min-height: 232px;
   }
 
-  .sonia-brand {
+  .brand {
     z-index: 90;
     top: 30px;
   }
 
-  .sonia-brand-image {
+  .brand-image {
     width: 120px;
     height: 120px;
   }
 
-  .sonia-brand-name {
+  .brand-name {
     font-size: 24px;
   }
 
-  .sonia-brand-copy {
+  .brand-copy {
     margin-top: 10px;
   }
 
-  .sonia-main-nav {
+  .main-nav {
     display: none;
   }
 
-  .sonia-gallery-intro {
+  .gallery-intro {
     font-size: 14px;
     line-height: 1.6;
   }
 
-  .sonia-menu-button {
+  .menu-button {
     position: absolute;
     z-index: 100;
     top: 59px;
@@ -793,7 +779,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     touch-action: manipulation;
   }
 
-  .sonia-menu-button span {
+  .menu-button span {
     display: block;
     width: 34px;
     height: 1px;
@@ -802,28 +788,28 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     transition: transform 380ms cubic-bezier(0.65, 0, 0.35, 1), opacity 240ms ease-in-out;
   }
 
-  .sonia-menu-button.is-open span:nth-child(1) {
+  .menu-button.is-open span:nth-child(1) {
     transform: translateY(7px) rotate(45deg);
   }
 
-  .sonia-menu-button.is-open span:nth-child(2) {
+  .menu-button.is-open span:nth-child(2) {
     opacity: 0;
   }
 
-  .sonia-menu-button.is-open span:nth-child(3) {
+  .menu-button.is-open span:nth-child(3) {
     transform: translateY(-7px) rotate(-45deg);
   }
 
-  .sonia-menu-button.is-open {
+  .menu-button.is-open {
     position: fixed;
   }
 
-  .sonia-menu-button:focus-visible {
+  .menu-button:focus-visible {
     outline: 2px solid #a64d49;
     outline-offset: 2px;
   }
 
-  .sonia-mobile-menu {
+  .mobile-menu {
     position: fixed;
     inset: 0;
     z-index: 98;
@@ -837,14 +823,13 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     transform: scale(0.985);
     transform-origin: 46px 85px;
     visibility: hidden;
-    will-change: opacity, transform;
     transition:
       opacity 380ms cubic-bezier(0.65, 0, 0.35, 1),
       transform 380ms cubic-bezier(0.65, 0, 0.35, 1),
       visibility 0s linear 380ms;
   }
 
-  .sonia-mobile-menu.is-open {
+  .mobile-menu.is-open {
     opacity: 1;
     pointer-events: auto;
     transform: scale(1);
@@ -852,25 +837,30 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     transition-delay: 0s;
   }
 
-  .sonia-mobile-socials {
+  .mobile-socials,
+  .mobile-nav {
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 380ms cubic-bezier(0.65, 0, 0.35, 1), transform 380ms cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .mobile-menu.is-open .mobile-socials,
+  .mobile-menu.is-open .mobile-nav {
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 45ms;
+  }
+
+  .mobile-socials {
     align-self: end;
     grid-row: 3;
     display: flex;
     justify-content: center;
     gap: 21px;
     padding-bottom: max(34px, env(safe-area-inset-bottom));
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 380ms cubic-bezier(0.65, 0, 0.35, 1), transform 380ms cubic-bezier(0.65, 0, 0.35, 1);
   }
 
-  .sonia-mobile-menu.is-open .sonia-mobile-socials {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: 45ms;
-  }
-
-  .sonia-mobile-socials a {
+  .mobile-socials a {
     display: grid;
     width: 44px;
     height: 44px;
@@ -878,34 +868,34 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     color: inherit;
   }
 
-  .sonia-mobile-socials svg {
+  .mobile-socials svg {
     width: 23px;
     height: 23px;
   }
 
-  .sonia-mobile-socials a:active {
+  .mobile-socials a:active {
     transform: scale(0.92);
   }
 
-  .sonia-mobile-socials a:focus-visible {
+  .mobile-socials a:focus-visible {
     outline: 2px solid #a64d49;
     outline-offset: 2px;
   }
 
-  .sonia-landing-carousel {
+  .landing-carousel {
     padding: 32px 4.05% 0;
   }
 
-  .sonia-carousel-stage {
+  .carousel-stage {
     max-height: none;
     aspect-ratio: 4 / 5;
   }
 
-  .sonia-carousel-under {
+  .carousel-under {
     min-height: 76px;
   }
 
-  .sonia-mobile-nav {
+  .mobile-nav {
     align-self: center;
     grid-row: 2;
     display: flex;
@@ -917,19 +907,10 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     font-weight: 300;
     line-height: 1.18;
     letter-spacing: -0.025em;
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 380ms cubic-bezier(0.65, 0, 0.35, 1), transform 380ms cubic-bezier(0.65, 0, 0.35, 1);
   }
 
-  .sonia-mobile-menu.is-open .sonia-mobile-nav {
-    opacity: 1;
-    transform: translateY(0);
-    transition-delay: 45ms;
-  }
-
-  .sonia-mobile-nav a,
-  .sonia-mobile-nav button {
+  .mobile-nav a,
+  .mobile-nav button {
     border: 0;
     padding: 0;
     background: transparent;
@@ -939,58 +920,57 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     cursor: pointer;
   }
 
-  .sonia-mobile-nav a:active,
-  .sonia-mobile-nav button:active {
+  .mobile-nav a:active,
+  .mobile-nav button:active {
     transform: scale(0.97);
   }
 
-  .sonia-mobile-nav a:focus-visible,
-  .sonia-mobile-nav button:focus-visible {
+  .mobile-nav a:focus-visible,
+  .mobile-nav button:focus-visible {
     outline: 2px solid #a64d49;
     outline-offset: 6px;
   }
 
-  .sonia-gallery {
+  .gallery {
     padding: 32px 4.05% 86px;
   }
 
-  .sonia-gallery-grid {
+  .gallery-grid {
     column-gap: 2px;
   }
 
-  .sonia-footer {
-    flex-direction: column;
+  .footer {
     width: auto;
     max-width: none;
     margin-inline: 4.05%;
   }
 
-  .sonia-footer-content {
+  .footer-content {
     flex-direction: column;
   }
 
-  .sonia-footer-links {
+  .footer-links {
     align-self: flex-end;
   }
 
-  .sonia-lightbox {
+  .lightbox {
     padding: 64px 42px 28px;
   }
 
-  .sonia-lightbox figure img {
+  .lightbox figure img {
     max-width: calc(100vw - 84px);
   }
 
-  .sonia-lightbox-previous {
+  .lightbox-previous {
     left: 0;
   }
 
-  .sonia-lightbox-next {
+  .lightbox-next {
     right: 0;
   }
 }
 
-@keyframes sonia-lightbox-in {
+@keyframes fade-in {
   from {
     opacity: 0;
   }
@@ -1000,19 +980,7 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
   }
 }
 
-@keyframes sonia-dissolve-out {
-  to {
-    opacity: 0;
-  }
-}
-
-@keyframes sonia-dissolve-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes sonia-lightbox-out {
+@keyframes fade-out {
   from {
     opacity: 1;
   }
@@ -1027,36 +995,35 @@ html[data-motion="lightbox-picture"]::view-transition-new(lightbox-picture) {
     scroll-behavior: auto;
   }
 
-  .sonia-menu-button span {
+  .menu-button span {
     transition: none;
   }
 
-  .sonia-mobile-menu {
+  .mobile-menu {
     transform: none;
     transition: opacity 160ms linear, visibility 0s linear 160ms;
   }
 
-  .sonia-mobile-menu.is-open {
+  .mobile-menu.is-open {
     transition-delay: 0s;
   }
 
-  .sonia-mobile-nav {
+  .mobile-nav {
     transform: none;
     transition: opacity 160ms linear;
   }
 
-  .sonia-lightbox {
+  .lightbox {
     animation: none;
   }
 
-  .sonia-gallery-item img {
+  .gallery-item img {
     transition: none;
   }
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  .sonia-mobile-menu,
-  .sonia-lightbox {
+  .lightbox {
     background: #fff;
     -webkit-backdrop-filter: none;
     backdrop-filter: none;

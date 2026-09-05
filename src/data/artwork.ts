@@ -1,7 +1,4 @@
-export type GalleryCategoryId = "tattoo" | "drawings" | "paintings";
-
 export type GalleryArtwork = {
-  fileName: string;
   imagePath: `/src/assets/artwork/${string}.webp`;
   title: string;
   aspectRatio: string;
@@ -14,8 +11,8 @@ export type GalleryArtwork = {
   };
 };
 
-export type GalleryCategory = {
-  id: GalleryCategoryId;
+type GalleryCategory = {
+  id: string;
   label: string;
   intro: readonly string[];
   items: readonly GalleryArtwork[];
@@ -43,7 +40,6 @@ function numberedTitle(label: "Tattoo" | "Drawing", index: number) {
 
 const tattooArtwork = tattooSource.map(({ fileName, ...item }, index) => {
   return {
-    fileName,
     imagePath: `/src/assets/artwork/tattoo/${fileName}` as const,
     title: numberedTitle("Tattoo", index),
     aspectRatio: "aspectRatio" in item ? item.aspectRatio : "3 / 4"
@@ -62,7 +58,6 @@ const drawingArtwork = drawingAspectRatios.map((aspectRatio, index) => {
   const fileName = `drawing-${number}.webp` as const;
 
   return {
-    fileName,
     imagePath: `/src/assets/artwork/drawings/${fileName}` as const,
     title: numberedTitle("Drawing", index),
     aspectRatio
@@ -125,7 +120,6 @@ const paintingSource = [
 ] as const;
 
 const paintingArtwork = paintingSource.map(({ fileName, ...item }) => ({
-  fileName,
   imagePath: `/src/assets/artwork/paintings/${fileName}` as const,
   ...item
 })) satisfies GalleryArtwork[];
@@ -156,3 +150,5 @@ export const galleryCategories = [
     items: paintingArtwork
   }
 ] as const satisfies readonly GalleryCategory[];
+
+export type GalleryCategoryId = (typeof galleryCategories)[number]["id"];

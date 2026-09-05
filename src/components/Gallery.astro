@@ -1,16 +1,17 @@
 ---
 import type { ImageMetadata } from "astro";
 import { getImage, Image } from "astro:assets";
-import { galleryCategories } from "../data/artwork";
+import { galleryCategories, type GalleryArtwork } from "../data/artwork";
 
-const imageLoaders = import.meta.glob<{ default: ImageMetadata }>(
-  "/src/assets/artwork/**/*.webp"
+const images = import.meta.glob<ImageMetadata>(
+  "/src/assets/artwork/**/*.webp",
+  { eager: true, import: "default" }
 );
 
-async function resolveImage(path: string) {
-  const load = imageLoaders[path];
-  if (!load) throw new Error("Artwork file is missing: " + path);
-  return (await load()).default;
+function resolveImage(path: GalleryArtwork["imagePath"]) {
+  const image = images[path];
+  if (!image) throw new Error("Artwork file is missing: " + path);
+  return image;
 }
 
 const categories = await Promise.all(
@@ -18,7 +19,7 @@ const categories = await Promise.all(
     ...category,
     items: await Promise.all(
       category.items.map(async (item) => {
-        const image = await resolveImage(item.imagePath);
+        const image = resolveImage(item.imagePath);
         const lightbox = await getImage({
           src: image,
           width: Math.min(1800, image.width),
@@ -33,7 +34,7 @@ const categories = await Promise.all(
 );
 ---
 
-<section id="work" class="sonia-gallery">
+<section id="work" class="gallery">
   {
     categories.map((category) => {
       const yearBreakIndex = category.items.findIndex(
@@ -47,29 +48,27 @@ const categories = await Promise.all(
           aria-label={category.label + " work"}
           hidden={category.id !== "tattoo"}
         >
-          <div class="sonia-gallery-intro">
+          <div class="gallery-intro">
             {category.intro.map((paragraph) => <p>{paragraph}</p>)}
           </div>
-          <hr class="sonia-gallery-separator" />
+          <hr class="gallery-separator" />
           {category.id === "paintings" && (
-            <h2 class="sonia-gallery-year-heading">2026</h2>
+            <h2 class="gallery-year-heading">2026</h2>
           )}
           <div
-            class="sonia-gallery-grid"
+            class="gallery-grid"
             data-gallery-grid
             data-year-break-index={yearBreakIndex >= 0 ? String(yearBreakIndex) : undefined}
           >
             {category.items.map((item, index) => (
               <>
                 {category.id === "paintings" && index === yearBreakIndex && (
-                  <h2 class="sonia-gallery-year-divider" data-year-divider>2022</h2>
+                  <h2 class="gallery-year-divider" data-year-divider>2022</h2>
                 )}
-                <figure class="sonia-gallery-item">
+                <figure class="gallery-item">
                   <button
                     type="button"
                     data-lightbox-open
-                    data-category={category.id}
-                    data-index={index}
                     data-full-src={item.lightboxSrc}
                     data-title={item.title}
                     data-medium={"medium" in item ? item.medium : undefined}
@@ -78,7 +77,6 @@ const categories = await Promise.all(
                         ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
                         : undefined
                     }
-                    data-alt={item.title + ", artwork by Ruby Smythe"}
                     aria-label={"View full image of " + item.title}
                   >
                     <Image
