@@ -70,7 +70,7 @@ button:focus-visible {
 }
 
 .collection {
-  padding: 4.5vw var(--page-gutter) 0;
+  padding: 3.2vw var(--page-gutter) 0;
 }
 .collection a {
   display: inline-flex;
@@ -92,7 +92,7 @@ a span[aria-hidden] {
   align-items: center;
   justify-content: space-between;
   gap: 3vw;
-  margin-bottom: 5vw;
+  margin-bottom: 2.2vw;
 }
 .collection-header h1 {
   font-size: inherit;
@@ -180,7 +180,7 @@ a span[aria-hidden] {
   display: flex;
   align-items: center;
   gap: 2.7vw;
-  margin-bottom: 3vw;
+  margin-bottom: 1.2vw;
   background: var(--paper);
 }
 .filter-controls > input {
@@ -210,7 +210,7 @@ a span[aria-hidden] {
 .collection-count {
   font-size: clamp(11px, 0.95vw, 17px);
   color: var(--muted);
-  margin: -0.6vw 0 1.8vw;
+  margin: -0.3vw 0 1vw;
 }
 .collection-count > span {
   display: none;
