@@ -2,101 +2,160 @@
 import type { ImageMetadata } from "astro";
 import { getImage, Image } from "astro:assets";
 import { galleryCategories, type GalleryArtwork } from "../data/artwork";
+import paintingTable from "../assets/artwork/contact/painting-table.webp";
 
 const images = import.meta.glob<ImageMetadata>(
   "/src/assets/artwork/**/*.webp",
-  { eager: true, import: "default" }
+  { eager: true, import: "default" },
 );
+const selectedPaths = [
+  "/src/assets/artwork/tattoo/IMG_1163.webp",
+  "/src/assets/artwork/tattoo/IMG_6601.webp",
+  "/src/assets/artwork/paintings/painting-02.webp",
+];
 
-function resolveImage(path: GalleryArtwork["imagePath"]) {
-  const image = images[path];
-  if (!image) throw new Error("Artwork file is missing: " + path);
-  return image;
-}
-
-const categories = await Promise.all(
-  galleryCategories.map(async (category) => ({
-    ...category,
-    items: await Promise.all(
-      category.items.map(async (item) => {
-        const image = resolveImage(item.imagePath);
-        const lightbox = await getImage({
-          src: image,
-          width: Math.min(1800, image.width),
-          format: "webp",
-          quality: 90
-        });
-
-        return { ...item, image, lightboxSrc: lightbox.src };
-      })
-    )
-  }))
+const artwork = galleryCategories.flatMap((category) =>
+  category.items.map((item: GalleryArtwork) => {
+    const image = images[item.imagePath];
+    if (!image) throw new Error("Artwork file is missing: " + item.imagePath);
+    return {
+      ...item,
+      image,
+      category: category.id,
+      caption:
+        category.id === "paintings"
+          ? `Painting, ${item.year}`
+          : category.id === "drawings"
+            ? "Ballpoint pen"
+            : "Tattoo",
+      selected: selectedPaths.includes(item.imagePath),
+    };
+  }),
 );
+const selected = selectedPaths.map((path) => {
+  const item = artwork.find((candidate) => candidate.imagePath === path);
+  if (!item) throw new Error("Selected artwork is missing: " + path);
+  return item;
+});
+const items = await Promise.all(
+  [
+    ...selected,
+    {
+      title: "At the painting table",
+      image: paintingTable,
+      category: "studio",
+      caption: "Studio photograph",
+      selected: true,
+      medium: undefined,
+      dimensions: undefined,
+    },
+    ...artwork.filter((item) => !item.selected),
+  ].map(async (item) => {
+    const lightboxWidth = Math.min(1800, item.image.width);
+    return {
+      ...item,
+      lightboxWidth,
+      lightboxHeight: Math.round(
+        (lightboxWidth * item.image.height) / item.image.width,
+      ),
+      lightbox: await getImage({
+        src: item.image,
+        width: lightboxWidth,
+        format: "webp",
+        quality: 90,
+      }),
+    };
+  }),
+);
+const filters = [
+  { id: "selected", label: "Selected work", count: "4 favourites" },
+  ...["tattoo", "paintings", "drawings"].map((id) => {
+    const category = galleryCategories.find((category) => category.id === id);
+    if (!category) throw new Error("Gallery category is missing: " + id);
+    return {
+      id,
+      label: category.label,
+      count: `${category.items.length} ${category.label.toLowerCase()}`,
+    };
+  }),
+];
 ---
 
-<section id="work" class="gallery">
-  {
-    categories.map((category) => {
-      const yearBreakIndex = category.items.findIndex(
-        (item) => "year" in item && item.year === 2022
-      );
-
-      return (
-        <section
-          id={"gallery-" + category.id}
-          data-category-panel={category.id}
-          aria-label={category.label + " work"}
-          hidden={category.id !== "tattoo"}
+<section
+  id="work"
+  class="collection-content"
+  aria-label="Artwork"
+  tabindex="-1"
+>
+  <div class="filter-controls" role="group" aria-label="Filter artwork">
+    {
+      filters.map((filter) => (
+        <>
+          <input
+            type="radio"
+            name="artwork-filter"
+            id={`filter-${filter.id}`}
+            value={filter.id}
+            checked={filter.id === "selected"}
+            aria-controls="artwork-grid"
+          />
+          <label for={`filter-${filter.id}`}>{filter.label}</label>
+        </>
+      ))
+    }
+  </div>
+  <p
+    class="collection-count"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    {
+      filters.map((filter) => (
+        <span data-count={filter.id}>{filter.count}</span>
+      ))
+    }
+  </p>
+  <div id="artwork-grid" class="collection-grid">
+    {
+      items.map((item, index) => (
+        <figure
+          data-category={item.category}
+          data-selected={item.selected ? "true" : undefined}
         >
-          <div class="gallery-intro">
-            {category.intro.map((paragraph) => <p>{paragraph}</p>)}
-          </div>
-          <hr class="gallery-separator" />
-          {category.id === "paintings" && (
-            <h2 class="gallery-year-heading">2026</h2>
-          )}
-          <div
-            class="gallery-grid"
-            data-gallery-grid
-            data-year-break-index={yearBreakIndex >= 0 ? String(yearBreakIndex) : undefined}
+          <button
+            type="button"
+            data-lightbox-open
+            data-full-src={item.lightbox.src}
+            data-full-width={item.lightboxWidth}
+            data-full-height={item.lightboxHeight}
+            data-title={item.title}
+            data-medium={item.medium ?? item.caption}
+            data-dimensions={
+              item.dimensions
+                ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
+                : undefined
+            }
+            aria-label={`View full image of ${item.title}`}
           >
-            {category.items.map((item, index) => (
-              <>
-                {category.id === "paintings" && index === yearBreakIndex && (
-                  <h2 class="gallery-year-divider" data-year-divider>2022</h2>
-                )}
-                <figure class="gallery-item">
-                  <button
-                    type="button"
-                    data-lightbox-open
-                    data-full-src={item.lightboxSrc}
-                    data-title={item.title}
-                    data-medium={"medium" in item ? item.medium : undefined}
-                    data-dimensions={
-                      "dimensions" in item
-                        ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
-                        : undefined
-                    }
-                    aria-label={"View full image of " + item.title}
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.title + ", artwork by Ruby Smythe"}
-                      widths={[360, 720, 1080]}
-                      sizes="(max-width: 899px) 50vw, 33vw"
-                      quality={85}
-                      loading={category.id === "tattoo" && index < 7 ? "eager" : "lazy"}
-                      fetchpriority={category.id === "tattoo" && index === 0 ? "high" : "auto"}
-                      style={"aspect-ratio: " + item.aspectRatio}
-                    />
-                  </button>
-                  <figcaption>{item.title}</figcaption>
-                </figure>
-              </>
-            ))}
-          </div>
-        </section>
-      );
-    })
-  }
+            <Image
+              src={item.image}
+              alt={`${item.title}, ${item.caption.toLowerCase()}, by Ruby Smythe`}
+              widths={[360, 720, 1080].filter(
+                (width) => width <= item.image.width,
+              )}
+              sizes="(max-width: 767px) calc((100vw - 64px) / 2), 33vw"
+              quality={88}
+              loading={item.selected ? "eager" : "lazy"}
+              fetchpriority={index === 0 ? "high" : "auto"}
+            />
+          </button>
+          <figcaption>
+            {item.title}
+            <span>{item.caption}</span>
+          </figcaption>
+        </figure>
+      ))
+    }
+  </div>
 </section>

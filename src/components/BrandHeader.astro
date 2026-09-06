@@ -1,144 +1,31 @@
 ---
 import { Image } from "astro:assets";
 import rubyMark from "../assets/brand/ruby-mark.webp";
-import { galleryCategories } from "../data/artwork";
-
-type Props = {
-  page: "home" | "gallery";
-};
-
-const { page } = Astro.props;
 ---
 
-<header class="header" aria-label="Primary">
-  <button
-    class="menu-button"
-    type="button"
-    aria-label="Open menu"
-    aria-expanded="false"
-    aria-controls="mobile-menu"
-    data-menu-button
-  >
-    <span aria-hidden="true"></span>
-    <span aria-hidden="true"></span>
-    <span aria-hidden="true"></span>
-  </button>
-
-  <div class="brand">
-    <a
-      class="brand-mark"
-      href={page === "home" ? "/" : "#top"}
-      aria-label={page === "home" ? "Ruby Smythe, home" : "Ruby Smythe, back to top"}
-    >
-      <span class="brand-image">
-        <Image src={rubyMark} width={180} alt="" loading="eager" />
-      </span>
-      <span class="brand-copy">
-        <span class="brand-name">ruby smythe</span>
-        <span class="brand-subtitle">tattoo, drawing &amp; painting</span>
+<header class="collection-header">
+  <h1>
+    <a class="brand-lockup" href="/">
+      <Image
+        class="brand-mark"
+        src={rubyMark}
+        alt=""
+        widths={[44, 88, 128, 200, 256]}
+        sizes="(max-width: 767px) 44px, (min-width: 1842px) 128px, 6.95vw"
+        quality={88}
+        loading="eager"
+      />
+      <span class="wordmark">
+        ruby smythe<span>Tattoo artist &amp; painter</span>
       </span>
     </a>
-
-    <nav class="main-nav" aria-label="Portfolio sections">
-      <a class:list={[{ active: page === "home" }]} href="/" aria-current={page === "home" ? "page" : undefined}>
-        Home
-      </a>
-      {
-        galleryCategories.map((category) =>
-          page === "gallery" ? (
-            <button
-              class={category.id === "tattoo" ? "active" : undefined}
-              type="button"
-              data-category-trigger={category.id}
-              aria-controls={"gallery-" + category.id}
-              aria-pressed={category.id === "tattoo" ? "true" : "false"}
-            >
-              {category.label}
-            </button>
-          ) : (
-            <a href={`/gallery#${category.id}`}>{category.label}</a>
-          )
-        )
-      }
-      <a href={page === "home" ? "/#about" : "#about"}>About</a>
-    </nav>
-  </div>
-
-  <div
-    id="mobile-menu"
-    class="mobile-menu"
-    role="dialog"
-    aria-modal="true"
-    aria-hidden="true"
-    aria-label="Site menu"
-    data-mobile-menu
+  </h1>
+  <a
+    class="enquire"
+    href="https://www.instagram.com/byrubydesigns"
+    target="_blank"
+    rel="noopener noreferrer"
   >
-    <nav class="mobile-nav" aria-label="Portfolio sections">
-      <a
-        class:list={[{ active: page === "home" }]}
-        href="/"
-        aria-current={page === "home" ? "page" : undefined}
-        tabindex="-1"
-        data-menu-close
-      >
-        Home
-      </a>
-      {
-        galleryCategories.map((category) =>
-          page === "gallery" ? (
-            <button
-              class={category.id === "tattoo" ? "active" : undefined}
-              type="button"
-              tabindex="-1"
-              data-category-trigger={category.id}
-              aria-controls={"gallery-" + category.id}
-              aria-pressed={category.id === "tattoo" ? "true" : "false"}
-            >
-              {category.label}
-            </button>
-          ) : (
-            <a href={`/gallery#${category.id}`} tabindex="-1" data-menu-close>
-              {category.label}
-            </a>
-          )
-        )
-      }
-      <a href={page === "home" ? "/#about" : "#about"} tabindex="-1" data-menu-close>
-        About
-      </a>
-    </nav>
-    {
-      page === "home" && (
-        <div class="mobile-socials" role="group" aria-label="Social links">
-          <a
-            href="https://www.instagram.com/byrubydesigns"
-            target="_blank"
-            rel="noreferrer"
-            tabindex="-1"
-            data-menu-close
-            aria-label="Ruby Smythe on Instagram"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-              <rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8"></rect>
-              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"></circle>
-              <circle cx="17.4" cy="6.8" r="1.15" fill="currentColor"></circle>
-            </svg>
-          </a>
-          <a
-            href="https://inkdependent.eu/"
-            target="_blank"
-            rel="noreferrer"
-            tabindex="-1"
-            data-menu-close
-            aria-label="Inkdependent Studio"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
-              <path d="M4 10.5 12 4l8 6.5V20H4v-9.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"></path>
-              <path d="M9.5 20v-6h5v6" stroke="currentColor" stroke-width="1.7"></path>
-            </svg>
-          </a>
-        </div>
-      )
-    }
-  </div>
+    Enquire <span aria-hidden="true">↗</span>
+  </a>
 </header>

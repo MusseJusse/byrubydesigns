@@ -1,395 +1,248 @@
-import type { GalleryCategoryId as CategoryId } from "../data/artwork";
-import { lockDocumentScroll, prefersReducedMotion, requireElement, trapFocus } from "./dom";
-import { createMobileMenu } from "./mobile-menu";
+import { lockDocumentScroll, requireElement } from "./dom";
 
-function isCategoryId(value: string | undefined): value is CategoryId {
-  return categoryPanels.some((panel) => panel.dataset.categoryPanel === value);
-}
-
-function categoryFromHash(): CategoryId | undefined {
-  const category = window.location.hash.slice(1);
-  return isCategoryId(category) ? category : undefined;
-}
-
-const categoryTriggers = Array.from(
-  document.querySelectorAll<HTMLButtonElement>("[data-category-trigger]")
+const filters = Array.from(
+  document.querySelectorAll<HTMLInputElement>('[name="artwork-filter"]'),
 );
-const categoryPanels = Array.from(
-  document.querySelectorAll<HTMLElement>("[data-category-panel]")
+const imageButtons = Array.from(
+  document.querySelectorAll<HTMLButtonElement>("[data-lightbox-open]"),
 );
-const lightbox = requireElement<HTMLElement>("[data-lightbox]");
+const gallery = requireElement<HTMLElement>("#work");
+const lightbox = requireElement<HTMLDialogElement>("[data-lightbox]");
 const lightboxImage = requireElement<HTMLImageElement>("[data-lightbox-image]");
 const lightboxCaption = requireElement<HTMLElement>("[data-lightbox-caption]");
-const lightboxClose = requireElement<HTMLButtonElement>("[data-lightbox-close]");
-const lightboxPrevious = requireElement<HTMLButtonElement>("[data-lightbox-previous]");
-const lightboxNext = requireElement<HTMLButtonElement>("[data-lightbox-next]");
+const lightboxFigure = requireElement<HTMLElement>("[data-lightbox] figure");
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+let renderedFilter = requireElement<HTMLInputElement>(
+  '[name="artwork-filter"]:checked',
+);
+let requestedFilter = renderedFilter;
+let categoryTransition: ViewTransition | undefined;
+let lightboxAnimations: Animation[] = [];
+let closingLightbox = false;
+let activeIndex = 0;
+let activeButtons: HTMLButtonElement[] = [];
+let unlockScroll: (() => void) | undefined;
+let imageRequest = 0;
+let loadingIndicatorTimer: number | undefined;
 
-let selectedCategory: CategoryId = "tattoo";
-let activeIndex: number | null = null;
-let requestedLightboxIndex: number | null = null;
-let activeTrigger: HTMLButtonElement | null = null;
-let lightboxUnlockScroll: (() => void) | null = null;
-let finishLightboxClose: (() => void) | null = null;
-let layoutFrame = 0;
-const resizeObserver = new ResizeObserver(scheduleLayout);
-let categoryTransitionId = 0;
-let lightboxTransitionId = 0;
-
-const mobileMenu = createMobileMenu({
-  onOpened: () => closeLightbox({ restoreFocus: false, animate: false }),
-  restoreFocus: (button) => {
-    (activeIndex === null ? button : lightboxClose).focus();
-  }
-});
-
-function activePanel() {
-  const panel = categoryPanels.find(
-    (candidate) => candidate.dataset.categoryPanel === selectedCategory
-  );
-  if (!panel) throw new Error("Category panel is missing: " + selectedCategory);
-  return panel;
-}
-
-function activeImageButtons() {
-  return Array.from(
-    activePanel().querySelectorAll<HTMLButtonElement>("[data-lightbox-open]")
-  );
-}
-
-function scheduleLayout() {
-  cancelAnimationFrame(layoutFrame);
-  layoutFrame = requestAnimationFrame(layoutActiveGallery);
-}
-
-function layoutActiveGallery() {
-  const panel = activePanel();
-  const gallery = panel.querySelector<HTMLElement>("[data-gallery-grid]");
-  if (!gallery) throw new Error("The active gallery grid is missing");
-
-  const items = Array.from(gallery.querySelectorAll<HTMLElement>(".gallery-item"));
-  const isMobile = window.innerWidth <= 640;
-  const columnCount = window.innerWidth >= 900 ? 3 : 2;
-  const horizontalGap = isMobile ? 2 : 11;
-  const verticalGap = 28;
-  const itemWidth = (gallery.clientWidth - horizontalGap * (columnCount - 1)) / columnCount;
-
-  for (const item of items) {
-    item.style.width = itemWidth + "px";
-  }
-
-  function layoutItems(group: HTMLElement[], startY: number) {
-    const columnHeights = Array.from({ length: columnCount }, () => startY);
-
-    group.forEach((item, index) => {
-      const columnIndex = index % columnCount;
-      const x = columnIndex * (itemWidth + horizontalGap);
-      const y = columnHeights[columnIndex] ?? startY;
-
-      item.style.transform = "translate3d(" + x + "px, " + y + "px, 0)";
-      columnHeights[columnIndex] = y + item.offsetHeight + verticalGap;
-    });
-
-    return Math.max(...columnHeights) - verticalGap;
-  }
-
-  const yearDivider = gallery.querySelector<HTMLElement>("[data-year-divider]");
-  const parsedBreakIndex = Number.parseInt(gallery.dataset.yearBreakIndex ?? "", 10);
-  const yearBreakIndex = Number.isFinite(parsedBreakIndex) ? parsedBreakIndex : -1;
-  let galleryBottom: number;
-
-  if (yearDivider && yearBreakIndex > 0) {
-    const firstYearBottom = layoutItems(items.slice(0, yearBreakIndex), 0);
-    const dividerY = firstYearBottom + (isMobile ? 48 : 64);
-
-    yearDivider.style.width = gallery.clientWidth + "px";
-    yearDivider.style.transform = "translate3d(0, " + dividerY + "px, 0)";
-
-    const secondYearStart = dividerY + yearDivider.offsetHeight + (isMobile ? 24 : 32);
-    galleryBottom = layoutItems(items.slice(yearBreakIndex), secondYearStart);
-  } else {
-    galleryBottom = layoutItems(items, 0);
-  }
-
-  gallery.style.height = Math.max(0, galleryBottom) + "px";
-  gallery.classList.add("is-ready");
-}
-
-function observeActiveGallery() {
-  resizeObserver.disconnect();
-
-  const gallery = activePanel().querySelector<HTMLElement>("[data-gallery-grid]");
-  if (!gallery) throw new Error("The active gallery grid is missing");
-
-  gallery.classList.remove("is-ready");
-  resizeObserver.observe(gallery);
-
-  for (const item of gallery.querySelectorAll<HTMLElement>(".gallery-item")) {
-    resizeObserver.observe(item);
-  }
-
-  const divider = gallery.querySelector<HTMLElement>("[data-year-divider]");
-  if (divider) resizeObserver.observe(divider);
-  scheduleLayout();
-}
-
-function updateSelectedCategory(category: CategoryId) {
-  closeLightbox({ restoreFocus: false, animate: false });
-  selectedCategory = category;
-
-  for (const trigger of categoryTriggers) {
-    const active = trigger.dataset.categoryTrigger === category;
-    trigger.classList.toggle("active", active);
-    trigger.setAttribute("aria-pressed", String(active));
-  }
-
-  for (const panel of categoryPanels) {
-    panel.hidden = panel.dataset.categoryPanel !== category;
-  }
-
-  observeActiveGallery();
-  mobileMenu.close();
-}
-
-function selectCategory(category: CategoryId, animate = true) {
-  if (category === selectedCategory) {
-    mobileMenu.close();
-    return;
-  }
-
-  if (!animate || prefersReducedMotion() || !document.startViewTransition) {
-    updateSelectedCategory(category);
-    return;
-  }
-
-  const transitionId = ++categoryTransitionId;
-  const outgoingPanel = activePanel();
-  let incomingPanel: HTMLElement | null = null;
-  outgoingPanel.style.viewTransitionName = "gallery-category";
-  document.documentElement.dataset.motion = "gallery-category";
-
-  const transition = document.startViewTransition(() => {
-    updateSelectedCategory(category);
-    incomingPanel = activePanel();
-    outgoingPanel.style.removeProperty("view-transition-name");
-    incomingPanel.style.viewTransitionName = "gallery-category";
-    cancelAnimationFrame(layoutFrame);
-    layoutActiveGallery();
-  });
-  // Rapid navigation can skip the animation while still completing the DOM update.
-  void transition.ready.catch(() => {});
-
-  const clearTransitionState = () => {
-    if (transitionId !== categoryTransitionId) return;
-    outgoingPanel.style.removeProperty("view-transition-name");
-    incomingPanel?.style.removeProperty("view-transition-name");
-    delete document.documentElement.dataset.motion;
+function selectFilter(
+  filter: HTMLInputElement,
+  { animate = true, resetScroll = false } = {},
+) {
+  if (filter === requestedFilter) return;
+  requestedFilter = filter;
+  categoryTransition?.skipTransition();
+  const scrollToGallery = resetScroll && gallery.getBoundingClientRect().top < 0;
+  const update = () => {
+    // A skipped transition can still run its callback. Always use the latest choice.
+    requestedFilter.checked = true;
+    renderedFilter = requestedFilter;
+    // Reset beneath the snapshot, so the outgoing artwork never jumps to its top.
+    if (scrollToGallery) gallery.scrollIntoView({ behavior: "instant" });
   };
-  void transition.finished.then(clearTransitionState, clearTransitionState);
-}
-
-function selectCategoryFromHash() {
-  const category = categoryFromHash();
-  if (category) selectCategory(category);
-  else if (!window.location.hash) {
-    selectCategory("tattoo");
-    window.history.replaceState(null, "", "#tattoo");
+  if (!animate || reducedMotion.matches || !document.startViewTransition) {
+    update();
+    return;
   }
+  const root = document.documentElement;
+  if (scrollToGallery) root.setAttribute("data-gallery-scroll", "");
+  const transition = document.startViewTransition(update);
+  categoryTransition = transition;
+  void transition.ready.catch(() => {
+    // Skipped or unavailable snapshots still apply the category update.
+  });
+  void transition.finished
+    .finally(() => {
+      if (categoryTransition !== transition) return;
+      root.removeAttribute("data-gallery-scroll");
+      categoryTransition = undefined;
+    })
+    .catch(() => {});
 }
 
-function updateCategoryHash(category: CategoryId) {
-  if (categoryFromHash() === category) return;
-  window.history.pushState(null, "", "#" + category);
+function syncFromHash(animate = true) {
+  const hash = window.location.hash.slice(1);
+  // Keep existing /gallery#tattoo, #paintings, and #drawings links working.
+  const filter = filters.find((input) => input.value === (hash || "selected"));
+  if (filter) selectFilter(filter, { animate });
 }
 
-function showActiveImage() {
-  const buttons = activeImageButtons();
-  if (activeIndex === null || buttons.length === 0) return;
+for (const filter of filters) {
+  filter.addEventListener("change", () => {
+    // Radios update before change fires; restore the old view for its snapshot.
+    renderedFilter.checked = true;
+    closeLightbox(true);
+    window.history.pushState(null, "", "#" + filter.value);
+    selectFilter(filter, { resetScroll: true });
+  });
+}
 
-  const button = buttons[activeIndex];
+function stopLightboxMotion() {
+  for (const animation of lightboxAnimations) animation.cancel();
+  lightboxAnimations = [];
+}
+
+// Read the current frame so closing during the entrance does not jump.
+function animateLightbox(opening: boolean) {
+  const interrupted = lightboxAnimations.some(
+    (animation) => animation.playState === "running",
+  );
+  const opacity = getComputedStyle(lightbox).opacity;
+  const transform = getComputedStyle(lightboxFigure).transform;
+  stopLightboxMotion();
+  const options = { duration: 220, easing: "cubic-bezier(.22, 1, .36, 1)" };
+  const fade = lightbox.animate(
+    [
+      { opacity: interrupted ? opacity : opening ? 0 : 1 },
+      { opacity: opening ? 1 : 0 },
+    ],
+    options,
+  );
+  const lift = lightboxFigure.animate(
+    [
+      {
+        transform: interrupted ? transform : opening ? "translateY(6px)" : "none",
+      },
+      { transform: opening ? "none" : "translateY(6px)" },
+    ],
+    options,
+  );
+  lightboxAnimations = [fade, lift];
+  return fade;
+}
+
+function cleanupLightbox() {
+  stopLightboxMotion();
+  closingLightbox = false;
+  imageRequest += 1;
+  window.clearTimeout(loadingIndicatorTimer);
+  loadingIndicatorTimer = undefined;
+  lightboxFigure.removeAttribute("aria-busy");
+  lightboxFigure.removeAttribute("data-image-state");
+  unlockScroll?.();
+  unlockScroll = undefined;
+  lightboxImage.removeAttribute("src");
+}
+
+function closeLightbox(immediate = false) {
+  if (!lightbox.open) return;
+  if (immediate || reducedMotion.matches) {
+    lightbox.close();
+    cleanupLightbox();
+    return;
+  }
+  if (closingLightbox) return;
+  closingLightbox = true;
+  animateLightbox(false).onfinish = () => {
+    lightbox.close();
+    cleanupLightbox();
+  };
+}
+
+function showImage() {
+  const button = activeButtons[activeIndex];
   if (!button) return;
-  const titleText = button.dataset.title ?? "Artwork";
-  const title = document.createElement("cite");
-  title.textContent = titleText;
-
-  const captionLines: HTMLElement[] = [title];
-  for (const detail of [button.dataset.medium, button.dataset.dimensions]) {
-    if (!detail) continue;
-    const line = document.createElement("span");
-    line.textContent = detail;
-    captionLines.push(line);
-  }
-
+  const title = button.dataset.title ?? "Artwork";
+  const request = ++imageRequest;
+  window.clearTimeout(loadingIndicatorTimer);
+  lightboxFigure.setAttribute("aria-busy", "true");
+  lightboxFigure.dataset.imageState = "pending";
+  lightboxImage.width = Number(button.dataset.fullWidth);
+  lightboxImage.height = Number(button.dataset.fullHeight);
+  lightboxImage.alt = button.querySelector("img")?.alt ?? title;
   lightboxImage.src = button.dataset.fullSrc ?? "";
-  lightboxImage.alt = button.querySelector("img")?.alt ?? "";
-  lightboxCaption.replaceChildren(...captionLines);
-  lightbox.setAttribute("aria-label", "Full image of " + titleText);
-}
-
-function clearLightboxPictureTransition() {
-  lightboxImage.style.removeProperty("view-transition-name");
-  if (document.documentElement.dataset.motion === "lightbox-picture") {
-    delete document.documentElement.dataset.motion;
-  }
-}
-
-async function preloadImage(source: string) {
-  const image = new Image();
-  image.src = source;
-  try {
-    await image.decode();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function openLightbox(button: HTMLButtonElement) {
-  const index = activeImageButtons().indexOf(button);
-  if (index < 0) return;
-
-  mobileMenu.close(false);
-
-  if (finishLightboxClose) {
-    lightbox.removeEventListener("animationend", finishLightboxClose);
-    finishLightboxClose = null;
-    lightbox.classList.remove("is-closing");
-  }
-
-  activeIndex = index;
-  requestedLightboxIndex = index;
-  activeTrigger = button;
-  showActiveImage();
-  lightbox.inert = false;
-  lightbox.hidden = false;
-  lightboxUnlockScroll ??= lockDocumentScroll();
-  requestAnimationFrame(() => lightboxClose.focus());
-}
-
-function closeLightbox({
-  restoreFocus = true,
-  animate = true,
-}: { restoreFocus?: boolean; animate?: boolean } = {}) {
-  if (activeIndex === null) return;
-  lightboxTransitionId += 1;
-  clearLightboxPictureTransition();
-  const trigger = activeTrigger;
-  activeIndex = null;
-  requestedLightboxIndex = null;
-  activeTrigger = null;
-  lightbox.inert = true;
-
-  const finishClosing = () => {
-    if (finishLightboxClose !== finishClosing) return;
-    lightbox.removeEventListener("animationend", finishClosing);
-    finishLightboxClose = null;
-    lightbox.classList.remove("is-closing");
-    lightbox.hidden = true;
-    lightboxImage.removeAttribute("src");
-    lightboxUnlockScroll?.();
-    lightboxUnlockScroll = null;
-  };
-  finishLightboxClose = finishClosing;
-
-  if (restoreFocus) trigger?.focus();
-
-  if (!animate || prefersReducedMotion()) {
-    finishClosing();
-    return;
-  }
-
-  lightbox.classList.add("is-closing");
-  lightbox.addEventListener("animationend", finishClosing, { once: true });
-}
-
-async function moveLightbox(direction: -1 | 1) {
-  const buttons = activeImageButtons();
-  if (activeIndex === null || buttons.length === 0) return;
-  const currentIndex = requestedLightboxIndex ?? activeIndex;
-  const nextIndex = (currentIndex + direction + buttons.length) % buttons.length;
-  requestedLightboxIndex = nextIndex;
-
-  if (prefersReducedMotion() || !document.startViewTransition) {
-    activeIndex = nextIndex;
-    showActiveImage();
-    return;
-  }
-
-  clearLightboxPictureTransition();
-  const transitionId = ++lightboxTransitionId;
-  const nextSource = buttons[nextIndex]?.dataset.fullSrc ?? "";
-  const imageReady = await preloadImage(nextSource);
-  if (transitionId !== lightboxTransitionId || activeIndex === null) return;
-  if (nextIndex === activeIndex) return;
-
-  if (!imageReady) {
-    activeIndex = nextIndex;
-    showActiveImage();
-    return;
-  }
-
-  lightboxImage.style.viewTransitionName = "lightbox-picture";
-  document.documentElement.dataset.motion = "lightbox-picture";
-
-  const transition = document.startViewTransition(() => {
-    if (transitionId !== lightboxTransitionId || activeIndex === null) return;
-    activeIndex = nextIndex;
-    showActiveImage();
+  loadingIndicatorTimer = window.setTimeout(() => {
+    if (request !== imageRequest) return;
+    lightboxFigure.dataset.imageState = "loading";
+    loadingIndicatorTimer = undefined;
+  }, 150);
+  void lightboxImage.decode().catch(() => {}).finally(() => {
+    if (request !== imageRequest) return;
+    window.clearTimeout(loadingIndicatorTimer);
+    loadingIndicatorTimer = undefined;
+    lightboxFigure.removeAttribute("aria-busy");
+    lightboxFigure.removeAttribute("data-image-state");
   });
-  void transition.ready.catch(() => {});
-
-  const clearTransitionState = () => {
-    if (transitionId !== lightboxTransitionId) return;
-    clearLightboxPictureTransition();
-  };
-  void transition.finished.then(clearTransitionState, clearTransitionState);
+  lightboxCaption.replaceChildren();
+  for (const text of [
+    title,
+    button.dataset.medium,
+    button.dataset.dimensions,
+  ]) {
+    if (!text) continue;
+    const line = document.createElement("span");
+    line.textContent = text;
+    lightboxCaption.append(line);
+  }
+  lightbox.setAttribute("aria-label", "Full image of " + title);
 }
 
-for (const trigger of categoryTriggers) {
-  trigger.addEventListener("click", () => {
-    const category = trigger.dataset.categoryTrigger;
-    if (isCategoryId(category)) {
-      selectCategory(category);
-      updateCategoryHash(category);
-    }
+function moveImage(direction: -1 | 1) {
+  if (!activeButtons.length) return;
+  if (closingLightbox) {
+    closingLightbox = false;
+    animateLightbox(true);
+  }
+  activeIndex =
+    (activeIndex + direction + activeButtons.length) % activeButtons.length;
+  showImage();
+}
+
+for (const button of imageButtons) {
+  button.addEventListener("click", () => {
+    activeButtons = imageButtons.filter(
+      (candidate) => candidate.getClientRects().length > 0,
+    );
+    activeIndex = activeButtons.indexOf(button);
+    showImage();
+    unlockScroll = lockDocumentScroll();
+    lightbox.showModal();
+    if (!reducedMotion.matches) animateLightbox(true);
   });
 }
 
-for (const button of document.querySelectorAll<HTMLButtonElement>("[data-lightbox-open]")) {
-  button.addEventListener("click", () => openLightbox(button));
-}
-
-lightboxClose.addEventListener("click", () => closeLightbox());
-lightboxPrevious.addEventListener("click", () => moveLightbox(-1));
-lightboxNext.addEventListener("click", () => moveLightbox(1));
+requireElement<HTMLButtonElement>("[data-lightbox-close]").addEventListener(
+  "click",
+  () => closeLightbox(),
+);
+requireElement<HTMLButtonElement>("[data-lightbox-previous]").addEventListener(
+  "click",
+  () => moveImage(-1),
+);
+requireElement<HTMLButtonElement>("[data-lightbox-next]").addEventListener(
+  "click",
+  () => moveImage(1),
+);
 lightbox.addEventListener("click", (event) => {
   if (event.target === lightbox) closeLightbox();
 });
-
-document.addEventListener("keydown", (event) => {
-  if (mobileMenu.isOpen || event.defaultPrevented || activeIndex === null) return;
-  if (event.key === "Escape") closeLightbox();
-  else if (event.key === "ArrowLeft") moveLightbox(-1);
-  else if (event.key === "ArrowRight") moveLightbox(1);
-  else trapFocus(event, lightbox);
+lightbox.addEventListener("cancel", (event) => {
+  event.preventDefault();
+  closeLightbox();
 });
-
+lightbox.addEventListener("close", () => {
+  // The native close event is queued and may arrive after another image opens.
+  if (!lightbox.open) cleanupLightbox();
+});
+lightbox.addEventListener("keydown", (event) => {
+  if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+    event.preventDefault();
+    moveImage(event.key === "ArrowLeft" ? -1 : 1);
+  }
+});
+window.addEventListener("hashchange", () => syncFromHash());
+window.addEventListener("popstate", () => syncFromHash());
+window.addEventListener("pageshow", () => syncFromHash(false));
 window.addEventListener("pagehide", () => {
-  cancelAnimationFrame(layoutFrame);
-  resizeObserver.disconnect();
-  closeLightbox({ restoreFocus: false, animate: false });
-  finishLightboxClose?.();
+  categoryTransition?.skipTransition();
+  closeLightbox(true);
+  unlockScroll?.();
+  unlockScroll = undefined;
 });
-
-window.addEventListener("popstate", selectCategoryFromHash);
-window.addEventListener("hashchange", selectCategoryFromHash);
-window.addEventListener("pageshow", (event) => {
-  if (event.persisted) observeActiveGallery();
+reducedMotion.addEventListener("change", () => {
+  if (!reducedMotion.matches) return;
+  categoryTransition?.skipTransition();
+  if (closingLightbox) closeLightbox(true);
+  else stopLightboxMotion();
 });
-
-document.documentElement.classList.add("portfolio-enhanced");
-const initialCategory = categoryFromHash();
-if (initialCategory && initialCategory !== selectedCategory) selectCategory(initialCategory, false);
-else {
-  observeActiveGallery();
-  if (!window.location.hash) window.history.replaceState(null, "", "#tattoo");
-}
+syncFromHash(false);
