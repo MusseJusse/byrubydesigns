@@ -23,11 +23,12 @@ const artwork = galleryCategories.flatMap((category) =>
       image,
       category: category.id,
       caption:
-        category.id === "paintings"
+        item.caption ??
+        (category.id === "paintings"
           ? `Painting, ${item.year}`
           : category.id === "drawings"
             ? "Ballpoint pen"
-            : "Tattoo",
+            : "Tattoo"),
       selected: selectedPaths.includes(item.imagePath),
     };
   }),
