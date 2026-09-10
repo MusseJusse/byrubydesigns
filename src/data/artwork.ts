@@ -52,7 +52,7 @@ const tattooArtwork = tattooSource.map(({ fileName, ...item }) => {
 }) satisfies GalleryArtwork[];
 
 const drawingSource = [
-  { fileName: "drawing-01.webp", title: "Otter and flowers", aspectRatio: "3 / 4" },
+  { fileName: "drawing-01.webp", title: "Panther and flowers", aspectRatio: "3 / 4" },
   { fileName: "drawing-02.webp", title: "Swallow and flowers", aspectRatio: "3 / 4" },
   { fileName: "drawing-03.webp", title: "Floral and insect studies", aspectRatio: "4 / 5" },
   { fileName: "drawing-04.webp", title: "Rose and dragonfly", aspectRatio: "3 / 4" },
