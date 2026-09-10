@@ -148,10 +148,6 @@ a span[aria-hidden] {
   border-left: 2px solid var(--ruby);
 }
 .category-intro p {
-  font-size: clamp(12px, 0.95vw, 17px);
-  line-height: 1.48;
-}
-.category-intro p:first-of-type {
   font-size: clamp(13px, 1.05vw, 19px);
   line-height: 1.4;
 }
@@ -574,10 +570,6 @@ html[data-gallery-scroll]::view-transition-new(root) {
     padding-left: 14px;
   }
   .collection-mobile-intros .category-intro p {
-    font-size: 13px;
-    line-height: 1.5;
-  }
-  .collection-mobile-intros .category-intro p:first-of-type {
     font-size: 15px;
     line-height: 1.45;
   }
@@ -595,6 +587,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
     min-height: 44px;
   }
   .collection-count {
+    display: none;
     font-size: 11px;
     margin: -5px 0 16px;
   }
