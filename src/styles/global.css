@@ -142,6 +142,18 @@ a span[aria-hidden] {
 .collection-aside-intros {
   margin-top: 3.2vw;
 }
+.collection-selected-intro {
+  margin-top: 3.2vw;
+  padding-left: 1vw;
+  border-left: 2px solid var(--ruby);
+  font-size: clamp(13px, 1.05vw, 19px);
+  line-height: 1.4;
+}
+.collection-body:has(input[value="tattoo"]:checked) .collection-selected-intro,
+.collection-body:has(input[value="paintings"]:checked) .collection-selected-intro,
+.collection-body:has(input[value="drawings"]:checked) .collection-selected-intro {
+  display: none;
+}
 .category-intro {
   display: none;
   padding-left: 1vw;
