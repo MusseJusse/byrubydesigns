@@ -672,7 +672,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
 
 @media (min-width: 2400px) {
   .collection-grid {
-    columns: 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    column-gap: 4vw;
+    row-gap: 4.5vw;
+  }
+  .collection-grid > figure {
+    margin-bottom: 0;
   }
 }
 
