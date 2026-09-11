@@ -145,7 +145,7 @@ const filters = [
               widths={[360, 720, 1080].filter(
                 (width) => width <= item.image.width,
               )}
-              sizes="(max-width: 767px) calc((100vw - 64px) / 2), 33vw"
+              sizes="(max-width: 767px) calc((100vw - 64px) / 2), (min-width: 2400px) 21vw, 33vw"
               quality={88}
               loading={item.selected ? "eager" : "lazy"}
               fetchpriority={index === 0 ? "high" : "auto"}

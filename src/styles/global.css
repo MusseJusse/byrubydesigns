@@ -670,6 +670,12 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
 }
 
+@media (min-width: 2400px) {
+  .collection-grid {
+    columns: 3;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .collection a:hover {
     opacity: 0.68;
