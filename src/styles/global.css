@@ -243,8 +243,10 @@ a span[aria-hidden] {
   display: none;
 }
 .collection-grid {
-  columns: 2;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   column-gap: 4vw;
+  row-gap: 4.5vw;
   view-transition-name: artwork;
 }
 .collection-count {
@@ -346,8 +348,6 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
 }
 .collection-grid > figure {
-  break-inside: avoid;
-  margin-bottom: 4.5vw;
   min-width: 0;
 }
 .collection-grid button {
@@ -605,9 +605,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .collection-grid {
     column-gap: 20px;
-  }
-  .collection-grid > figure {
-    margin-bottom: 30px;
+    row-gap: 30px;
   }
   .collection-grid button {
     border-radius: 3px;
@@ -672,13 +670,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
 
 @media (min-width: 2400px) {
   .collection-grid {
-    display: grid;
     grid-template-columns: repeat(3, 1fr);
-    column-gap: 4vw;
-    row-gap: 4.5vw;
-  }
-  .collection-grid > figure {
-    margin-bottom: 0;
   }
 }
 
