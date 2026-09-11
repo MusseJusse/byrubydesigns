@@ -668,7 +668,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
 }
 
-@media (min-width: 2400px) {
+@media (min-width: 1800px) {
   .collection-grid {
     grid-template-columns: repeat(3, 1fr);
   }
