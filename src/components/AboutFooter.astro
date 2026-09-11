@@ -1,11 +1,26 @@
-<footer id="about" class="footer">
-  <div class="footer-content">
-    <p>Ruby Smythe is a New Zealand-born painter and tattoo artist based in Edinburgh.</p>
-    <div class="footer-links" aria-label="External links">
-      <a href="https://www.instagram.com/byrubydesigns" target="_blank" rel="noreferrer">
-        Instagram
-      </a>
-    </div>
+---
+import { Image } from "astro:assets";
+import contactPhoto from "../assets/artwork/contact/IMG_1155.webp";
+---
+
+<footer id="about" class="wall-about" aria-labelledby="about-heading">
+  <Image
+    src={contactPhoto}
+    alt="Ruby painting beside a bouquet of flowers"
+    widths={[240, 480, 640]}
+    sizes="(max-width: 767px) 30vw, 15vw"
+    quality={88}
+    loading="lazy"
+  />
+  <div>
+    <h2 id="about-heading">Made by <span class="ruby-accent">Ruby</span>.</h2>
+    <p>New Zealand-born painter and tattoo artist,<br />based in Edinburgh.</p>
+    <a
+      href="https://www.instagram.com/byrubydesigns"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Get in touch <span aria-hidden="true">↗</span>
+    </a>
   </div>
-  <a class="back-to-top" href="#top" aria-label="Back to top">&gt;</a>
 </footer>
