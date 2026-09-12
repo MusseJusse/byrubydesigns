@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://www.byrubydesigns.com/sitemap-index.xml

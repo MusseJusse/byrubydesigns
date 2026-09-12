@@ -10,6 +10,21 @@ type Props = {
 };
 
 const { title, description } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? "https://www.byrubydesigns.com");
+const schema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Ruby Smythe",
+  alternateName: "byrubydesigns",
+  url: "https://www.byrubydesigns.com/",
+  jobTitle: "Tattoo artist and painter",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Edinburgh",
+    addressCountry: "GB"
+  },
+  sameAs: ["https://www.instagram.com/byrubydesigns"]
+};
 ---
 
 <!doctype html>
@@ -19,9 +34,19 @@ const { title, description } = Astro.props;
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical.href} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="byrubydesigns" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <link rel="icon" type="image/webp" href="/favicon.webp" />
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
     <title>{title}</title>
+    <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
   </head>
   <body>
     <slot />
