@@ -92,27 +92,26 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
   .lb[data-variant="a"] .lb-arrow:hover{opacity:1;background:rgba(48,49,46,.07)}
 }
 
-/* variant B: dark room */
-.lb[data-variant="b"]{color:#f2f2ee}
-.lb[data-variant="b"] .lb-bg{background:#121211}
+/* variant B: paper room */
+.lb[data-variant="b"]{color:#30312e}
+.lb[data-variant="b"] .lb-bg{background:#e8e8e5}
 .lb[data-variant="b"] .lb-caption{left:32px;bottom:84px;justify-items:start}
-.lb[data-variant="b"] .lb-caption strong{color:#f2f2ee}
-.lb[data-variant="b"] .lb-caption span{color:#9a9a93}
-.lb[data-variant="b"] .lb-count{position:absolute;top:18px;left:24px;margin:0;font-size:11.5px;color:#9a9a93;font-variant-numeric:tabular-nums}
+.lb[data-variant="b"] .lb-caption strong{color:#30312e}
+.lb[data-variant="b"] .lb-caption span{color:#646860}
+.lb[data-variant="b"] .lb-count{position:absolute;top:18px;left:24px;margin:0;font-size:11.5px;color:#646860;font-variant-numeric:tabular-nums}
 .lb[data-variant="b"] .lb-arrow{opacity:.5;transition:opacity 140ms ease,background-color 140ms ease}
-.lb[data-variant="b"] .lb-close,.lb[data-variant="b"] .lb-arrow{color:#f2f2ee}
+.lb[data-variant="b"] .lb-close,.lb[data-variant="b"] .lb-arrow{color:#30312e}
 .lb[data-variant="b"][data-mode="desktop"] .lb-stage{inset:44px 80px 150px}
 .lb[data-variant="b"][data-mode="mobile"] .lb-stage{inset:58px 12px 112px}
 .lb[data-variant="b"][data-mode="mobile"] .lb-caption{left:16px;bottom:24px}
 .lb[data-variant="b"] .lb-rail{position:absolute;left:0;right:0;bottom:24px;z-index:3;display:flex;gap:8px;justify-content:center}
 .lb[data-variant="b"] .rail-item{opacity:.4}
-.lb[data-variant="b"] .rail-item.is-current{opacity:1;box-shadow:0 0 0 1.5px #f2f2ee}
+.lb[data-variant="b"] .rail-item.is-current{opacity:1;box-shadow:0 0 0 1.5px #30312e}
 .lb[data-variant="b"][data-mode="mobile"] .lb-rail{display:none}
 .lb-close,.lb-arrow,.lb-count,.lb-caption,.lb-rail{transition:opacity 200ms ease}
 .lb[data-idle] :is(.lb-close,.lb-arrow,.lb-count,.lb-caption,.lb-rail){opacity:0;pointer-events:none;transition:opacity 240ms ease}
-.lb[data-idle] .lb-stage{cursor:none}
 @media (hover:hover) and (pointer:fine){
-  .lb[data-variant="b"] .lb-arrow:hover{opacity:1;background:rgba(255,255,255,.08)}
+  .lb[data-variant="b"] .lb-arrow:hover{opacity:1;background:rgba(48,49,46,.07)}
 }
 
 /* variant C: gallery plate */
@@ -160,7 +159,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
 <main class="wrap">
   <header>
     <h1>Lightbox mocks</h1>
-    <p class="lede">Three directions for the artwork viewer, each shown on a laptop and a phone. The frames run live: click a thumbnail to open, then use the arrow keys, Escape, double-click to zoom, or swipe inside a phone frame.</p>
+    <p class="lede">Three directions for the artwork viewer, each shown on a laptop and a phone and drawn in the site's own palette. The frames run live: click a thumbnail to open, then use the arrow keys, Escape, double-click to zoom, or swipe inside a phone frame.</p>
     <p class="muted">Placeholder artwork drawn in SVG. Type, colors, and surfaces match the site.</p>
     <noscript><p class="muted">The device frames need JavaScript. The comparison below works without it.</p></noscript>
   </header>
@@ -207,8 +206,8 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
     <div class="vhead">
       <span class="tag">B</span>
       <div>
-        <h2>Dark room</h2>
-        <p>Fine-line black work and gouache read differently against black. The page stays paper; the viewer goes dark like a gallery wall at night. Chrome withdraws after a couple of seconds and returns when you move, so the image holds the screen. A filmstrip shows the set and where you are in it.</p>
+        <h2>Paper room</h2>
+        <p>Uses the same paper surface as the page, but lets the image take over. Chrome withdraws after a couple of seconds and returns when you move, the image sits larger than in A, and a filmstrip along the bottom shows the set and where you are in it. This is the immersive direction that stays inside the site's palette.</p>
       </div>
     </div>
     <div class="devices">
@@ -236,7 +235,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
             <div class="mini-grid"></div>
           </div>
         </div>
-        <figcaption>Phone. Chrome stays during swipes, then fades back when you stop.</figcaption>
+        <figcaption>Phone. Full-width image with the caption pinned to the corner.</figcaption>
       </figure>
     </div>
   </section>
@@ -285,11 +284,11 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
     <h2>Side by side</h2>
     <table>
       <thead>
-        <tr><th></th><th>A Quiet viewer</th><th>B Dark room</th><th>C Gallery plate</th></tr>
+        <tr><th></th><th>A Quiet viewer</th><th>B Paper room</th><th>C Gallery plate</th></tr>
       </thead>
       <tbody>
-        <tr><td>Backdrop</td><td>Paper</td><td>Near black</td><td>Paper, with a labeled panel</td></tr>
-        <tr><td>Phone</td><td>Swipe, swipe down to close</td><td>Swipe, chrome fades between touches</td><td>Swipe, details in a draggable sheet</td></tr>
+        <tr><td>Backdrop</td><td>Paper</td><td>Paper, chrome recedes</td><td>Paper, with a labeled panel</td></tr>
+        <tr><td>Phone</td><td>Swipe, swipe down to close</td><td>Swipe, caption pinned to the corner</td><td>Swipe, details in a draggable sheet</td></tr>
         <tr><td>Zoom</td><td>Double-tap and ctrl+wheel</td><td>Double-tap and ctrl+wheel</td><td>Double-tap and ctrl+wheel</td></tr>
         <tr><td>Set navigation</td><td>Counter, preloaded arrows</td><td>Filmstrip</td><td>Jump list, labeled prev and next</td></tr>
         <tr><td>Best for</td><td>Keeping the site's calm</td><td>Letting the work own the screen</td><td>Paintings that need context</td></tr>
@@ -304,7 +303,7 @@ code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:
       <li>Preload the next and previous images once the viewer opens, and keep the existing decode() loading spinner.</li>
       <li>Dismiss on a swipe down past 90px or a flick faster than 0.11px/ms, with damping when the drag direction changes.</li>
       <li>Zoom on double-tap and ctrl+wheel, clamp panning to the image edges, and reset zoom when the image changes.</li>
-      <li>In the dark room, hide chrome after 2.5s idle, restore it on pointer or key, and never hide it while zoomed.</li>
+      <li>In the paper room, hide chrome after 2.5s idle, restore it on pointer or key, and never hide it while zoomed.</li>
       <li>Keep focus inside the viewer, return it to the thumbnail on close, and drop all transforms under prefers-reduced-motion.</li>
     </ul>
   </section>
