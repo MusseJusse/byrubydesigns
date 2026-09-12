@@ -10,10 +10,12 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "optimize:art": "node scripts/optimize-artwork.mjs",
     "check": "astro check",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/vercel": "^11.0.10",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "astro": "^7.2.4",

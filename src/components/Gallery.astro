@@ -52,7 +52,7 @@ const items = await Promise.all(
     },
     ...artwork.filter((item) => !item.selected),
   ].map(async (item) => {
-    const lightboxWidth = Math.min(1800, item.image.width);
+    const lightboxWidth = Math.min(1600, item.image.width);
     return {
       ...item,
       lightboxWidth,
@@ -63,7 +63,7 @@ const items = await Promise.all(
         src: item.image,
         width: lightboxWidth,
         format: "webp",
-        quality: 90,
+        quality: 80,
       }),
     };
   }),
@@ -146,7 +146,7 @@ const filters = [
                 (width) => width <= item.image.width,
               )}
               sizes="(max-width: 767px) calc((100vw - 64px) / 2), (min-width: 1800px) 21vw, 33vw"
-              quality={88}
+              quality={80}
               loading={item.selected ? "eager" : "lazy"}
               fetchpriority={index === 0 ? "high" : "auto"}
             />
