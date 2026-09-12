@@ -125,6 +125,7 @@ a span[aria-hidden] {
 .enquire {
   min-height: 44px;
   font-size: clamp(13px, 1.15vw, 20px);
+  white-space: nowrap;
 }
 .collection-body {
   display: grid;
@@ -559,6 +560,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .enquire {
     font-size: 13px;
+  }
+  .enquire-label {
+    display: none;
   }
   .collection-body {
     display: block;
