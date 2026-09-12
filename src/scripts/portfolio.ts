@@ -10,16 +10,17 @@ const gallery = requireElement<HTMLElement>("#work");
 const filterControls = requireElement<HTMLElement>(".filter-controls");
 const filterIndicator = requireElement<HTMLElement>("[data-filter-indicator]");
 const lightbox = requireElement<HTMLDialogElement>("[data-lightbox]");
-const lightboxImage = requireElement<HTMLImageElement>("[data-lightbox-image]");
+const lightboxStage = requireElement<HTMLElement>("[data-lightbox-stage]");
+const lightboxViewport = requireElement<HTMLElement>(".lightbox-viewport");
+const lightboxTrack = requireElement<HTMLElement>("[data-lightbox-track]");
 const lightboxCaption = requireElement<HTMLElement>("[data-lightbox-caption]");
 const lightboxCount = requireElement<HTMLElement>("[data-lightbox-count]");
-const lightboxFigure = requireElement<HTMLElement>("[data-lightbox] figure");
-const lightboxStage = requireElement<HTMLElement>("[data-lightbox-stage]");
-const lightboxFit = requireElement<HTMLElement>("[data-lightbox-fit]");
-const lightboxZoom = requireElement<HTMLElement>("[data-lightbox-zoom]");
 const lightboxRail = requireElement<HTMLElement>("[data-lightbox-rail]");
+const lightboxPrevious = requireElement<HTMLButtonElement>(
+  "[data-lightbox-previous]",
+);
+const lightboxNext = requireElement<HTMLButtonElement>("[data-lightbox-next]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-const preloadedSources = new Set<string>();
 
 type LightboxGesture = {
   id: number;
@@ -31,6 +32,7 @@ type LightboxGesture = {
   axis: "x" | "y" | null;
   moved: boolean;
   touch: boolean;
+  trackStartX: number;
 };
 
 type LightboxPinch = {
@@ -52,13 +54,12 @@ let closingLightbox = false;
 let activeIndex = 0;
 let activeButtons: HTMLButtonElement[] = [];
 let unlockScroll: (() => void) | undefined;
-let imageRequest = 0;
-let loadingIndicatorTimer: number | undefined;
 let chromeTimer: number | undefined;
 let zoomTransitionTimer: number | undefined;
 let zoomLevel = 1;
 let panX = 0;
 let panY = 0;
+let flipToken = 0;
 const activePointers = new Map<number, { x: number; y: number }>();
 let gesture: LightboxGesture | null = null;
 let pinch: LightboxPinch | null = null;
@@ -66,6 +67,12 @@ let suppressClick = false;
 let wheelAccumulator = 0;
 let wheelResetTimer: number | undefined;
 let lastWheelNavigation = 0;
+let slideEls: HTMLElement[] = [];
+let fitEls: HTMLElement[] = [];
+let zoomEls: HTMLElement[] = [];
+let imgEls: HTMLImageElement[] = [];
+let slideDesired: string[] = [];
+let slideWidth = 0;
 
 function positionFilterIndicator(animate: boolean) {
   const label = filterControls.querySelector<HTMLElement>(
@@ -171,18 +178,25 @@ function stopLightboxMotion() {
   lightboxAnimations = [];
 }
 
-function thumbImage(index: number) {
-  return (
-    activeButtons[index]?.querySelector<HTMLImageElement>("img") ?? null
-  );
+function currentFit() {
+  return fitEls[activeIndex] ?? null;
 }
 
-// Where the figure sits so it looks like the thumbnail it grows from.
+function currentZoom() {
+  return zoomEls[activeIndex] ?? null;
+}
+
+function thumbImage(index: number) {
+  return activeButtons[index]?.querySelector<HTMLImageElement>("img") ?? null;
+}
+
+// Where the slide sits so it looks like the thumbnail it grows from.
 function thumbnailTransform(index: number) {
   const thumb = thumbImage(index);
-  if (!thumb) return null;
+  const fit = currentFit();
+  if (!thumb || !fit) return null;
   const from = thumb.getBoundingClientRect();
-  const to = lightboxFit.getBoundingClientRect();
+  const to = fit.getBoundingClientRect();
   if (!from.width || !to.width) return null;
   const x = from.left + from.width / 2 - (to.left + to.width / 2);
   const y = from.top + from.height / 2 - (to.top + to.height / 2);
@@ -195,7 +209,8 @@ function animateLightbox(opening: boolean) {
     (animation) => animation.playState === "running",
   );
   const opacity = getComputedStyle(lightbox).opacity;
-  const transform = getComputedStyle(lightboxFit).transform;
+  const fit = currentFit();
+  const transform = fit ? getComputedStyle(fit).transform : "none";
   stopLightboxMotion();
   const options = {
     duration: opening
@@ -210,69 +225,41 @@ function animateLightbox(opening: boolean) {
     ],
     options,
   );
-  const target = thumbnailTransform(activeIndex);
-  const fallback = `scale(${motionScale()})`;
-  const scale = lightboxFit.animate(
-    [
-      { transform: opening ? (interrupted ? transform : target ?? fallback) : transform },
-      { transform: opening ? "none" : target ?? fallback },
-    ],
-    options,
-  );
-  lightboxAnimations = [fade, scale];
+  const animations: Animation[] = [fade];
+  if (fit) {
+    const target = thumbnailTransform(activeIndex);
+    const fallback = `scale(${motionScale()})`;
+    const scale = fit.animate(
+      [
+        {
+          transform: opening
+            ? interrupted
+              ? transform
+              : target ?? fallback
+            : transform,
+        },
+        { transform: opening ? "none" : target ?? fallback },
+      ],
+      options,
+    );
+    animations.push(scale);
+    // The image travels to and from the thumbnail outside the carousel clip.
+    const token = ++flipToken;
+    lightbox.dataset.flipping = "";
+    const clear = () => {
+      if (token !== flipToken) return;
+      lightbox.removeAttribute("data-flipping");
+    };
+    scale.addEventListener("finish", clear, { once: true });
+    window.setTimeout(clear, options.duration + 80);
+  }
+  lightboxAnimations = animations;
   return fade;
-}
-
-function clearDragStyles() {
-  lightboxFit.style.transform = "";
-  lightbox.style.opacity = "";
-}
-
-function snapBack(from: string) {
-  stopLightboxMotion();
-  clearDragStyles();
-  const animation = lightboxFit.animate(
-    [{ transform: from }, { transform: "none" }],
-    {
-      duration: motionDuration("--duration-fast", 250),
-      easing: motionEasing(),
-    },
-  );
-  lightboxAnimations = [animation];
-}
-
-function glideTo(direction: -1 | 1, fromX: number) {
-  stopLightboxMotion();
-  const duration = motionDuration("--duration-quick", 150);
-  const glide = lightboxFit.animate(
-    [
-      { transform: `translateX(${fromX}px)`, opacity: 1 },
-      {
-        transform: `translateX(${-direction * lightbox.clientWidth * 0.4}px)`,
-        opacity: 0,
-      },
-    ],
-    { duration, easing: motionEasing() },
-  );
-  lightboxAnimations = [glide];
-  let settled = false;
-  const settle = (navigate: boolean) => {
-    if (settled) return;
-    settled = true;
-    if (navigate) moveTo(activeIndex + direction, direction);
-  };
-  glide.addEventListener("finish", () => settle(true), { once: true });
-  glide.addEventListener("cancel", () => settle(false), { once: true });
-  // Animation events can be delayed in background tabs; never strand the viewer.
-  window.setTimeout(() => settle(true), duration + 80);
 }
 
 function cleanupLightbox() {
   stopLightboxMotion();
   closingLightbox = false;
-  imageRequest += 1;
-  window.clearTimeout(loadingIndicatorTimer);
-  loadingIndicatorTimer = undefined;
   window.clearTimeout(chromeTimer);
   chromeTimer = undefined;
   window.clearTimeout(zoomTransitionTimer);
@@ -286,13 +273,20 @@ function cleanupLightbox() {
   lightbox.removeAttribute("data-chrome-hidden");
   lightbox.removeAttribute("data-dragging");
   lightbox.removeAttribute("data-zoomed");
+  lightbox.removeAttribute("data-flipping");
   lightbox.style.opacity = "";
   resetZoom(false);
-  lightboxFigure.removeAttribute("aria-busy");
-  lightboxFigure.removeAttribute("data-image-state");
+  lightboxTrack.style.transition = "none";
+  lightboxTrack.style.transform = "";
+  lightboxTrack.replaceChildren();
+  slideEls = [];
+  fitEls = [];
+  zoomEls = [];
+  imgEls = [];
+  slideDesired = [];
+  slideWidth = 0;
   unlockScroll?.();
   unlockScroll = undefined;
-  lightboxImage.removeAttribute("src");
 }
 
 function closeLightbox(immediate = false) {
@@ -317,30 +311,120 @@ function closeLightbox(immediate = false) {
   window.setTimeout(settle, motionDuration("--duration-quick", 150) + 100);
 }
 
-function showImage() {
-  const button = activeButtons[activeIndex];
+// Slides hold a thumbnail at first, so a swipe never waits on the network.
+function prepareSlide(index: number) {
+  const img = imgEls[index];
+  const button = activeButtons[index];
+  if (!img || !button) return;
+  const width = button.dataset.fullWidth;
+  const height = button.dataset.fullHeight;
+  if (width) img.width = Number(width);
+  if (height) img.height = Number(height);
+  img.alt = button.querySelector("img")?.alt ?? "";
+}
+
+function assignSlideSource(index: number, full: boolean) {
+  const img = imgEls[index];
+  const button = activeButtons[index];
+  if (!img || !button) return;
+  const thumb = button.querySelector<HTMLImageElement>("img");
+  const src = full
+    ? button.dataset.fullSrc
+    : thumb?.currentSrc || thumb?.src;
+  if (!src) return;
+  slideDesired[index] = src;
+  if (img.getAttribute("src") === src) return;
+  // Swap to the full image only once it is decoded, so the thumbnail stays
+  // visible and the box keeps its size while the larger file loads.
+  if (!full || !img.getAttribute("src")) {
+    img.src = src;
+    return;
+  }
+  const preload = new Image();
+  preload.src = src;
+  void preload
+    .decode()
+    .catch(() => {})
+    .finally(() => {
+      if (!lightbox.open || slideDesired[index] !== src) return;
+      const current = imgEls[index];
+      if (!current || current.getAttribute("src") === src) return;
+      current.src = src;
+    });
+}
+
+function syncSlideSources(center: number) {
+  for (let index = 0; index < imgEls.length; index += 1) {
+    const img = imgEls[index];
+    if (!img) continue;
+    const distance = Math.abs(index - center);
+    if (distance <= 1) assignSlideSource(index, true);
+    else if (distance > 2 || !img.getAttribute("src"))
+      assignSlideSource(index, false);
+  }
+}
+
+function buildCarousel() {
+  lightboxTrack.replaceChildren();
+  slideEls = [];
+  fitEls = [];
+  zoomEls = [];
+  imgEls = [];
+  slideDesired = [];
+  activeButtons.forEach((_, index) => {
+    const slide = document.createElement("div");
+    slide.className = "lightbox-slide";
+    const fit = document.createElement("div");
+    fit.className = "lightbox-fit";
+    const zoom = document.createElement("div");
+    zoom.className = "lightbox-zoom";
+    const img = document.createElement("img");
+    img.alt = "";
+    img.decoding = "async";
+    img.draggable = false;
+    zoom.append(img);
+    fit.append(zoom);
+    slide.append(fit);
+    lightboxTrack.append(slide);
+    slideEls[index] = slide;
+    fitEls[index] = fit;
+    zoomEls[index] = zoom;
+    imgEls[index] = img;
+    prepareSlide(index);
+    assignSlideSource(index, false);
+  });
+}
+
+function setActiveSlide(index: number) {
+  slideEls.forEach((slide, position) => {
+    slide.classList.toggle("is-active", position === index);
+  });
+}
+
+function updateRail(index: number) {
+  const items = lightboxRail.children;
+  for (let position = 0; position < items.length; position += 1) {
+    const item = items[position] as HTMLElement | undefined;
+    if (!item) continue;
+    if (position === index) item.setAttribute("aria-current", "true");
+    else item.removeAttribute("aria-current");
+  }
+  const current = items[index] as HTMLElement | undefined;
+  if (!current || lightboxRail.hidden) return;
+  lightboxRail.scrollTo({
+    left:
+      current.offsetLeft -
+      lightboxRail.clientWidth / 2 +
+      current.offsetWidth / 2,
+    behavior: reducedMotion.matches ? "auto" : "smooth",
+  });
+}
+
+function setActiveState(index: number) {
+  activeIndex = index;
+  const button = activeButtons[index];
   if (!button) return;
   const title = button.dataset.title ?? "Artwork";
-  const request = ++imageRequest;
-  window.clearTimeout(loadingIndicatorTimer);
-  lightboxFigure.setAttribute("aria-busy", "true");
-  lightboxFigure.dataset.imageState = "pending";
-  lightboxImage.width = Number(button.dataset.fullWidth);
-  lightboxImage.height = Number(button.dataset.fullHeight);
-  lightboxImage.alt = button.querySelector("img")?.alt ?? title;
-  lightboxImage.src = button.dataset.fullSrc ?? "";
-  loadingIndicatorTimer = window.setTimeout(() => {
-    if (request !== imageRequest) return;
-    lightboxFigure.dataset.imageState = "loading";
-    loadingIndicatorTimer = undefined;
-  }, 150);
-  void lightboxImage.decode().catch(() => {}).finally(() => {
-    if (request !== imageRequest) return;
-    window.clearTimeout(loadingIndicatorTimer);
-    loadingIndicatorTimer = undefined;
-    lightboxFigure.removeAttribute("aria-busy");
-    lightboxFigure.removeAttribute("data-image-state");
-  });
   lightboxCaption.replaceChildren();
   for (const text of [
     title,
@@ -354,43 +438,58 @@ function showImage() {
   }
   lightboxCount.textContent =
     activeButtons.length > 1
-      ? `${activeIndex + 1} / ${activeButtons.length}`
+      ? `${index + 1} / ${activeButtons.length}`
       : "";
-  updateRail();
-  preloadNeighbours();
   lightbox.setAttribute("aria-label", "Full image of " + title);
+  updateRail(index);
+  syncSlideSources(index);
+  lightboxPrevious.disabled = index <= 0;
+  lightboxNext.disabled = index >= activeButtons.length - 1;
+  setActiveSlide(index);
 }
 
-function moveTo(index: number, direction: -1 | 1) {
-  if (!activeButtons.length) return;
-  if (closingLightbox) {
-    closingLightbox = false;
-    animateLightbox(true);
+function trackDuration(distance: number) {
+  return Math.min(520, Math.max(240, 240 + distance * 30));
+}
+
+function setTrackTransform(
+  x: number,
+  y: number,
+  animate: boolean,
+  duration = 0,
+) {
+  const translate = `translate3d(${x}px, ${y}px, 0)`;
+  if (!animate || reducedMotion.matches) {
+    lightboxTrack.style.transition = "none";
+    lightboxTrack.style.transform = translate;
+    return;
   }
-  activeIndex =
-    ((index % activeButtons.length) + activeButtons.length) %
-    activeButtons.length;
+  lightboxTrack.style.transition = `transform ${duration}ms ${motionEasing()}`;
+  lightboxTrack.style.transform = translate;
+}
+
+function liveTrackTransform() {
+  const computed = getComputedStyle(lightboxTrack).transform;
+  if (!computed || computed === "none") return { x: 0, y: 0 };
+  const matrix = new DOMMatrixReadOnly(computed);
+  return { x: matrix.m41, y: matrix.m42 };
+}
+
+function goToSlide(index: number, animate = true) {
+  const count = activeButtons.length;
+  if (!count || !slideWidth) return;
+  const target = Math.min(count - 1, Math.max(0, index));
+  const from = liveTrackTransform().x;
+  const distance = Math.abs(-target * slideWidth - from) / slideWidth;
   resetZoom(false);
-  showImage();
-  if (!reducedMotion.matches) {
-    stopLightboxMotion();
-    const slide = lightboxFit.animate(
-      [
-        { transform: `translateX(${direction * 24}px)`, opacity: 0 },
-        { transform: "none", opacity: 1 },
-      ],
-      {
-        duration: motionDuration("--duration-quick", 150),
-        easing: motionEasing(),
-      },
-    );
-    lightboxAnimations = [slide];
-  }
+  setActiveState(target);
+  setTrackTransform(-target * slideWidth, 0, animate, trackDuration(distance));
   noteActivity();
 }
 
-function moveImage(direction: -1 | 1) {
-  moveTo(activeIndex + direction, direction);
+function moveBy(direction: -1 | 1) {
+  if (!lightbox.open) return;
+  goToSlide(activeIndex + direction);
 }
 
 function buildRail() {
@@ -411,72 +510,43 @@ function buildRail() {
     item.append(thumb);
     item.addEventListener("click", () => {
       if (index === activeIndex) return;
-      moveTo(index, index > activeIndex ? 1 : -1);
+      goToSlide(index);
     });
     lightboxRail.append(item);
   });
 }
 
-function updateRail() {
-  const items = lightboxRail.children;
-  for (let index = 0; index < items.length; index += 1) {
-    const item = items[index] as HTMLElement | undefined;
-    if (!item) continue;
-    if (index === activeIndex) item.setAttribute("aria-current", "true");
-    else item.removeAttribute("aria-current");
-  }
-  const current = items[activeIndex] as HTMLElement | undefined;
-  if (!current || lightboxRail.hidden) return;
-  lightboxRail.scrollTo({
-    left:
-      current.offsetLeft -
-      lightboxRail.clientWidth / 2 +
-      current.offsetWidth / 2,
-    behavior: reducedMotion.matches ? "auto" : "smooth",
-  });
-}
-
-function preloadNeighbours() {
-  if (activeButtons.length < 2) return;
-  for (const offset of [1, -1]) {
-    const button =
-      activeButtons[
-        (activeIndex + offset + activeButtons.length) % activeButtons.length
-      ];
-    const src = button?.dataset.fullSrc;
-    if (!src || preloadedSources.has(src)) continue;
-    preloadedSources.add(src);
-    const image = new Image();
-    image.src = src;
-  }
-}
-
 function applyZoom(animate: boolean) {
+  const zoom = currentZoom();
+  if (!zoom) return;
   const transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
   if (animate && !reducedMotion.matches) {
     window.clearTimeout(zoomTransitionTimer);
-    lightboxZoom.style.transition = `transform ${motionDuration(
+    zoom.style.transition = `transform ${motionDuration(
       "--duration-quick",
       150,
     )}ms ${motionEasing()}`;
-    lightboxZoom.style.transform = transform;
+    zoom.style.transform = transform;
     zoomTransitionTimer = window.setTimeout(() => {
-      lightboxZoom.style.transition = "";
+      zoom.style.transition = "";
     }, 200);
   } else {
-    lightboxZoom.style.transition = "none";
-    lightboxZoom.style.transform = transform;
-    void lightboxZoom.offsetWidth;
-    lightboxZoom.style.transition = "";
+    zoom.style.transition = "none";
+    zoom.style.transform = transform;
+    void zoom.offsetWidth;
+    zoom.style.transition = "";
   }
   if (zoomLevel > 1) lightbox.dataset.zoomed = "";
   else lightbox.removeAttribute("data-zoomed");
 }
 
 function resetZoom(animate: boolean) {
+  const zoom = currentZoom();
   if (zoomLevel === 1 && panX === 0 && panY === 0) {
-    lightboxZoom.style.transition = "";
-    lightboxZoom.style.transform = "";
+    if (zoom) {
+      zoom.style.transition = "";
+      zoom.style.transform = "";
+    }
     lightbox.removeAttribute("data-zoomed");
     return;
   }
@@ -487,8 +557,10 @@ function resetZoom(animate: boolean) {
 }
 
 function clampPan() {
-  const maxX = (lightboxFit.clientWidth * (zoomLevel - 1)) / 2;
-  const maxY = (lightboxFit.clientHeight * (zoomLevel - 1)) / 2;
+  const fit = currentFit();
+  if (!fit) return;
+  const maxX = (fit.clientWidth * (zoomLevel - 1)) / 2;
+  const maxY = (fit.clientHeight * (zoomLevel - 1)) / 2;
   panX = Math.max(-maxX, Math.min(maxX, panX));
   panY = Math.max(-maxY, Math.min(maxY, panY));
 }
@@ -511,7 +583,7 @@ function startPinch() {
   const points = Array.from(activePointers.values());
   if (points.length < 2) return;
   const [first, second] = points;
-  const rect = lightboxStage.getBoundingClientRect();
+  const rect = lightboxViewport.getBoundingClientRect();
   pinch = {
     startDistance:
       Math.hypot(first.x - second.x, first.y - second.y) || 1,
@@ -528,8 +600,10 @@ function updatePinch() {
   if (!pinch) return;
   const points = Array.from(activePointers.values());
   if (points.length < 2) return;
+  const zoom = currentZoom();
+  if (!zoom) return;
   const [first, second] = points;
-  const rect = lightboxStage.getBoundingClientRect();
+  const rect = lightboxViewport.getBoundingClientRect();
   const distance = Math.hypot(first.x - second.x, first.y - second.y) || 1;
   const midX = (first.x + second.x) / 2 - (rect.left + rect.width / 2);
   const midY = (first.y + second.y) / 2 - (rect.top + rect.height / 2);
@@ -550,8 +624,8 @@ function updatePinch() {
   }
   if (zoomLevel > 1) lightbox.dataset.zoomed = "";
   else lightbox.removeAttribute("data-zoomed");
-  lightboxZoom.style.transition = "none";
-  lightboxZoom.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+  zoom.style.transition = "none";
+  zoom.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
 }
 
 function chromeHasFocus() {
@@ -586,31 +660,26 @@ for (const button of imageButtons) {
     activeButtons = imageButtons.filter(
       (candidate) => candidate.getClientRects().length > 0,
     );
-    activeIndex = activeButtons.indexOf(button);
+    const index = activeButtons.indexOf(button);
+    activeIndex = index < 0 ? 0 : index;
     buildRail();
+    buildCarousel();
+    syncSlideSources(activeIndex);
+    setActiveState(activeIndex);
     resetZoom(false);
-    showImage();
     closingLightbox = false;
     unlockScroll = lockDocumentScroll();
     lightbox.showModal();
     lightbox.focus({ preventScroll: true });
+    slideWidth = lightboxTrack.clientWidth;
+    setTrackTransform(-activeIndex * slideWidth, 0, false);
     if (!reducedMotion.matches) animateLightbox(true);
     noteActivity();
   });
 }
 
-requireElement<HTMLButtonElement>("[data-lightbox-close]").addEventListener(
-  "click",
-  () => closeLightbox(),
-);
-requireElement<HTMLButtonElement>("[data-lightbox-previous]").addEventListener(
-  "click",
-  () => moveImage(-1),
-);
-requireElement<HTMLButtonElement>("[data-lightbox-next]").addEventListener(
-  "click",
-  () => moveImage(1),
-);
+lightboxPrevious.addEventListener("click", () => moveBy(-1));
+lightboxNext.addEventListener("click", () => moveBy(1));
 
 lightboxStage.addEventListener("click", (event) => {
   if (!lightbox.open) return;
@@ -633,13 +702,13 @@ lightbox.addEventListener("close", () => {
 lightbox.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
     event.preventDefault();
-    moveImage(event.key === "ArrowLeft" ? -1 : 1);
+    moveBy(event.key === "ArrowLeft" ? -1 : 1);
   }
 });
 
 lightboxStage.addEventListener("dblclick", (event) => {
   if (!lightbox.open) return;
-  const rect = lightboxStage.getBoundingClientRect();
+  const rect = lightboxViewport.getBoundingClientRect();
   const x = event.clientX - (rect.left + rect.width / 2);
   const y = event.clientY - (rect.top + rect.height / 2);
   if (zoomLevel === 1) zoomTo(2.4, x, y, true);
@@ -652,7 +721,7 @@ lightbox.addEventListener(
     if (!lightbox.open) return;
     if (event.ctrlKey || event.metaKey) {
       event.preventDefault();
-      const rect = lightboxStage.getBoundingClientRect();
+      const rect = lightboxViewport.getBoundingClientRect();
       zoomTo(
         zoomLevel * Math.exp(-event.deltaY * 0.012),
         event.clientX - (rect.left + rect.width / 2),
@@ -676,7 +745,7 @@ lightbox.addEventListener(
     const direction = wheelAccumulator > 0 ? 1 : -1;
     wheelAccumulator = 0;
     lastWheelNavigation = performance.now();
-    moveImage(direction);
+    moveBy(direction);
   },
   { passive: false },
 );
@@ -692,11 +761,15 @@ lightboxStage.addEventListener("pointerdown", (event) => {
   if (activePointers.size === 2) {
     gesture = null;
     lightbox.removeAttribute("data-dragging");
-    clearDragStyles();
+    lightbox.style.opacity = "";
     startPinch();
     return;
   }
   if (activePointers.size > 2 || gesture) return;
+  // Freeze the track where it is, even mid-transition, so the drag is 1:1.
+  const live = liveTrackTransform();
+  lightboxTrack.style.transition = "none";
+  lightboxTrack.style.transform = `translate3d(${live.x}px, ${live.y}px, 0)`;
   gesture = {
     id: event.pointerId,
     x: event.clientX,
@@ -707,6 +780,7 @@ lightboxStage.addEventListener("pointerdown", (event) => {
     axis: null,
     moved: false,
     touch: event.pointerType !== "mouse",
+    trackStartX: live.x,
   };
 });
 
@@ -739,20 +813,25 @@ lightboxStage.addEventListener("pointermove", (event) => {
     panY += moveY;
     clampPan();
     lightbox.dataset.dragging = "";
-    lightboxZoom.style.transition = "none";
-    lightboxZoom.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+    const zoom = currentZoom();
+    if (zoom) {
+      zoom.style.transition = "none";
+      zoom.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+    }
     return;
   }
-  if (!gesture.touch) return;
   if (!gesture.axis) gesture.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
   if (gesture.axis === "x") {
-    lightboxFit.style.transform = `translateX(${dx}px)`;
-    lightbox.style.opacity = String(
-      Math.max(0.35, 1 - Math.abs(dx) / (lightbox.clientWidth * 0.9)),
-    );
+    if (!slideWidth) return;
+    const last = Math.max(0, activeButtons.length - 1) * slideWidth;
+    let x = gesture.trackStartX + dx;
+    if (x > 0) x *= 0.35;
+    else if (x < -last) x = -last + (x + last) * 0.35;
+    setTrackTransform(x, 0, false);
   } else {
+    if (!gesture.touch) return;
     const damped = dy > 0 ? dy : dy * 0.25;
-    lightboxFit.style.transform = `translateY(${damped}px)`;
+    setTrackTransform(gesture.trackStartX, damped, false);
     lightbox.style.opacity = String(Math.max(0.3, 1 - Math.abs(dy) / 420));
   }
   event.preventDefault();
@@ -782,26 +861,27 @@ lightboxStage.addEventListener("pointerup", (event) => {
     if (before !== `${panX},${panY}`) applyZoom(true);
     return;
   }
-  if (!active.touch || !active.moved || !active.axis) {
-    clearDragStyles();
+  const live = liveTrackTransform();
+  if (!active.moved || !active.axis) {
+    lightbox.style.opacity = "";
     return;
   }
   if (active.axis === "x") {
-    if (Math.abs(dx) > 64 || Math.abs(velocityX) > 0.11) {
-      clearDragStyles();
-      glideTo(dx < 0 ? 1 : -1, dx);
-    } else {
-      snapBack(`translateX(${dx}px)`);
-    }
+    // Project the flick forward so a fast swipe can land two slides away.
+    const projected = live.x + velocityX * 220;
+    const target = Math.round(-projected / Math.max(1, slideWidth));
+    lightbox.style.opacity = "";
+    goToSlide(target);
     return;
   }
+  if (!active.touch) return;
   if (dy > 90 || (velocityY > 0.11 && dy > 20)) {
-    clearDragStyles();
+    lightbox.style.opacity = "";
     closeLightbox();
     return;
   }
-  const damped = dy > 0 ? dy : dy * 0.25;
-  snapBack(`translateY(${damped}px)`);
+  lightbox.style.opacity = "";
+  setTrackTransform(live.x, 0, true, 240);
 });
 
 lightboxStage.addEventListener("pointercancel", (event) => {
@@ -809,7 +889,7 @@ lightboxStage.addEventListener("pointercancel", (event) => {
   if (pinch && activePointers.size < 2) pinch = null;
   gesture = null;
   lightbox.removeAttribute("data-dragging");
-  clearDragStyles();
+  lightbox.style.opacity = "";
 });
 
 lightbox.addEventListener("pointermove", noteActivity);
@@ -820,7 +900,12 @@ lightbox.addEventListener("focusin", noteActivity);
 window.addEventListener("hashchange", () => syncFromHash());
 window.addEventListener("popstate", () => syncFromHash());
 window.addEventListener("pageshow", () => syncFromHash(false));
-window.addEventListener("resize", () => positionFilterIndicator(false));
+window.addEventListener("resize", () => {
+  positionFilterIndicator(false);
+  if (!lightbox.open || !imgEls.length) return;
+  slideWidth = lightboxTrack.clientWidth;
+  setTrackTransform(-activeIndex * slideWidth, 0, false);
+});
 void document.fonts.ready.then(() => positionFilterIndicator(false));
 window.addEventListener("pagehide", () => {
   categoryTransition?.skipTransition();
