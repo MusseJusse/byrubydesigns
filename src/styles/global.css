@@ -495,6 +495,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
   cursor: default;
 }
 .lightbox-image-stage {
+  position: relative;
+  /* Above the transformed image layer, below the chrome. */
+  z-index: 1;
   display: grid;
   place-items: center;
   cursor: zoom-in;
@@ -543,6 +546,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox figcaption {
   position: absolute;
+  z-index: 4;
   left: 28px;
   bottom: 86px;
   display: grid;
@@ -553,6 +557,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox-count {
   position: absolute;
+  z-index: 4;
   top: 22px;
   left: 28px;
   margin: 0;
@@ -563,6 +568,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .lightbox-close,
 .lightbox-arrow {
   position: absolute;
+  z-index: 4;
   display: grid;
   place-items: center;
   width: 44px;
@@ -595,7 +601,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   position: absolute;
   left: 50%;
   bottom: 22px;
-  z-index: 2;
+  z-index: 4;
   display: flex;
   gap: 6px;
   max-width: calc(100% - 160px);
