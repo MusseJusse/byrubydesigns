@@ -472,7 +472,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   border: 0;
   padding: 44px 80px 152px;
   color: var(--ink);
-  background: var(--paper);
+  background: transparent;
   cursor: zoom-out;
 }
 .lightbox:focus {
@@ -484,6 +484,14 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox::backdrop {
   background: transparent;
+}
+/* Fades independently of the image, so the image stays solid as it flies. */
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--paper);
+  will-change: opacity;
 }
 .lightbox figure {
   display: grid;
@@ -509,6 +517,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
 /* Let the open and close transitions travel to and from the thumbnail. */
 .lightbox[data-flipping] .lightbox-viewport {
   overflow: visible;
+}
+.lightbox[data-flipping] .lightbox-slide:not(.is-active) {
+  visibility: hidden;
 }
 .lightbox-track {
   display: flex;

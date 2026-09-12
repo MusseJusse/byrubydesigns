@@ -10,6 +10,7 @@ const gallery = requireElement<HTMLElement>("#work");
 const filterControls = requireElement<HTMLElement>(".filter-controls");
 const filterIndicator = requireElement<HTMLElement>("[data-filter-indicator]");
 const lightbox = requireElement<HTMLDialogElement>("[data-lightbox]");
+const lightboxBackdrop = requireElement<HTMLElement>("[data-lightbox-backdrop]");
 const lightboxStage = requireElement<HTMLElement>("[data-lightbox-stage]");
 const lightboxViewport = requireElement<HTMLElement>(".lightbox-viewport");
 const lightboxTrack = requireElement<HTMLElement>("[data-lightbox-track]");
@@ -204,47 +205,72 @@ function thumbnailTransform(index: number) {
   return `translate(${x}px, ${y}px) scale(${from.width / to.width})`;
 }
 
+// A slight tilt toward the viewer, the way iPadOS lifts a photo off the grid.
+function openingTransform(index: number) {
+  const target = thumbnailTransform(index);
+  const thumb = thumbImage(index);
+  if (!target || !thumb) return target ?? `scale(${motionScale()})`;
+  const rect = thumb.getBoundingClientRect();
+  const offset =
+    (rect.top + rect.height / 2 - window.innerHeight / 2) / window.innerHeight;
+  const tilt = Math.max(-5, Math.min(5, -offset * 8));
+  return `perspective(1200px) ${target} rotateX(${tilt.toFixed(2)}deg)`;
+}
+
+const chromeElements = [
+  lightboxClose,
+  lightboxPrevious,
+  lightboxNext,
+  lightboxCount,
+  lightboxCaption,
+  lightboxRail,
+];
+
 // Read the current frame so closing during the entrance does not jump.
 function animateLightbox(opening: boolean) {
   const interrupted = lightboxAnimations.some(
     (animation) => animation.playState === "running",
   );
-  const opacity = getComputedStyle(lightbox).opacity;
   const fit = currentFit();
   const transform = fit ? getComputedStyle(fit).transform : "none";
+  const backdrop = getComputedStyle(lightboxBackdrop).opacity;
+  const chrome = chromeElements.map((element) => ({
+    element,
+    opacity: Number.parseFloat(getComputedStyle(element).opacity) || 0,
+    hidden: getComputedStyle(element).display === "none",
+    resting: element instanceof HTMLButtonElement && element.disabled ? 0.25 : 1,
+  }));
   stopLightboxMotion();
-  const options = {
-    duration: opening
-      ? motionDuration("--duration-fast", 250)
-      : motionDuration("--duration-quick", 150),
-    easing: motionEasing(),
-  };
-  const fade = lightbox.animate(
-    [
-      { opacity: interrupted ? opacity : opening ? 0 : 1 },
-      { opacity: opening ? 1 : 0 },
-    ],
-    options,
-  );
-  const animations: Animation[] = [fade];
+  const duration = opening
+    ? motionDuration("--duration-fast", 250)
+    : motionDuration("--duration-quick", 150);
+  const easing = motionEasing();
+  const animations: Animation[] = [
+    lightboxBackdrop.animate(
+      [
+        { opacity: interrupted ? backdrop : opening ? 0 : 1 },
+        { opacity: opening ? 1 : 0 },
+      ],
+      { duration, easing },
+    ),
+  ];
   if (fit) {
     const target = thumbnailTransform(activeIndex);
-    const fallback = `scale(${motionScale()})`;
     const scale = fit.animate(
       [
         {
           transform: opening
             ? interrupted
               ? transform
-              : target ?? fallback
+              : openingTransform(activeIndex)
             : transform,
         },
-        { transform: opening ? "none" : target ?? fallback },
+        { transform: opening ? "none" : target ?? `scale(${motionScale()})` },
       ],
-      options,
+      { duration, easing },
     );
     animations.push(scale);
-    // The image travels to and from the thumbnail outside the carousel clip.
+    // The image travels outside the carousel clip, so hide its neighbours.
     const token = ++flipToken;
     lightbox.dataset.flipping = "";
     const clear = () => {
@@ -252,10 +278,32 @@ function animateLightbox(opening: boolean) {
       lightbox.removeAttribute("data-flipping");
     };
     scale.addEventListener("finish", clear, { once: true });
-    window.setTimeout(clear, options.duration + 80);
+    window.setTimeout(clear, duration + 80);
+  }
+  // Chrome waits for the image to leave, and gets out of the way first on close.
+  for (const entry of chrome) {
+    if (entry.hidden) continue;
+    animations.push(
+      entry.element.animate(
+        opening
+          ? [
+              { opacity: interrupted ? entry.opacity : 0 },
+              { opacity: entry.resting },
+            ]
+          : [{ opacity: entry.opacity }, { opacity: 0 }],
+        opening
+          ? {
+              duration: 150,
+              delay: interrupted ? 0 : 70,
+              easing,
+              fill: "backwards",
+            }
+          : { duration: 100, easing, fill: "forwards" },
+      ),
+    );
   }
   lightboxAnimations = animations;
-  return fade;
+  return animations[0];
 }
 
 function cleanupLightbox() {
