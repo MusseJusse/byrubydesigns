@@ -31,7 +31,15 @@ type LightboxGesture = {
   axis: "x" | "y" | null;
   moved: boolean;
   touch: boolean;
-  captured: boolean;
+};
+
+type LightboxPinch = {
+  startDistance: number;
+  startZoom: number;
+  startPanX: number;
+  startPanY: number;
+  startMidX: number;
+  startMidY: number;
 };
 
 let renderedFilter = requireElement<HTMLInputElement>(
@@ -51,8 +59,13 @@ let zoomTransitionTimer: number | undefined;
 let zoomLevel = 1;
 let panX = 0;
 let panY = 0;
+const activePointers = new Map<number, { x: number; y: number }>();
 let gesture: LightboxGesture | null = null;
+let pinch: LightboxPinch | null = null;
 let suppressClick = false;
+let wheelAccumulator = 0;
+let wheelResetTimer: number | undefined;
+let lastWheelNavigation = 0;
 
 function positionFilterIndicator(animate: boolean) {
   const label = filterControls.querySelector<HTMLElement>(
@@ -230,6 +243,7 @@ function snapBack(from: string) {
 
 function glideTo(direction: -1 | 1, fromX: number) {
   stopLightboxMotion();
+  const duration = motionDuration("--duration-quick", 150);
   const glide = lightboxFit.animate(
     [
       { transform: `translateX(${fromX}px)`, opacity: 1 },
@@ -238,13 +252,19 @@ function glideTo(direction: -1 | 1, fromX: number) {
         opacity: 0,
       },
     ],
-    {
-      duration: motionDuration("--duration-quick", 150),
-      easing: motionEasing(),
-    },
+    { duration, easing: motionEasing() },
   );
   lightboxAnimations = [glide];
-  glide.onfinish = () => moveTo(activeIndex + direction, direction);
+  let settled = false;
+  const settle = (navigate: boolean) => {
+    if (settled) return;
+    settled = true;
+    if (navigate) moveTo(activeIndex + direction, direction);
+  };
+  glide.addEventListener("finish", () => settle(true), { once: true });
+  glide.addEventListener("cancel", () => settle(false), { once: true });
+  // Animation events can be delayed in background tabs; never strand the viewer.
+  window.setTimeout(() => settle(true), duration + 80);
 }
 
 function cleanupLightbox() {
@@ -257,6 +277,12 @@ function cleanupLightbox() {
   chromeTimer = undefined;
   window.clearTimeout(zoomTransitionTimer);
   zoomTransitionTimer = undefined;
+  window.clearTimeout(wheelResetTimer);
+  wheelResetTimer = undefined;
+  wheelAccumulator = 0;
+  activePointers.clear();
+  gesture = null;
+  pinch = null;
   lightbox.removeAttribute("data-chrome-hidden");
   lightbox.removeAttribute("data-dragging");
   lightbox.removeAttribute("data-zoomed");
@@ -280,10 +306,15 @@ function closeLightbox(immediate = false) {
   if (closingLightbox) return;
   closingLightbox = true;
   if (zoomLevel > 1) resetZoom(true);
-  animateLightbox(false).onfinish = () => {
+  const fade = animateLightbox(false);
+  const settle = () => {
+    if (!closingLightbox || !lightbox.open) return;
     lightbox.close();
     cleanupLightbox();
   };
+  fade.addEventListener("finish", settle, { once: true });
+  // Fall back to a timer, the same way the transitions.dev modal recipe does.
+  window.setTimeout(settle, motionDuration("--duration-quick", 150) + 100);
 }
 
 function showImage() {
@@ -476,6 +507,53 @@ function zoomTo(level: number, x: number, y: number, animate: boolean) {
   noteActivity();
 }
 
+function startPinch() {
+  const points = Array.from(activePointers.values());
+  if (points.length < 2) return;
+  const [first, second] = points;
+  const rect = lightboxStage.getBoundingClientRect();
+  pinch = {
+    startDistance:
+      Math.hypot(first.x - second.x, first.y - second.y) || 1,
+    startZoom: zoomLevel,
+    startPanX: panX,
+    startPanY: panY,
+    startMidX: (first.x + second.x) / 2 - (rect.left + rect.width / 2),
+    startMidY: (first.y + second.y) / 2 - (rect.top + rect.height / 2),
+  };
+  suppressClick = true;
+}
+
+function updatePinch() {
+  if (!pinch) return;
+  const points = Array.from(activePointers.values());
+  if (points.length < 2) return;
+  const [first, second] = points;
+  const rect = lightboxStage.getBoundingClientRect();
+  const distance = Math.hypot(first.x - second.x, first.y - second.y) || 1;
+  const midX = (first.x + second.x) / 2 - (rect.left + rect.width / 2);
+  const midY = (first.y + second.y) / 2 - (rect.top + rect.height / 2);
+  const level = Math.max(
+    1,
+    Math.min(4, pinch.startZoom * (distance / pinch.startDistance)),
+  );
+  // Keep the point between the fingers under the fingers as they move.
+  const contentX = (pinch.startMidX - pinch.startPanX) / pinch.startZoom;
+  const contentY = (pinch.startMidY - pinch.startPanY) / pinch.startZoom;
+  zoomLevel = level;
+  panX = midX - contentX * level;
+  panY = midY - contentY * level;
+  clampPan();
+  if (level === 1) {
+    panX = 0;
+    panY = 0;
+  }
+  if (zoomLevel > 1) lightbox.dataset.zoomed = "";
+  else lightbox.removeAttribute("data-zoomed");
+  lightboxZoom.style.transition = "none";
+  lightboxZoom.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+}
+
 function chromeHasFocus() {
   const active = document.activeElement;
   if (!active || active === lightbox) return false;
@@ -491,7 +569,14 @@ function noteActivity() {
   window.clearTimeout(chromeTimer);
   lightbox.removeAttribute("data-chrome-hidden");
   chromeTimer = window.setTimeout(() => {
-    if (!lightbox.open || zoomLevel > 1 || gesture || chromeHasFocus()) return;
+    if (
+      !lightbox.open ||
+      zoomLevel > 1 ||
+      gesture ||
+      pinch ||
+      chromeHasFocus()
+    )
+      return;
     lightbox.setAttribute("data-chrome-hidden", "");
   }, 2500);
 }
@@ -505,6 +590,7 @@ for (const button of imageButtons) {
     buildRail();
     resetZoom(false);
     showImage();
+    closingLightbox = false;
     unlockScroll = lockDocumentScroll();
     lightbox.showModal();
     lightbox.focus({ preventScroll: true });
@@ -526,12 +612,14 @@ requireElement<HTMLButtonElement>("[data-lightbox-next]").addEventListener(
   () => moveImage(1),
 );
 
-lightbox.addEventListener("click", (event) => {
-  if (event.target !== lightbox) return;
+lightboxStage.addEventListener("click", (event) => {
+  if (!lightbox.open) return;
   if (suppressClick) {
     suppressClick = false;
     return;
   }
+  const target = event.target;
+  if (target instanceof Element && target.closest(".lightbox-fit")) return;
   closeLightbox();
 });
 lightbox.addEventListener("cancel", (event) => {
@@ -561,21 +649,54 @@ lightboxStage.addEventListener("dblclick", (event) => {
 lightbox.addEventListener(
   "wheel",
   (event) => {
-    if (!lightbox.open || !(event.ctrlKey || event.metaKey)) return;
-    event.preventDefault();
-    const rect = lightboxStage.getBoundingClientRect();
-    zoomTo(
-      zoomLevel * Math.exp(-event.deltaY * 0.012),
-      event.clientX - (rect.left + rect.width / 2),
-      event.clientY - (rect.top + rect.height / 2),
-      true,
-    );
+    if (!lightbox.open) return;
+    if (event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      const rect = lightboxStage.getBoundingClientRect();
+      zoomTo(
+        zoomLevel * Math.exp(-event.deltaY * 0.012),
+        event.clientX - (rect.left + rect.width / 2),
+        event.clientY - (rect.top + rect.height / 2),
+        true,
+      );
+      return;
+    }
+    // A horizontal two-finger trackpad swipe moves through the set.
+    if (zoomLevel > 1) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest(".lightbox-rail")) return;
+    if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+    window.clearTimeout(wheelResetTimer);
+    wheelResetTimer = window.setTimeout(() => {
+      wheelAccumulator = 0;
+    }, 140);
+    wheelAccumulator += event.deltaX;
+    if (Math.abs(wheelAccumulator) < 70) return;
+    if (performance.now() - lastWheelNavigation < 260) return;
+    const direction = wheelAccumulator > 0 ? 1 : -1;
+    wheelAccumulator = 0;
+    lastWheelNavigation = performance.now();
+    moveImage(direction);
   },
   { passive: false },
 );
 
 lightboxStage.addEventListener("pointerdown", (event) => {
-  if (!lightbox.open || event.button !== 0 || gesture) return;
+  if (!lightbox.open || event.button !== 0) return;
+  suppressClick = false;
+  noteActivity();
+  activePointers.set(event.pointerId, {
+    x: event.clientX,
+    y: event.clientY,
+  });
+  if (activePointers.size === 2) {
+    gesture = null;
+    lightbox.removeAttribute("data-dragging");
+    clearDragStyles();
+    startPinch();
+    return;
+  }
+  if (activePointers.size > 2 || gesture) return;
   gesture = {
     id: event.pointerId,
     x: event.clientX,
@@ -586,12 +707,21 @@ lightboxStage.addEventListener("pointerdown", (event) => {
     axis: null,
     moved: false,
     touch: event.pointerType !== "mouse",
-    captured: false,
   };
-  noteActivity();
 });
 
 lightboxStage.addEventListener("pointermove", (event) => {
+  if (activePointers.has(event.pointerId)) {
+    activePointers.set(event.pointerId, {
+      x: event.clientX,
+      y: event.clientY,
+    });
+  }
+  if (pinch) {
+    updatePinch();
+    event.preventDefault();
+    return;
+  }
   if (!gesture || event.pointerId !== gesture.id) return;
   const dx = event.clientX - gesture.x;
   const dy = event.clientY - gesture.y;
@@ -604,14 +734,6 @@ lightboxStage.addEventListener("pointermove", (event) => {
     suppressClick = true;
   }
   if (!gesture.moved) return;
-  if (!gesture.captured) {
-    gesture.captured = true;
-    try {
-      lightboxStage.setPointerCapture(event.pointerId);
-    } catch {
-      // The pointer can already be gone; dragging still works without capture.
-    }
-  }
   if (zoomLevel > 1) {
     panX += moveX;
     panY += moveY;
@@ -637,6 +759,14 @@ lightboxStage.addEventListener("pointermove", (event) => {
 });
 
 lightboxStage.addEventListener("pointerup", (event) => {
+  activePointers.delete(event.pointerId);
+  if (pinch) {
+    if (activePointers.size < 2) {
+      pinch = null;
+      gesture = null;
+    }
+    return;
+  }
   if (!gesture || event.pointerId !== gesture.id) return;
   const active = gesture;
   gesture = null;
@@ -646,9 +776,6 @@ lightboxStage.addEventListener("pointerup", (event) => {
   const elapsed = Math.max(1, performance.now() - active.time);
   const velocityX = dx / elapsed;
   const velocityY = dy / elapsed;
-  window.setTimeout(() => {
-    suppressClick = false;
-  }, 0);
   if (zoomLevel > 1) {
     const before = `${panX},${panY}`;
     clampPan();
@@ -677,7 +804,9 @@ lightboxStage.addEventListener("pointerup", (event) => {
   snapBack(`translateY(${damped}px)`);
 });
 
-lightboxStage.addEventListener("pointercancel", () => {
+lightboxStage.addEventListener("pointercancel", (event) => {
+  activePointers.delete(event.pointerId);
+  if (pinch && activePointers.size < 2) pinch = null;
   gesture = null;
   lightbox.removeAttribute("data-dragging");
   clearDragStyles();

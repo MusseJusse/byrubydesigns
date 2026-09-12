@@ -495,12 +495,14 @@ html[data-gallery-scroll]::view-transition-new(root) {
   cursor: default;
 }
 .lightbox-image-stage {
-  position: relative;
-  /* Above the transformed image layer, below the chrome. */
+  position: absolute;
+  inset: 0;
+  /* Gesture surface for the whole viewer, below the chrome. */
   z-index: 1;
   display: grid;
   place-items: center;
-  cursor: zoom-in;
+  padding: 44px 80px 152px;
+  cursor: default;
   touch-action: none;
 }
 .lightbox-image-stage > *,
@@ -519,6 +521,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .lightbox-fit {
   display: grid;
   overflow: hidden;
+  cursor: zoom-in;
 }
 .lightbox-zoom {
   display: grid;
@@ -554,6 +557,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   font-size: 12px;
   line-height: 1.35;
   text-align: left;
+  pointer-events: none;
 }
 .lightbox-count {
   position: absolute;
@@ -564,6 +568,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   font-size: 12px;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 .lightbox-close,
 .lightbox-arrow {
@@ -648,10 +653,10 @@ html[data-gallery-scroll]::view-transition-new(root) {
   opacity: 0;
   pointer-events: none;
 }
-.lightbox[data-zoomed] .lightbox-image-stage {
+.lightbox[data-zoomed] .lightbox-fit {
   cursor: grab;
 }
-.lightbox[data-dragging] .lightbox-image-stage {
+.lightbox[data-dragging] .lightbox-fit {
   cursor: grabbing;
 }
 @media (hover: hover) and (pointer: fine) {
@@ -786,6 +791,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: 13px;
   }
   .lightbox {
+    padding: 64px 12px 132px;
+  }
+  .lightbox-image-stage {
     padding: 64px 12px 132px;
   }
   .lightbox-image-stage img {
