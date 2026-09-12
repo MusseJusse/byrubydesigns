@@ -7,6 +7,8 @@ const imageButtons = Array.from(
   document.querySelectorAll<HTMLButtonElement>("[data-lightbox-open]"),
 );
 const gallery = requireElement<HTMLElement>("#work");
+const filterControls = requireElement<HTMLElement>(".filter-controls");
+const filterIndicator = requireElement<HTMLElement>("[data-filter-indicator]");
 const lightbox = requireElement<HTMLDialogElement>("[data-lightbox]");
 const lightboxImage = requireElement<HTMLImageElement>("[data-lightbox-image]");
 const lightboxCaption = requireElement<HTMLElement>("[data-lightbox-caption]");
@@ -25,6 +27,28 @@ let unlockScroll: (() => void) | undefined;
 let imageRequest = 0;
 let loadingIndicatorTimer: number | undefined;
 
+function positionFilterIndicator(animate: boolean) {
+  const label = filterControls.querySelector<HTMLElement>(
+    `label[for="${renderedFilter.id}"]`,
+  );
+  if (!label) return;
+  const transform = `translate(${label.offsetLeft}px, ${
+    label.offsetTop + label.offsetHeight - filterIndicator.offsetHeight
+  }px)`;
+  const width = `${label.offsetWidth}px`;
+  if (animate) {
+    filterIndicator.style.transform = transform;
+    filterIndicator.style.width = width;
+  } else {
+    filterIndicator.style.transition = "none";
+    filterIndicator.style.transform = transform;
+    filterIndicator.style.width = width;
+    void filterIndicator.offsetWidth;
+    filterIndicator.style.transition = "";
+  }
+  filterControls.dataset.indicatorReady = "";
+}
+
 function selectFilter(
   filter: HTMLInputElement,
   { animate = true, resetScroll = false } = {},
@@ -33,12 +57,13 @@ function selectFilter(
   requestedFilter = filter;
   categoryTransition?.skipTransition();
   const scrollToGallery = resetScroll && gallery.getBoundingClientRect().top < 0;
-  const update = () => {
+  const update = (animateIndicator = animate) => {
     // A skipped transition can still run its callback. Always use the latest choice.
     requestedFilter.checked = true;
     renderedFilter = requestedFilter;
     // Reset beneath the snapshot, so the outgoing artwork never jumps to its top.
     if (scrollToGallery) gallery.scrollIntoView({ behavior: "instant" });
+    positionFilterIndicator(animateIndicator);
   };
   if (!animate || reducedMotion.matches || !document.startViewTransition) {
     update();
@@ -46,7 +71,7 @@ function selectFilter(
   }
   const root = document.documentElement;
   if (scrollToGallery) root.setAttribute("data-gallery-scroll", "");
-  const transition = document.startViewTransition(update);
+  const transition = document.startViewTransition(() => update(false));
   categoryTransition = transition;
   void transition.ready.catch(() => {
     // Skipped or unavailable snapshots still apply the category update.
@@ -90,7 +115,10 @@ function animateLightbox(opening: boolean) {
   const opacity = getComputedStyle(lightbox).opacity;
   const transform = getComputedStyle(lightboxFigure).transform;
   stopLightboxMotion();
-  const options = { duration: 220, easing: "cubic-bezier(.22, 1, .36, 1)" };
+  const options = {
+    duration: opening ? 250 : 150,
+    easing: "cubic-bezier(.22, 1, .36, 1)",
+  };
   const fade = lightbox.animate(
     [
       { opacity: interrupted ? opacity : opening ? 0 : 1 },
@@ -98,16 +126,14 @@ function animateLightbox(opening: boolean) {
     ],
     options,
   );
-  const lift = lightboxFigure.animate(
+  const scale = lightboxFigure.animate(
     [
-      {
-        transform: interrupted ? transform : opening ? "translateY(6px)" : "none",
-      },
-      { transform: opening ? "none" : "translateY(6px)" },
+      { transform: interrupted ? transform : opening ? "scale(0.96)" : "none" },
+      { transform: opening ? "none" : "scale(0.96)" },
     ],
     options,
   );
-  lightboxAnimations = [fade, lift];
+  lightboxAnimations = [fade, scale];
   return fade;
 }
 
@@ -233,6 +259,8 @@ lightbox.addEventListener("keydown", (event) => {
 window.addEventListener("hashchange", () => syncFromHash());
 window.addEventListener("popstate", () => syncFromHash());
 window.addEventListener("pageshow", () => syncFromHash(false));
+window.addEventListener("resize", () => positionFilterIndicator(false));
+void document.fonts.ready.then(() => positionFilterIndicator(false));
 window.addEventListener("pagehide", () => {
   categoryTransition?.skipTransition();
   closeLightbox(true);
@@ -246,3 +274,4 @@ reducedMotion.addEventListener("change", () => {
   else stopLightboxMotion();
 });
 syncFromHash(false);
+positionFilterIndicator(false);

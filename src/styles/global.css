@@ -202,6 +202,23 @@ a span[aria-hidden] {
   opacity: 0;
   pointer-events: none;
 }
+.filter-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: var(--ruby);
+  transform: translate(0, 0);
+  transition:
+    transform 250ms cubic-bezier(.22, 1, .36, 1),
+    width 250ms cubic-bezier(.22, 1, .36, 1);
+  pointer-events: none;
+  view-transition-name: filter-indicator;
+}
+.filter-controls:not([data-indicator-ready]) > input:checked + label {
+  box-shadow: inset 0 -1px var(--ruby);
+}
 .filter-controls > label {
   display: inline-flex;
   align-items: center;
@@ -213,7 +230,6 @@ a span[aria-hidden] {
 }
 .filter-controls > input:checked + label {
   color: var(--ruby);
-  box-shadow: inset 0 -1px var(--ruby);
 }
 .filter-controls > input:focus-visible + label {
   outline: 2px solid var(--ink);
@@ -301,6 +317,11 @@ a span[aria-hidden] {
   animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) reverse both;
   mix-blend-mode: normal;
 }
+::view-transition-old(filter-indicator),
+::view-transition-new(filter-indicator) {
+  animation-duration: 220ms;
+  mix-blend-mode: normal;
+}
 /* A scroll reset fades between viewports instead of moving the entire tall grid. */
 html[data-gallery-scroll] :is(.collection-grid, .collection-count, .category-intros) {
   view-transition-name: none;
@@ -342,6 +363,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
   ::view-transition-old(*),
   ::view-transition-new(*) {
     animation: none !important;
+  }
+  .filter-indicator {
+    transition: none !important;
   }
   .lightbox-image-stage img {
     transition: none;
