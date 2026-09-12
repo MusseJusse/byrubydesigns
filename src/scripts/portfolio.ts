@@ -16,6 +16,7 @@ const lightboxTrack = requireElement<HTMLElement>("[data-lightbox-track]");
 const lightboxCaption = requireElement<HTMLElement>("[data-lightbox-caption]");
 const lightboxCount = requireElement<HTMLElement>("[data-lightbox-count]");
 const lightboxRail = requireElement<HTMLElement>("[data-lightbox-rail]");
+const lightboxClose = requireElement<HTMLButtonElement>("[data-lightbox-close]");
 const lightboxPrevious = requireElement<HTMLButtonElement>(
   "[data-lightbox-previous]",
 );
@@ -678,6 +679,7 @@ for (const button of imageButtons) {
   });
 }
 
+lightboxClose.addEventListener("click", () => closeLightbox());
 lightboxPrevious.addEventListener("click", () => moveBy(-1));
 lightboxNext.addEventListener("click", () => moveBy(1));
 
