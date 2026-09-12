@@ -12,6 +12,11 @@
   --muted: #646860;
   --ruby: #873e4f;
   --page-gutter: 4.5vw;
+  /* Motion tokens, mirrored from transitions.dev. */
+  --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --ease-smooth-out: cubic-bezier(.22, 1, .36, 1);
+  --scale-large: 0.96;
 }
 
 *,
@@ -367,12 +372,17 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .filter-indicator {
     transition: none !important;
   }
-  .lightbox-image-stage img {
-    transition: none;
+  .lightbox-slide img,
+  .lightbox-track {
+    transition: none !important;
   }
-  .lightbox figure[data-image-state="loading"]
-    .lightbox-image-stage::after {
-    visibility: hidden;
+  .lightbox-close,
+  .lightbox-arrow,
+  .lightbox-count,
+  .lightbox figcaption,
+  .lightbox-rail,
+  .lightbox-rail button {
+    transition: none !important;
   }
 }
 .collection-grid > figure {
@@ -460,10 +470,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
   max-height: none;
   margin: 0;
   border: 0;
-  padding: 60px 80px;
+  padding: 44px 80px 152px;
   color: var(--ink);
-  background: var(--paper);
+  background: transparent;
   cursor: zoom-out;
+}
+.lightbox:focus {
+  outline: none;
 }
 .lightbox[open] {
   display: grid;
@@ -472,6 +485,14 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .lightbox::backdrop {
   background: transparent;
 }
+/* Fades independently of the image, so the image stays solid as it flies. */
+.lightbox-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--paper);
+  will-change: opacity;
+}
 .lightbox figure {
   display: grid;
   justify-items: center;
@@ -479,52 +500,90 @@ html[data-gallery-scroll]::view-transition-new(root) {
   cursor: default;
 }
 .lightbox-image-stage {
+  position: absolute;
+  inset: 0;
+  /* Gesture surface for the whole viewer, below the chrome. */
+  z-index: 1;
+  cursor: default;
+  touch-action: none;
+  overflow: hidden;
+  user-select: none;
+}
+.lightbox-viewport {
+  position: absolute;
+  inset: 44px 80px 152px;
+  overflow: hidden;
+}
+/* Let the open and close transitions travel to and from the thumbnail. */
+.lightbox[data-flipping] .lightbox-viewport {
+  overflow: visible;
+}
+.lightbox[data-flipping] .lightbox-slide:not(.is-active) {
+  visibility: hidden;
+}
+.lightbox-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+.lightbox-slide {
+  flex: 0 0 100%;
   display: grid;
   place-items: center;
+  height: 100%;
+  min-width: 0;
 }
-.lightbox-image-stage > *,
-.lightbox-image-stage::after {
-  grid-area: 1 / 1;
+.lightbox-fit {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  cursor: zoom-in;
 }
-.lightbox-image-stage::after {
-  content: "";
-  width: 20px;
-  height: 20px;
-  border: 1.5px solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  opacity: 0;
+.lightbox-zoom {
+  display: grid;
+  place-items: center;
+  transform-origin: center;
 }
-.lightbox-image-stage img {
+.lightbox-slide img {
   display: block;
-  max-width: min(76vw, 1100px);
-  max-height: calc(100dvh - 210px);
+  width: auto;
+  height: auto;
+  max-width: min(calc(100vw - 160px), 1600px);
+  max-height: calc(100dvh - 196px);
   object-fit: contain;
   opacity: 1;
-  transition: opacity 160ms cubic-bezier(.22, 1, .36, 1);
+  transition: opacity 200ms var(--ease-smooth-out);
 }
-.lightbox figure[data-image-state] img {
-  opacity: 0;
-}
-.lightbox figure[data-image-state="loading"] .lightbox-image-stage::after {
-  opacity: 0.55;
-  animation: lightbox-spin 700ms linear infinite;
-}
-@keyframes lightbox-spin {
-  to {
-    transform: rotate(1turn);
-  }
+.lightbox-slide:not(.is-active) img {
+  opacity: 0.6;
 }
 .lightbox figcaption {
+  position: absolute;
+  z-index: 4;
+  left: 28px;
+  bottom: 86px;
   display: grid;
   gap: 3px;
   font-size: 12px;
   line-height: 1.35;
-  text-align: center;
+  text-align: left;
+  pointer-events: none;
+}
+.lightbox-count {
+  position: absolute;
+  z-index: 4;
+  top: 22px;
+  left: 28px;
+  margin: 0;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 .lightbox-close,
 .lightbox-arrow {
   position: absolute;
+  z-index: 4;
   display: grid;
   place-items: center;
   width: 44px;
@@ -536,22 +595,88 @@ html[data-gallery-scroll]::view-transition-new(root) {
   cursor: pointer;
 }
 .lightbox-close {
-  top: 22px;
-  right: 24px;
+  top: 14px;
+  right: 18px;
 }
 .lightbox-arrow {
   top: 50%;
   transform: translateY(-50%);
 }
 .lightbox-previous {
-  left: 22px;
+  left: 20px;
 }
 .lightbox-next {
-  right: 22px;
+  right: 20px;
+}
+.lightbox-arrow:disabled {
+  opacity: 0.25;
+  cursor: default;
 }
 .lightbox button svg {
   width: 25px;
   height: 25px;
+}
+.lightbox-rail {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 4;
+  display: flex;
+  gap: 6px;
+  max-width: calc(100% - 160px);
+  overflow-x: auto;
+  padding: 3px;
+  transform: translateX(-50%);
+  scrollbar-width: none;
+}
+.lightbox-rail::-webkit-scrollbar {
+  display: none;
+}
+.lightbox-rail button {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  opacity: 0.4;
+  transition: opacity var(--duration-quick) var(--ease-smooth-out);
+}
+.lightbox-rail button[aria-current="true"] {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+.lightbox-rail img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  object-fit: cover;
+}
+.lightbox-close,
+.lightbox-arrow,
+.lightbox-count,
+.lightbox figcaption,
+.lightbox-rail {
+  transition: opacity var(--duration-fast) var(--ease-smooth-out);
+}
+.lightbox[data-chrome-hidden]
+  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, .lightbox figcaption, .lightbox-rail) {
+  opacity: 0;
+  pointer-events: none;
+}
+.lightbox[data-zoomed] .lightbox-fit {
+  cursor: grab;
+}
+.lightbox[data-dragging] .lightbox-fit {
+  cursor: grabbing;
+}
+@media (hover: hover) and (pointer: fine) {
+  .lightbox-rail button:hover {
+    opacity: 1;
+  }
 }
 
 @media (max-width: 767px) {
@@ -680,22 +805,34 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: 13px;
   }
   .lightbox {
-    padding: 70px 20px 80px;
+    padding: 64px 12px 132px;
   }
-  .lightbox-image-stage img {
-    max-width: calc(100vw - 40px);
-    max-height: calc(100dvh - 250px);
+  .lightbox-viewport {
+    inset: 64px 12px 132px;
+  }
+  .lightbox-slide img {
+    max-width: calc(100vw - 24px);
+    max-height: calc(100dvh - 196px);
+  }
+  .lightbox figcaption {
+    left: 16px;
+    bottom: 22px;
+  }
+  .lightbox-count {
+    top: 16px;
+    left: 16px;
   }
   .lightbox-arrow {
-    top: auto;
-    bottom: 14px;
-    transform: none;
+    background: rgba(232, 232, 229, 0.82);
   }
   .lightbox-previous {
-    left: 20px;
+    left: 6px;
   }
   .lightbox-next {
-    right: 20px;
+    right: 6px;
+  }
+  .lightbox-rail {
+    display: none;
   }
 }
 

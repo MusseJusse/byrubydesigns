@@ -1,16 +1,22 @@
-<dialog class="lightbox" data-lightbox aria-label="Artwork viewer">
+<dialog
+  class="lightbox"
+  data-lightbox
+  aria-label="Artwork viewer"
+  tabindex="-1"
+>
+  <div class="lightbox-backdrop" data-lightbox-backdrop aria-hidden="true"></div>
   <button
     class="lightbox-close"
     data-lightbox-close
     type="button"
     aria-label="Close full image"
-    autofocus
   >
     <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
       <path d="M5 5l14 14M19 5 5 19" stroke="currentColor" stroke-width="1.5"
       ></path>
     </svg>
   </button>
+  <p class="lightbox-count" data-lightbox-count aria-hidden="true"></p>
   <button
     class="lightbox-arrow lightbox-previous"
     data-lightbox-previous
@@ -22,8 +28,10 @@
     </svg>
   </button>
   <figure>
-    <div class="lightbox-image-stage">
-      <img data-lightbox-image alt="" decoding="async" />
+    <div class="lightbox-image-stage" data-lightbox-stage>
+      <div class="lightbox-viewport">
+        <div class="lightbox-track" data-lightbox-track></div>
+      </div>
     </div>
     <figcaption data-lightbox-caption aria-live="polite"></figcaption>
   </figure>
@@ -37,4 +45,11 @@
       <path d="m9 4 8 8-8 8" stroke="currentColor" stroke-width="1.5"></path>
     </svg>
   </button>
+  <div
+    class="lightbox-rail"
+    data-lightbox-rail
+    role="group"
+    aria-label="Artwork set"
+  >
+  </div>
 </dialog>
