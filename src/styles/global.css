@@ -127,6 +127,9 @@ a span[aria-hidden] {
   font-size: clamp(13px, 1.15vw, 20px);
   white-space: nowrap;
 }
+.enquire-handle {
+  color: var(--ruby);
+}
 .collection-body {
   display: grid;
   grid-template-columns: 17% minmax(0, 1fr);
@@ -650,6 +653,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
     display: none;
   }
   .wall-about a {
+    display: inline-block;
     font-size: 13px;
   }
   .lightbox {
