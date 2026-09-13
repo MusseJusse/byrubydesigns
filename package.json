@@ -11,6 +11,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "optimize:art": "node scripts/optimize-artwork.mjs",
+    "generate:brand": "node scripts/generate-brand-assets.mjs",
     "check": "astro check",
     "astro": "astro"
   },
