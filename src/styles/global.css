@@ -447,6 +447,35 @@ html[data-gallery-scroll]::view-transition-new(root) {
   min-height: 44px;
   font-size: clamp(13px, 1.1vw, 20px);
 }
+.legal {
+  max-width: 68ch;
+  margin: 0 auto;
+  padding: 5vw var(--page-gutter) 8vw;
+}
+.legal h1 {
+  font-size: clamp(28px, 3.2vw, 48px);
+  font-weight: 450;
+  letter-spacing: -0.025em;
+  margin-bottom: 0.35em;
+}
+.legal h2 {
+  font-size: clamp(17px, 1.5vw, 24px);
+  font-weight: 500;
+  margin: 1.6em 0 0.35em;
+}
+.legal p {
+  margin-bottom: 1em;
+}
+.legal-updated {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+.legal-back {
+  margin-top: 2.5em;
+}
+.legal-back a {
+  color: var(--ruby);
+}
 .skip-link {
   position: fixed;
   top: 8px;
