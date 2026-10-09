@@ -681,9 +681,9 @@ function chromeHasFocus() {
   const active = document.activeElement;
   if (!active || active === lightbox) return false;
   return Boolean(
-    lightbox
-      .querySelector(".lightbox-close, .lightbox-arrow, .lightbox-rail")
-      ?.contains(active),
+    active instanceof Element &&
+      lightbox.contains(active) &&
+      active.closest(".lightbox-close, .lightbox-arrow, .lightbox-rail"),
   );
 }
 
