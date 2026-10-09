@@ -696,6 +696,17 @@ html[data-gallery-scroll]::view-transition-new(root) {
   opacity: 0;
   pointer-events: none;
 }
+/* Keep keyboard focus visible even if the idle timer has hidden the chrome. */
+.lightbox[data-chrome-hidden] :is(.lightbox-close, .lightbox-arrow):focus-visible,
+.lightbox[data-chrome-hidden] .lightbox-rail:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+  transition: none;
+}
+.lightbox-rail button:focus-visible {
+  opacity: 1;
+  outline-offset: -2px;
+}
 .lightbox[data-zoomed] .lightbox-fit {
   cursor: grab;
 }
