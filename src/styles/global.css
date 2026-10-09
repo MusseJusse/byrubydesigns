@@ -12,6 +12,16 @@
   --muted: #646860;
   --ruby: #873e4f;
   --page-gutter: 4.5vw;
+  /* Rem bounds and a rem contribution let fluid text follow font preferences. */
+  --text-body: clamp(0.875rem, 0.5rem + 0.625vw, 1.25rem);
+  --text-wordmark: clamp(1.9375rem, 1rem + 2.25vw, 4rem);
+  --text-subtitle: clamp(0.75rem, 0.25rem + 0.7375vw, 1.1875rem);
+  --text-detail: clamp(0.8125rem, 0.25rem + 0.7375vw, 1.1875rem);
+  --text-contact: clamp(0.8125rem, 0.25rem + 0.8375vw, 1.25rem);
+  --text-control: clamp(0.8125rem, 0.25rem + 0.7875vw, 1.25rem);
+  --text-caption: clamp(0.75rem, 0.25rem + 0.6875vw, 1.125rem);
+  --text-meta: clamp(0.6875rem, 0.25rem + 0.5375vw, 1rem);
+  --text-heading: clamp(1.375rem, 0.75rem + 1.2625vw, 2.5rem);
   /* Motion tokens, mirrored from transitions.dev. */
   --duration-quick: 150ms;
   --duration-fast: 250ms;
@@ -36,7 +46,7 @@ html {
 body {
   margin: 0;
   font:
-    400 clamp(14px, 1.25vw, 20px)/1.45 "TikTok Sans Variable",
+    400 var(--text-body)/1.45 "TikTok Sans Variable",
     Arial,
     sans-serif;
   font-optical-sizing: auto;
@@ -100,10 +110,13 @@ a span[aria-hidden] {
   margin-bottom: 2.2vw;
 }
 .collection-header h1 {
+  min-width: 0;
+  max-width: 100%;
   font-size: inherit;
   font-weight: inherit;
 }
 .collection-header .brand-lockup {
+  max-width: 100%;
   gap: 1.1vw;
 }
 .brand-mark {
@@ -114,22 +127,22 @@ a span[aria-hidden] {
 }
 .collection-header .wordmark {
   display: block;
-  font-size: clamp(31px, 3.5vw, 64px);
+  font-size: var(--text-wordmark);
   font-weight: 500;
   letter-spacing: -0.055em;
   line-height: 1.05;
-  white-space: nowrap;
+  white-space: normal;
 }
 .wordmark > span {
   display: block;
-  font-size: clamp(12px, 1.05vw, 19px);
+  font-size: var(--text-subtitle);
   font-weight: 400;
   letter-spacing: 0;
   margin-top: 0.7vw;
 }
 .enquire {
   min-height: 44px;
-  font-size: clamp(13px, 1.15vw, 20px);
+  font-size: var(--text-contact);
   white-space: nowrap;
 }
 .brand-handle {
@@ -142,7 +155,7 @@ a span[aria-hidden] {
 }
 .collection-aside {
   padding-top: 0.9vw;
-  font-size: clamp(13px, 1.05vw, 19px);
+  font-size: var(--text-detail);
 }
 .collection-aside > a {
   margin-top: 2.8vw;
@@ -155,7 +168,7 @@ a span[aria-hidden] {
   margin-top: 3.2vw;
   padding-left: 1vw;
   border-left: 2px solid var(--ruby);
-  font-size: clamp(13px, 1.05vw, 19px);
+  font-size: var(--text-detail);
   line-height: 1.4;
 }
 .collection-body:has(input[value="tattoo"]:checked) .collection-selected-intro,
@@ -169,7 +182,7 @@ a span[aria-hidden] {
   border-left: 2px solid var(--ruby);
 }
 .category-intro p {
-  font-size: clamp(13px, 1.05vw, 19px);
+  font-size: var(--text-detail);
   line-height: 1.4;
 }
 .category-intro p + p {
@@ -191,6 +204,7 @@ a span[aria-hidden] {
   scroll-margin-top: 12px;
 }
 .filter-controls {
+  flex-wrap: wrap;
   position: sticky;
   top: 0;
   z-index: 3;
@@ -228,7 +242,7 @@ a span[aria-hidden] {
   display: inline-flex;
   align-items: center;
   min-height: max(44px, 3.5vw);
-  font-size: clamp(13px, 1.1vw, 20px);
+  font-size: var(--text-control);
   color: #666a62;
   white-space: nowrap;
   cursor: pointer;
@@ -241,7 +255,7 @@ a span[aria-hidden] {
   outline-offset: 4px;
 }
 .collection-count {
-  font-size: clamp(11px, 0.95vw, 17px);
+  font-size: clamp(0.6875rem, 0.25rem + 0.6375vw, 1.0625rem);
   color: var(--muted);
   margin: -0.3vw 0 1vw;
 }
@@ -406,13 +420,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .collection-grid figcaption {
   padding-top: 1vw;
-  font-size: clamp(12px, 1vw, 18px);
+  font-size: var(--text-caption);
   line-height: 1.4;
 }
 .collection-grid figcaption > span {
   display: block;
   margin-top: 0.25vw;
-  font-size: clamp(11px, 0.85vw, 16px);
+  font-size: var(--text-meta);
   color: var(--muted);
 }
 .wall-about {
@@ -431,7 +445,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   border-radius: 0.5vw;
 }
 .wall-about h2 {
-  font-size: clamp(22px, 2.2vw, 40px);
+  font-size: var(--text-heading);
   font-weight: 450;
   letter-spacing: -0.025em;
   margin-bottom: 1.2vw;
@@ -440,12 +454,12 @@ html[data-gallery-scroll]::view-transition-new(root) {
   color: var(--ruby);
 }
 .wall-about p {
-  font-size: clamp(13px, 1.1vw, 20px);
+  font-size: var(--text-control);
   margin-bottom: 2vw;
 }
 .wall-about a {
   min-height: 44px;
-  font-size: clamp(13px, 1.1vw, 20px);
+  font-size: var(--text-control);
 }
 .legal {
   max-width: 68ch;
@@ -453,13 +467,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
   padding: 5vw var(--page-gutter) 8vw;
 }
 .legal h1 {
-  font-size: clamp(28px, 3.2vw, 48px);
+  font-size: clamp(1.75rem, 1rem + 1.95vw, 3rem);
   font-weight: 450;
   letter-spacing: -0.025em;
   margin-bottom: 0.35em;
 }
 .legal h2 {
-  font-size: clamp(17px, 1.5vw, 24px);
+  font-size: clamp(1.0625rem, 0.5rem + 0.875vw, 1.5rem);
   font-weight: 500;
   margin: 1.6em 0 0.35em;
 }
@@ -593,7 +607,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   bottom: 86px;
   display: grid;
   gap: 3px;
-  font-size: 12px;
+  font-size: 0.75rem;
   line-height: 1.35;
   text-align: left;
   pointer-events: none;
@@ -604,7 +618,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   top: 22px;
   left: 28px;
   margin: 0;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   pointer-events: none;
@@ -713,7 +727,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
     --page-gutter: 22px;
   }
   body {
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.5;
   }
   .collection {
@@ -724,7 +738,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
     margin-bottom: 27px;
   }
   .collection-header .wordmark {
-    font-size: clamp(24px, 7.44vw, 31px);
+    font-size: clamp(1.5rem, 0.25rem + 6.4vw, 1.9375rem);
   }
   .collection-header .brand-lockup {
     gap: 8px;
@@ -733,14 +747,14 @@ html[data-gallery-scroll]::view-transition-new(root) {
     width: clamp(36px, 11.28vw, 44px);
   }
   .wordmark > span {
-    font-size: clamp(10px, 3.08vw, 12px);
+    font-size: clamp(0.625rem, 0.125rem + 2.56vw, 0.75rem);
     margin-top: 6px;
   }
   .collection a {
     gap: 6px;
   }
   .enquire {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   .enquire-label {
     display: none;
@@ -767,7 +781,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
     padding-left: 14px;
   }
   .collection-mobile-intros .category-intro p {
-    font-size: 15px;
+    font-size: 0.9375rem;
     line-height: 1.45;
   }
   .collection-mobile-intros .category-intro p + p {
@@ -780,12 +794,12 @@ html[data-gallery-scroll]::view-transition-new(root) {
     padding-block: 3px;
   }
   .filter-controls > label {
-    font-size: 12px;
+    font-size: 0.75rem;
     min-height: 44px;
   }
   .collection-count {
     display: none;
-    font-size: 11px;
+    font-size: 0.6875rem;
     margin: -5px 0 16px;
   }
   .collection-grid {
@@ -797,11 +811,11 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .collection-grid figcaption {
     padding-top: 8px;
-    font-size: 12px;
+    font-size: 0.75rem;
     line-height: 1.35;
   }
   .collection-grid figcaption > span {
-    font-size: 11px;
+    font-size: 0.6875rem;
     margin-top: 2px;
   }
   .wall-about {
@@ -819,19 +833,19 @@ html[data-gallery-scroll]::view-transition-new(root) {
     flex: 1;
   }
   .wall-about h2 {
-    font-size: 22px;
+    font-size: 1.375rem;
     line-height: 1.2;
     margin-bottom: 12px;
   }
   .wall-about p {
-    font-size: 13px;
+    font-size: 0.8125rem;
     margin-bottom: 12px;
   }
   .wall-about p br {
     display: none;
   }
   .wall-about a {
-    font-size: 13px;
+    font-size: 0.8125rem;
   }
   .lightbox {
     padding: 64px 12px 132px;
