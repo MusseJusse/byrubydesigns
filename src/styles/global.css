@@ -88,9 +88,17 @@ a span[aria-hidden] {
   color: var(--ruby);
   transition: transform 160ms ease;
 }
-.collection a:hover span[aria-hidden],
 .collection a:focus-visible span[aria-hidden] {
   transform: translate(2px, -2px);
+}
+@media (hover: hover) and (pointer: fine) {
+  .collection a:hover span[aria-hidden] {
+    transform: translate(2px, -2px);
+  }
+}
+.collection a:not(.brand-lockup):active {
+  opacity: 1;
+  text-decoration: underline;
 }
 .collection-header {
   display: flex;
@@ -369,7 +377,8 @@ html[data-gallery-scroll]::view-transition-new(root) {
   ::view-transition-new(*) {
     animation: none !important;
   }
-  .filter-indicator {
+  .filter-indicator,
+  a span[aria-hidden] {
     transition: none !important;
   }
   .lightbox-slide img,
@@ -706,6 +715,22 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .lightbox-rail button:hover {
     opacity: 1;
   }
+}
+
+/* Press feedback is immediate, including when reduced motion is requested. */
+.filter-controls > label:active,
+.filter-controls > input:checked + label:active,
+.lightbox :is(.lightbox-close, .lightbox-arrow):enabled:active {
+  background: #d9d9d5;
+  color: var(--ink);
+}
+.collection-grid button:active {
+  opacity: 0.82;
+}
+.lightbox-rail button:active {
+  opacity: 1;
+  filter: brightness(0.85);
+  transition: none;
 }
 
 @media (max-width: 767px) {
