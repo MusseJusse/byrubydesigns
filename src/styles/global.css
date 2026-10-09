@@ -872,8 +872,8 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .collection a:hover {
-    opacity: 0.68;
+  .collection a:not(.brand-lockup):hover {
+    text-decoration: underline;
   }
   .filter-controls > label:hover {
     color: var(--ink);
