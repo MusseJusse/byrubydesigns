@@ -208,8 +208,26 @@ button:focus-visible {
   outline: 2px solid var(--ink);
   outline-offset: 4px;
 }
-.collection-content {
-  min-width: 0;
+/* Announces the shown count to screen readers when the filter changes. */
+.collection-count {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.collection-count > span {
+  display: none;
+}
+.collection-content:has(input[value="selected"]:checked)
+  [data-count="selected"],
+.collection-content:has(input[value="tattoo"]:checked) [data-count="tattoo"],
+.collection-content:has(input[value="paintings"]:checked)
+  [data-count="paintings"],
+.collection-content:has(input[value="drawings"]:checked)
+  [data-count="drawings"] {
+  display: inline;
 }
 .collection-wall {
   padding: 2.4vw var(--page-gutter) 5vw;
@@ -259,13 +277,18 @@ button:focus-visible {
   gap: 4vw 2.4vw;
   view-transition-name: artwork;
 }
+/* Favourites open big, two to a row, as in the mock. */
 .collection-content:has(input[value="selected"]:checked) .collection-grid {
-  --row-height: 26vw;
+  --row-height: 46vw;
 }
 .collection-grid > figure {
   flex: var(--ratio) 1 calc(var(--ratio) * var(--row-height));
   max-width: calc(var(--ratio) * var(--row-height) * 1.5);
   min-width: 0;
+}
+/* Keep focused artwork clear of the sticky filters. */
+.collection-grid button {
+  scroll-margin-top: 6rem;
 }
 /* Only the changing artwork moves; keep the page and its controls still. */
 ::view-transition {
@@ -766,9 +789,17 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .enquire-label {
     display: none;
   }
+  /* One scrollable line, so the sticky rail never doubles in height. */
   .filter-controls {
+    flex-wrap: nowrap;
     justify-content: space-between;
     gap: 10px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  /* The scrolling rail clips anything outside it. */
+  .filter-controls > input:focus-visible + label {
+    outline-offset: -2px;
   }
   .filter-controls > label {
     padding-block: 0;
@@ -787,8 +818,8 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .collection-grid,
   .collection-content:has(input[value="selected"]:checked) .collection-grid {
-    /* Two pieces per row: half the content width before growing. */
-    --row-height: calc((100vw - 2 * var(--page-gutter)) / 2);
+    /* Two pieces per row: half the grid width, less the gap, before growing. */
+    --row-height: calc((100% - 14px) / 2);
     gap: 24px 14px;
   }
   .collection-grid button {

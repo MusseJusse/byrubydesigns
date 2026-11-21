@@ -10,8 +10,8 @@ const images = import.meta.glob<ImageMetadata>(
 );
 const selectedPaths = [
   "/src/assets/artwork/tattoo/IMG_1163.webp",
-  "/src/assets/artwork/tattoo/IMG_6601.webp",
   "/src/assets/artwork/paintings/painting-02.webp",
+  "/src/assets/artwork/tattoo/IMG_6601.webp",
 ];
 
 const artwork = galleryCategories.flatMap((category) =>
@@ -74,6 +74,7 @@ const filters = [
     id: "selected",
     label: "Favourites",
     count: selected.length + 1,
+    status: `${selected.length + 1} favourites`,
     intro: ["A few of my favourite completed and in progress pieces."],
   },
   ...["tattoo", "paintings", "drawings"].map((id) => {
@@ -83,6 +84,7 @@ const filters = [
       id,
       label: category.label,
       count: category.items.length,
+      status: `${category.items.length} ${category.label.toLowerCase()}`,
       intro: category.intro,
     };
   }),
@@ -117,6 +119,14 @@ const filters = [
       ))
     }
   </div>
+  <p
+    class="collection-count"
+    role="status"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+    {filters.map((filter) => <span data-count={filter.id}>{filter.status}</span>)}
+  </p>
   <div class="collection-wall">
     <div class="category-intros">
       {
