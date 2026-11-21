@@ -267,23 +267,35 @@ button:focus-visible {
   display: none;
 }
 /* Justified rows: each piece grows by its aspect ratio, so a row shares one
-   height and nothing is cropped. --row-height is the height before growing;
-   the cap stops a lone last piece from ballooning. */
+   height and nothing is cropped. --row-height is the height before growing.
+   Its px cap fits more pieces per row on wide screens instead of scaling them
+   up. The max-width cap stops a lone last piece from ballooning and keeps any
+   piece shorter than the screen. */
 .collection-grid {
-  --row-height: 33vw;
+  --row-height: min(33vw, 560px);
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
-  gap: 4vw 2.4vw;
+  gap: min(4vw, 64px) min(2.4vw, 40px);
   view-transition-name: artwork;
 }
-/* Favourites open big, two to a row, as in the mock. */
+/* Favourites open big, two to a row as in the mock, centred when the height
+   cap leaves room beside them. Very wide screens fit all four in one row. */
 .collection-content:has(input[value="selected"]:checked) .collection-grid {
   --row-height: 46vw;
+  justify-content: center;
+}
+@media (min-width: 2400px) {
+  .collection-content:has(input[value="selected"]:checked) .collection-grid {
+    --row-height: min(26vw, 640px);
+  }
 }
 .collection-grid > figure {
   flex: var(--ratio) 1 calc(var(--ratio) * var(--row-height));
-  max-width: calc(var(--ratio) * var(--row-height) * 1.5);
+  max-width: min(
+    calc(var(--ratio) * var(--row-height) * 1.5),
+    calc(var(--ratio) * 75svh)
+  );
   min-width: 0;
 }
 /* Keep focused artwork clear of the sticky filters. */
@@ -420,10 +432,11 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .wall-about {
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  /* The photo column stops growing on very wide screens. */
+  grid-template-columns: minmax(0, min(44.5vw, 960px)) minmax(0, 1fr);
   align-items: center;
-  gap: 4vw;
-  padding: 5vw var(--page-gutter) 5.5vw;
+  gap: min(4vw, 80px);
+  padding: min(5vw, 96px) var(--page-gutter) min(5.5vw, 104px);
   background: var(--ink);
   color: #c8cac2;
 }
