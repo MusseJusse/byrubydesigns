@@ -465,7 +465,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .wall-about-photos {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: min(1.2vw, 24px);
 }
 .wall-about-photos img {
@@ -859,8 +859,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .collection-grid,
   .collection-content:has(input[value="selected"]:checked) .collection-grid {
-    /* Two pieces per row: half the grid width, less the gap, before growing. */
-    --row-height: calc((100% - 14px) / 2);
+    /* Two pieces per row: half the grid width, less the gap, before growing.
+       Phones held sideways fit more per row instead. */
+    --row-height: min(calc((100% - 14px) / 2), 42svh);
     gap: 24px 14px;
   }
   /* A wide piece alone on its row fills it rather than stopping short. */
