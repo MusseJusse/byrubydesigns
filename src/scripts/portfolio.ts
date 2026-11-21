@@ -149,6 +149,10 @@ for (const filter of filters) {
     window.history.pushState(null, "", "#" + filter.value);
     selectFilter(filter, { resetScroll: true });
   });
+  // The hidden radios share one spot, so bring the focused label into the scrolling rail's view.
+  filter.addEventListener("focus", () => {
+    filter.labels?.[0]?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  });
 }
 
 // Timing comes from the motion tokens in global.css, mirrored from transitions.dev.
