@@ -93,7 +93,7 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: 3vw;
-  padding: 3.2vw var(--page-gutter) 1.4vw;
+  padding: min(3.2vw, 64px) var(--page-gutter) min(1.4vw, 28px);
 }
 .collection-header h1 {
   min-width: 0;
@@ -155,7 +155,7 @@ button:focus-visible {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2.7vw;
+  gap: min(2.7vw, 52px);
   padding: 0 var(--page-gutter);
   background: var(--paper);
 }
@@ -188,7 +188,7 @@ button:focus-visible {
   align-items: baseline;
   gap: 0.4em;
   padding-block: 0.9em;
-  min-height: max(44px, 3.5vw);
+  min-height: 44px;
   font-size: var(--text-control);
   color: var(--muted);
   white-space: nowrap;
@@ -203,6 +203,13 @@ button:focus-visible {
 }
 .filter-controls > input:checked + label .filter-count {
   color: var(--ruby);
+}
+/* Forced colours drop the indicator's background, so underline the chosen tab. */
+@media (forced-colors: active) {
+  .filter-controls > input:checked + label {
+    text-decoration: underline 2px;
+    text-underline-offset: 0.35em;
+  }
 }
 .filter-controls > input:focus-visible + label {
   outline: 2px solid var(--ink);
@@ -230,12 +237,12 @@ button:focus-visible {
   display: inline;
 }
 .collection-wall {
-  padding: 2.4vw var(--page-gutter) 5vw;
+  padding: min(2.4vw, 48px) var(--page-gutter) min(5vw, 96px);
   background: var(--paper-soft);
 }
 .category-intros {
   max-width: 60ch;
-  margin-bottom: 2.4vw;
+  margin-bottom: min(2.4vw, 48px);
   view-transition-name: artwork-intro;
 }
 .category-intro {
@@ -268,35 +275,48 @@ button:focus-visible {
 }
 /* Justified rows: each piece grows by its aspect ratio, so a row shares one
    height and nothing is cropped. --row-height is the height before growing.
-   Its px cap fits more pieces per row on wide screens instead of scaling them
-   up. The max-width cap stops a lone last piece from ballooning and keeps any
-   piece shorter than the screen. */
+   Its px and svh caps fit more pieces per row on large screens instead of
+   scaling them up. Full rows grow to fill the width; the max-width cap only
+   bounds the rare row that would need to more than double. */
 .collection-grid {
-  --row-height: min(33vw, 560px);
+  --row-height: min(33vw, 560px, 50svh);
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
   gap: min(4vw, 64px) min(2.4vw, 40px);
   view-transition-name: artwork;
 }
-/* Favourites open big, two to a row as in the mock, centred when the height
-   cap leaves room beside them. Very wide screens fit all four in one row. */
+/* Favourites open big, two to a row as in the mock, centred when their height
+   cap leaves room beside them. Very wide or short windows fit all four in one
+   row, which avoids a 3+1 split. */
 .collection-content:has(input[value="selected"]:checked) .collection-grid {
   --row-height: 46vw;
   justify-content: center;
 }
-@media (min-width: 2400px) {
+@media (min-width: 2400px), (min-aspect-ratio: 15/8) {
   .collection-content:has(input[value="selected"]:checked) .collection-grid {
-    --row-height: min(26vw, 640px);
+    --row-height: min(26vw, 640px, 50svh);
   }
 }
 .collection-grid > figure {
   flex: var(--ratio) 1 calc(var(--ratio) * var(--row-height));
+  max-width: calc(var(--ratio) * var(--row-height) * 2);
+  min-width: 0;
+}
+/* Soaks up the last row's spare width, so it stays at row height. */
+.collection-grid::after {
+  content: "";
+  flex: 999 1 0;
+}
+/* Favourites centre instead, and stay shorter than the screen. */
+.collection-content:has(input[value="selected"]:checked) .collection-grid::after {
+  display: none;
+}
+.collection-content:has(input[value="selected"]:checked) .collection-grid > figure {
   max-width: min(
     calc(var(--ratio) * var(--row-height) * 1.5),
     calc(var(--ratio) * 75svh)
   );
-  min-width: 0;
 }
 /* Keep focused artwork clear of the sticky filters. */
 .collection-grid button {
