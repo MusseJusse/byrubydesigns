@@ -86,6 +86,21 @@ button:focus-visible {
   background: var(--ink);
   color: #fff;
 }
+.wall-about::selection,
+.wall-about ::selection {
+  background: var(--paper);
+  color: var(--ink);
+}
+.wall-about .wall-about-cta::selection,
+.wall-about .wall-about-cta ::selection {
+  background: var(--ink);
+  color: #fff;
+}
+.enquire::selection,
+.enquire ::selection {
+  background: var(--on-ruby);
+  color: var(--ruby-deep);
+}
 
 .collection-header {
   display: flex;
