@@ -75,7 +75,7 @@ const filters = [
     label: "Favourites",
     count: selected.length + 1,
     status: `${selected.length + 1} favourites`,
-    intro: ["A few of my favourite completed and in progress pieces."],
+    intro: ["A few favourites: tattoos, paintings, and work in progress."],
   },
   ...["tattoo", "paintings", "drawings"].map((id) => {
     const category = galleryCategories.find((category) => category.id === id);
@@ -145,7 +145,7 @@ const filters = [
             ? [item.medium, item.year].filter(Boolean).join(", ")
             : item.caption;
           const dimensions = item.dimensions
-            ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
+            ? `${item.dimensions.width}\u00a0×\u00a0${item.dimensions.height}\u00a0${item.dimensions.unit}`
             : undefined;
           return (
             <figure
