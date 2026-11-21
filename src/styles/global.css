@@ -190,7 +190,7 @@ button:focus-visible {
   padding-block: 0.9em;
   min-height: max(44px, 3.5vw);
   font-size: var(--text-control);
-  color: #666a62;
+  color: var(--muted);
   white-space: nowrap;
   cursor: pointer;
 }
@@ -398,11 +398,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .collection-grid figcaption {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) fit-content(40%);
   column-gap: 1em;
   padding-top: 1vw;
   font-size: var(--text-caption);
   line-height: 1.4;
+  /* Long words break at large text sizes instead of spilling into the next caption. */
+  overflow-wrap: anywhere;
 }
 .artwork-size,
 .artwork-meta {
