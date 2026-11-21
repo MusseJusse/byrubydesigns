@@ -411,7 +411,6 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .artwork-size {
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
 }
 .artwork-meta {
   grid-column: 1 / -1;
@@ -456,9 +455,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
   color: #9ea198;
 }
 .wall-about-cta {
+  max-width: 100%;
   margin-top: 2.2vw;
+  padding-block: 0.5em;
   background: var(--paper);
   color: var(--ink);
+  /* Wrap at large text sizes rather than widen the page. */
+  white-space: normal;
 }
 .wall-about-cta:focus-visible {
   outline-color: var(--paper);

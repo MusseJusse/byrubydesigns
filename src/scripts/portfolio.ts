@@ -113,6 +113,7 @@ function selectFilter(
     // Reset beneath the snapshot, so the outgoing artwork never jumps to its top.
     if (scrollToGallery) gallery.scrollIntoView({ behavior: "instant" });
     positionFilterIndicator(animateIndicator);
+    revealFilterLabel(requestedFilter);
   };
   if (!animate || reducedMotion.matches || !document.startViewTransition) {
     update();
@@ -134,6 +135,18 @@ function selectFilter(
     .catch(() => {});
 }
 
+// When the mobile rail overflows, scroll it (never the page) so the chosen tab is in view.
+function revealFilterLabel(filter: HTMLInputElement) {
+  const label = filter.labels?.[0];
+  if (!label) return;
+  const right = label.offsetLeft + label.offsetWidth - filterControls.clientWidth;
+  if (label.offsetLeft < filterControls.scrollLeft) {
+    filterControls.scrollLeft = label.offsetLeft;
+  } else if (right > filterControls.scrollLeft) {
+    filterControls.scrollLeft = right;
+  }
+}
+
 function syncFromHash(animate = true) {
   const hash = window.location.hash.slice(1);
   // Keep existing /gallery#tattoo, #paintings, and #drawings links working.
@@ -148,10 +161,6 @@ for (const filter of filters) {
     closeLightbox(true);
     window.history.pushState(null, "", "#" + filter.value);
     selectFilter(filter, { resetScroll: true });
-  });
-  // The hidden radios share one spot, so bring the focused label into the scrolling rail's view.
-  filter.addEventListener("focus", () => {
-    filter.labels?.[0]?.scrollIntoView({ block: "nearest", inline: "nearest" });
   });
 }
 
