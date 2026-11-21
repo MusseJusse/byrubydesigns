@@ -113,6 +113,7 @@ function selectFilter(
     // Reset beneath the snapshot, so the outgoing artwork never jumps to its top.
     if (scrollToGallery) gallery.scrollIntoView({ behavior: "instant" });
     positionFilterIndicator(animateIndicator);
+    revealFilterLabel(requestedFilter);
   };
   if (!animate || reducedMotion.matches || !document.startViewTransition) {
     update();
@@ -134,6 +135,22 @@ function selectFilter(
     .catch(() => {});
 }
 
+// When the mobile rail overflows, scroll it (never the page) so the chosen tab is in view.
+function revealFilterLabel(filter: HTMLInputElement) {
+  const label = filter.labels?.[0];
+  if (!label) return;
+  // Keep the rail's gutter beside the tab, so it never sits flush with the screen edge.
+  const gutter = parseFloat(getComputedStyle(filterControls).paddingLeft);
+  const left = label.offsetLeft - gutter;
+  const right =
+    label.offsetLeft + label.offsetWidth + gutter - filterControls.clientWidth;
+  if (left < filterControls.scrollLeft) {
+    filterControls.scrollLeft = left;
+  } else if (right > filterControls.scrollLeft) {
+    filterControls.scrollLeft = right;
+  }
+}
+
 function syncFromHash(animate = true) {
   const hash = window.location.hash.slice(1);
   // Keep existing /gallery#tattoo, #paintings, and #drawings links working.
@@ -149,6 +166,8 @@ for (const filter of filters) {
     window.history.pushState(null, "", "#" + filter.value);
     selectFilter(filter, { resetScroll: true });
   });
+  // Tabbing in can land on a tab the rail has scrolled out of view.
+  filter.addEventListener("focus", () => revealFilterLabel(filter));
 }
 
 // Timing comes from the motion tokens in global.css, mirrored from transitions.dev.
@@ -952,6 +971,7 @@ window.addEventListener("popstate", () => syncFromHash());
 window.addEventListener("pageshow", () => syncFromHash(false));
 window.addEventListener("resize", () => {
   positionFilterIndicator(false);
+  revealFilterLabel(renderedFilter);
   if (!lightbox.open || !imgEls.length) return;
   slideWidth = lightboxTrack.clientWidth;
   setTrackTransform(-activeIndex * slideWidth, 0, false);

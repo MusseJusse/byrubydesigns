@@ -10,8 +10,8 @@ const images = import.meta.glob<ImageMetadata>(
 );
 const selectedPaths = [
   "/src/assets/artwork/tattoo/IMG_1163.webp",
-  "/src/assets/artwork/tattoo/IMG_6601.webp",
   "/src/assets/artwork/paintings/painting-02.webp",
+  "/src/assets/artwork/tattoo/IMG_6601.webp",
 ];
 
 const artwork = galleryCategories.flatMap((category) =>
@@ -48,6 +48,7 @@ const items = await Promise.all(
       caption: "Studio photograph",
       selected: true,
       medium: undefined,
+      year: undefined,
       dimensions: undefined,
     },
     ...artwork.filter((item) => !item.selected),
@@ -69,14 +70,22 @@ const items = await Promise.all(
   }),
 );
 const filters = [
-  { id: "selected", label: "Selected work", count: "4 favourites" },
+  {
+    id: "selected",
+    label: "Favourites",
+    count: selected.length + 1,
+    status: `${selected.length + 1} favourites`,
+    intro: ["A few of my favourite completed and in progress pieces."],
+  },
   ...["tattoo", "paintings", "drawings"].map((id) => {
     const category = galleryCategories.find((category) => category.id === id);
     if (!category) throw new Error("Gallery category is missing: " + id);
     return {
       id,
       label: category.label,
-      count: `${category.items.length} ${category.label.toLowerCase()}`,
+      count: category.items.length,
+      status: `${category.items.length} ${category.label.toLowerCase()}`,
+      intro: category.intro,
     };
   }),
 ];
@@ -102,7 +111,10 @@ const filters = [
             checked={filter.id === "selected"}
             aria-controls="artwork-grid"
           />
-          <label for={`filter-${filter.id}`}>{filter.label}</label>
+          <label for={`filter-${filter.id}`}>
+            {filter.label}
+            <span class="filter-count">{filter.count}</span>
+          </label>
         </>
       ))
     }
@@ -113,52 +125,70 @@ const filters = [
     aria-live="polite"
     aria-atomic="true"
   >
-    {
-      filters.map((filter) => (
-        <span data-count={filter.id}>{filter.count}</span>
-      ))
-    }
+    {filters.map((filter) => <span data-count={filter.id}>{filter.status}</span>)}
   </p>
-  <div id="artwork-grid" class="collection-grid">
-    {
-      items.map((item, index) => (
-        <figure
-          data-category={item.category}
-          data-selected={item.selected ? "true" : undefined}
-        >
-          <button
-            type="button"
-            data-lightbox-open
-            data-full-src={item.lightbox.src}
-            data-full-width={item.lightboxWidth}
-            data-full-height={item.lightboxHeight}
-            data-title={item.title}
-            data-medium={item.medium ?? item.caption}
-            data-dimensions={
-              item.dimensions
-                ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
-                : undefined
-            }
-            aria-label={`View full image of ${item.title}`}
-          >
-            <Image
-              src={item.image}
-              alt={`${item.title}, ${item.caption.toLowerCase()}, by Ruby Smythe`}
-              widths={[360, 720, 1080].filter(
-                (width) => width <= item.image.width,
-              )}
-              sizes="(max-width: 767px) calc((100vw - 64px) / 2), (min-width: 1800px) 21vw, 33vw"
-              quality={80}
-              loading={item.selected ? "eager" : "lazy"}
-              fetchpriority={index === 0 ? "high" : "auto"}
-            />
-          </button>
-          <figcaption>
-            {item.title}
-            <span>{item.caption}</span>
-          </figcaption>
-        </figure>
-      ))
-    }
+  <div class="collection-wall">
+    <div class="category-intros">
+      {
+        filters.map((filter) => (
+          <div class="category-intro" data-category-intro={filter.id}>
+            {filter.intro.map((paragraph) => <p>{paragraph}</p>)}
+          </div>
+        ))
+      }
+    </div>
+    <div id="artwork-grid" class="collection-grid">
+      {
+        items.map((item, index) => {
+          // Paintings show their medium and year; everything else keeps its caption.
+          const meta = item.medium
+            ? [item.medium, item.year].filter(Boolean).join(", ")
+            : item.caption;
+          const dimensions = item.dimensions
+            ? `${item.dimensions.width} × ${item.dimensions.height} ${item.dimensions.unit}`
+            : undefined;
+          return (
+            <figure
+              data-category={item.category}
+              data-selected={item.selected ? "true" : undefined}
+              style={`--ratio: ${(item.image.width / item.image.height).toFixed(4)}`}
+            >
+              <button
+                type="button"
+                data-lightbox-open
+                data-full-src={item.lightbox.src}
+                data-full-width={item.lightboxWidth}
+                data-full-height={item.lightboxHeight}
+                data-title={item.title}
+                data-medium={item.medium ?? item.caption}
+                data-dimensions={dimensions}
+                aria-label={`View full image of ${item.title}`}
+              >
+                <Image
+                  src={item.image}
+                  alt={`${item.title}, ${item.caption.toLowerCase()}, by Ruby Smythe`}
+                  widths={[360, 720, 1080].filter(
+                    (width) => width <= item.image.width,
+                  )}
+                  sizes={
+                    item.selected
+                      ? "(max-width: 767px) 50vw, 46vw"
+                      : "(max-width: 767px) 50vw, 31vw"
+                  }
+                  quality={80}
+                  loading={item.selected ? "eager" : "lazy"}
+                  fetchpriority={index === 0 ? "high" : "auto"}
+                />
+              </button>
+              <figcaption>
+                <span class="artwork-title">{item.title}</span>
+                {dimensions && <span class="artwork-size">{dimensions}</span>}
+                <span class="artwork-meta">{meta}</span>
+              </figcaption>
+            </figure>
+          );
+        })
+      }
+    </div>
   </div>
 </section>
