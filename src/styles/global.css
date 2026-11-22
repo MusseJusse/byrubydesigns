@@ -83,19 +83,10 @@ button:focus-visible {
   display: none !important;
 }
 ::selection {
-  background: var(--ink);
-  color: #fff;
+  background: var(--ruby);
+  color: var(--on-ruby);
 }
-.wall-about::selection,
-.wall-about ::selection {
-  background: var(--paper);
-  color: var(--ink);
-}
-.wall-about .wall-about-cta::selection,
-.wall-about .wall-about-cta ::selection {
-  background: var(--ink);
-  color: #fff;
-}
+/* The ruby button would hide a ruby highlight, so invert it there. */
 .enquire::selection,
 .enquire ::selection {
   background: var(--on-ruby);
