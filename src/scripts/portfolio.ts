@@ -23,6 +23,7 @@ const lightboxPrevious = requireElement<HTMLButtonElement>(
 );
 const lightboxNext = requireElement<HTMLButtonElement>("[data-lightbox-next]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const skipLink = requireElement<HTMLAnchorElement>(".skip-link");
 
 type LightboxGesture = {
   id: number;
@@ -380,6 +381,11 @@ function closeLightbox(immediate = false) {
   }
   if (closingLightbox) return;
   closingLightbox = true;
+  // A drag still held down must not move the image while it flies home.
+  gesture = null;
+  pinch = null;
+  activePointers.clear();
+  lightbox.removeAttribute("data-dragging");
   if (zoomLevel > 1) resetZoom(true);
   const fade = animateLightbox(false);
   const settle = () => {
@@ -1033,6 +1039,13 @@ lightbox.addEventListener("focusin", noteActivity);
 window.addEventListener("hashchange", () => syncFromHash());
 window.addEventListener("popstate", () => syncFromHash());
 window.addEventListener("pageshow", () => syncFromHash(false));
+// Jump to the artwork without writing #work into history, which the
+// category router would not understand on Back.
+skipLink.addEventListener("click", (event) => {
+  event.preventDefault();
+  gallery.focus();
+});
+
 // Text-only zoom and font loading resize the tabs without a window resize.
 const filterResize = new ResizeObserver(() => {
   positionFilterIndicator(false);
@@ -1043,9 +1056,13 @@ for (const label of filterControls.querySelectorAll("label")) filterResize.obser
 window.addEventListener("resize", () => {
   if (!lightbox.open || !imgEls.length) return;
   slideWidth = lightboxTrack.clientWidth;
-  // A drag measured against the old width would jump, so drop it.
+  // A drag measured against the old width would jump, so drop it along with
+  // the dimming a swipe down applies.
   gesture = null;
+  pinch = null;
+  activePointers.clear();
   lightbox.removeAttribute("data-dragging");
+  lightbox.style.opacity = "";
   setTrackTransform(-activeIndex * slideWidth, 0, false);
   updateRail(activeIndex, "auto");
   if (zoomLevel > 1) {
