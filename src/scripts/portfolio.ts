@@ -384,10 +384,14 @@ function prepareSlide(index: number) {
   const img = imgEls[index];
   const button = activeButtons[index];
   if (!img || !button) return;
-  const width = button.dataset.fullWidth;
-  const height = button.dataset.fullHeight;
-  if (width) img.width = Number(width);
-  if (height) img.height = Number(height);
+  const width = Number(button.dataset.fullWidth);
+  const height = Number(button.dataset.fullHeight);
+  if (width && height) {
+    img.width = width;
+    img.height = height;
+    img.style.setProperty("--full-width", `${width}px`);
+    img.style.setProperty("--ratio", String(width / height));
+  }
   img.alt = button.querySelector("img")?.alt ?? "";
 }
 
@@ -466,6 +470,8 @@ function buildCarousel() {
 function setActiveSlide(index: number) {
   slideEls.forEach((slide, position) => {
     slide.classList.toggle("is-active", position === index);
+    // Offscreen slides stay out of the accessibility tree.
+    slide.toggleAttribute("aria-hidden", position !== index);
   });
 }
 
@@ -479,6 +485,10 @@ function updateRail(index: number) {
   }
   const current = items[index] as HTMLElement | undefined;
   if (!current || lightboxRail.hidden) return;
+  // Arrow keys pressed on a thumbnail carry focus to the new one.
+  if (lightboxRail.contains(document.activeElement)) {
+    current.focus({ preventScroll: true });
+  }
   lightboxRail.scrollTo({
     left:
       current.offsetLeft -
@@ -513,6 +523,12 @@ function setActiveState(index: number) {
   syncSlideSources(index);
   lightboxPrevious.disabled = index <= 0;
   lightboxNext.disabled = index >= activeButtons.length - 1;
+  // A disabled arrow drops focus to the page, so hand it to the other one.
+  const focused = document.activeElement;
+  if (focused instanceof HTMLButtonElement && focused.disabled) {
+    const fallback = [lightboxPrevious, lightboxNext].find((arrow) => !arrow.disabled);
+    (fallback ?? lightboxClose).focus();
+  }
   setActiveSlide(index);
 }
 
@@ -553,6 +569,13 @@ function goToSlide(index: number, animate = true) {
   setActiveState(target);
   setTrackTransform(-target * slideWidth, 0, animate, trackDuration(distance));
   noteActivity();
+}
+
+// Finish a slide change that a press interrupted without dragging.
+function settleTrack(duration?: number) {
+  const target = -activeIndex * slideWidth;
+  const distance = Math.abs(target - liveTrackTransform().x) / Math.max(1, slideWidth);
+  setTrackTransform(target, 0, true, duration ?? trackDuration(distance));
 }
 
 function moveBy(direction: -1 | 1) {
@@ -931,8 +954,10 @@ lightboxStage.addEventListener("pointerup", (event) => {
     return;
   }
   const live = liveTrackTransform();
-  if (!active.moved || !active.axis) {
+  // A press that never became a horizontal drag lets an interrupted slide finish.
+  if (!active.moved || !active.axis || (active.axis === "y" && !active.touch)) {
     lightbox.style.opacity = "";
+    settleTrack();
     return;
   }
   if (active.axis === "x") {
@@ -943,22 +968,23 @@ lightboxStage.addEventListener("pointerup", (event) => {
     goToSlide(target);
     return;
   }
-  if (!active.touch) return;
   if (dy > 90 || (velocityY > 0.11 && dy > 20)) {
     lightbox.style.opacity = "";
     closeLightbox();
     return;
   }
   lightbox.style.opacity = "";
-  setTrackTransform(live.x, 0, true, 240);
+  settleTrack(240);
 });
 
 lightboxStage.addEventListener("pointercancel", (event) => {
   activePointers.delete(event.pointerId);
   if (pinch && activePointers.size < 2) pinch = null;
+  const interrupted = gesture && zoomLevel === 1;
   gesture = null;
   lightbox.removeAttribute("data-dragging");
   lightbox.style.opacity = "";
+  if (interrupted) settleTrack();
 });
 
 lightbox.addEventListener("pointermove", noteActivity);
@@ -969,14 +995,18 @@ lightbox.addEventListener("focusin", noteActivity);
 window.addEventListener("hashchange", () => syncFromHash());
 window.addEventListener("popstate", () => syncFromHash());
 window.addEventListener("pageshow", () => syncFromHash(false));
-window.addEventListener("resize", () => {
+// Text-only zoom and font loading resize the tabs without a window resize.
+const filterResize = new ResizeObserver(() => {
   positionFilterIndicator(false);
   revealFilterLabel(renderedFilter);
+});
+filterResize.observe(filterControls);
+for (const label of filterControls.querySelectorAll("label")) filterResize.observe(label);
+window.addEventListener("resize", () => {
   if (!lightbox.open || !imgEls.length) return;
   slideWidth = lightboxTrack.clientWidth;
   setTrackTransform(-activeIndex * slideWidth, 0, false);
 });
-void document.fonts.ready.then(() => positionFilterIndicator(false));
 window.addEventListener("pagehide", () => {
   categoryTransition?.skipTransition();
   closeLightbox(true);

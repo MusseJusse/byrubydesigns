@@ -145,7 +145,8 @@ const filters = [
             ? [item.medium, item.year].filter(Boolean).join(", ")
             : item.caption;
           const dimensions = item.dimensions
-            ? `${item.dimensions.width}\u00a0×\u00a0${item.dimensions.height}\u00a0${item.dimensions.unit}`
+            ? // Numbers stay together. At large text the unit can wrap on its own.
+              `${item.dimensions.width}\u00a0×\u00a0${item.dimensions.height} ${item.dimensions.unit}`
             : undefined;
           return (
             <figure
@@ -160,7 +161,7 @@ const filters = [
                 data-full-width={item.lightboxWidth}
                 data-full-height={item.lightboxHeight}
                 data-title={item.title}
-                data-medium={item.medium ?? item.caption}
+                data-medium={meta}
                 data-dimensions={dimensions}
                 aria-label={`View full image of ${item.title}`}
               >
