@@ -103,6 +103,8 @@ function selectFilter(
   { animate = true, resetScroll = false } = {},
 ) {
   if (filter === requestedFilter) return;
+  // Back and Forward can change the category under an open lightbox.
+  closeLightbox(true);
   requestedFilter = filter;
   categoryTransition?.skipTransition();
   const scrollToGallery = resetScroll && gallery.getBoundingClientRect().top < 0;
@@ -162,7 +164,6 @@ for (const filter of filters) {
   filter.addEventListener("change", () => {
     // Radios update before change fires; restore the old view for its snapshot.
     renderedFilter.checked = true;
-    closeLightbox(true);
     window.history.pushState(null, "", "#" + filter.value);
     selectFilter(filter, { resetScroll: true });
   });
@@ -265,7 +266,6 @@ function animateLightbox(opening: boolean) {
     element,
     opacity: Number.parseFloat(getComputedStyle(element).opacity) || 0,
     hidden: getComputedStyle(element).display === "none",
-    resting: element instanceof HTMLButtonElement && element.disabled ? 0.25 : 1,
   }));
   stopLightboxMotion();
   const duration = opening
@@ -283,6 +283,8 @@ function animateLightbox(opening: boolean) {
   ];
   if (fit) {
     const target = thumbnailTransform(activeIndex);
+    // With no visible thumbnail to return to, the image fades out with the backdrop.
+    const fade = !opening && !target;
     const scale = fit.animate(
       [
         {
@@ -291,8 +293,12 @@ function animateLightbox(opening: boolean) {
               ? transform
               : openingTransform(activeIndex)
             : transform,
+          ...(fade && { opacity: 1 }),
         },
-        { transform: opening ? "none" : target ?? `scale(${motionScale()})` },
+        {
+          transform: opening ? "none" : target ?? `scale(${motionScale()})`,
+          ...(fade && { opacity: 0 }),
+        },
       ],
       { duration, easing },
     );
@@ -313,10 +319,9 @@ function animateLightbox(opening: boolean) {
     animations.push(
       entry.element.animate(
         opening
-          ? [
-              { opacity: interrupted ? entry.opacity : 0 },
-              { opacity: entry.resting },
-            ]
+          ? // A lone start keyframe ends on the stylesheet's own opacity,
+            // disabled arrows included.
+            [{ opacity: interrupted ? entry.opacity : 0, offset: 0 }]
           : [{ opacity: entry.opacity }, { opacity: 0 }],
         opening
           ? {
@@ -572,6 +577,7 @@ function liveTrackTransform() {
 }
 
 function goToSlide(index: number, animate = true) {
+  if (closingLightbox) return;
   const count = activeButtons.length;
   if (!count || !slideWidth) return;
   const target = Math.min(count - 1, Math.max(0, index));
@@ -818,7 +824,7 @@ lightbox.addEventListener("keydown", (event) => {
 });
 
 lightboxStage.addEventListener("dblclick", (event) => {
-  if (!lightbox.open) return;
+  if (!lightbox.open || closingLightbox) return;
   const rect = lightboxViewport.getBoundingClientRect();
   const x = event.clientX - (rect.left + rect.width / 2);
   const y = event.clientY - (rect.top + rect.height / 2);
@@ -829,7 +835,7 @@ lightboxStage.addEventListener("dblclick", (event) => {
 lightbox.addEventListener(
   "wheel",
   (event) => {
-    if (!lightbox.open) return;
+    if (!lightbox.open || closingLightbox) return;
     if (event.ctrlKey || event.metaKey) {
       event.preventDefault();
       const rect = lightboxViewport.getBoundingClientRect();
@@ -862,7 +868,7 @@ lightbox.addEventListener(
 );
 
 lightboxStage.addEventListener("pointerdown", (event) => {
-  if (!lightbox.open || event.button !== 0) return;
+  if (!lightbox.open || closingLightbox || event.button !== 0) return;
   suppressClick = false;
   noteActivity();
   activePointers.set(event.pointerId, {
@@ -912,6 +918,7 @@ lightboxStage.addEventListener("pointermove", (event) => {
   if (!gesture || event.pointerId !== gesture.id) return;
   // A mouse release lost to another window ends the drag here instead.
   if (!gesture.touch && !(event.buttons & 1)) {
+    activePointers.delete(event.pointerId);
     gesture = null;
     lightbox.removeAttribute("data-dragging");
     if (zoomLevel === 1) settleTrack();
@@ -1000,7 +1007,7 @@ lightbox.addEventListener("pointerup", (event) => {
     return;
   }
   if (dy > 90 || (velocityY > 0.11 && dy > 20)) {
-    lightbox.style.opacity = "";
+    // Close from the dimmed state. Cleanup clears the opacity.
     closeLightbox();
     return;
   }
@@ -1036,6 +1043,9 @@ for (const label of filterControls.querySelectorAll("label")) filterResize.obser
 window.addEventListener("resize", () => {
   if (!lightbox.open || !imgEls.length) return;
   slideWidth = lightboxTrack.clientWidth;
+  // A drag measured against the old width would jump, so drop it.
+  gesture = null;
+  lightbox.removeAttribute("data-dragging");
   setTrackTransform(-activeIndex * slideWidth, 0, false);
   updateRail(activeIndex, "auto");
   if (zoomLevel > 1) {
