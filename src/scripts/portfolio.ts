@@ -414,15 +414,16 @@ function assignSlideSource(index: number, full: boolean) {
   }
   const preload = new Image();
   preload.src = src;
-  void preload
-    .decode()
-    .catch(() => {})
-    .finally(() => {
+  // A failed load keeps the thumbnail rather than showing a broken image.
+  void preload.decode().then(
+    () => {
       if (!lightbox.open || slideDesired[index] !== src) return;
       const current = imgEls[index];
       if (!current || current.getAttribute("src") === src) return;
       current.src = src;
-    });
+    },
+    () => {},
+  );
 }
 
 function syncSlideSources(center: number) {
@@ -471,7 +472,8 @@ function setActiveSlide(index: number) {
   slideEls.forEach((slide, position) => {
     slide.classList.toggle("is-active", position === index);
     // Offscreen slides stay out of the accessibility tree.
-    slide.toggleAttribute("aria-hidden", position !== index);
+    if (position === index) slide.removeAttribute("aria-hidden");
+    else slide.setAttribute("aria-hidden", "true");
   });
 }
 
@@ -480,6 +482,8 @@ function updateRail(index: number) {
   for (let position = 0; position < items.length; position += 1) {
     const item = items[position] as HTMLElement | undefined;
     if (!item) continue;
+    // Only the current thumbnail is a tab stop. Arrow keys move between them.
+    item.tabIndex = position === index ? 0 : -1;
     if (position === index) item.setAttribute("aria-current", "true");
     else item.removeAttribute("aria-current");
   }
@@ -898,6 +902,8 @@ lightboxStage.addEventListener("pointermove", (event) => {
   if (!gesture.moved && Math.hypot(dx, dy) > 8) {
     gesture.moved = true;
     suppressClick = true;
+    // Keep the drag's pointerup even if it ends over the chrome.
+    lightboxStage.setPointerCapture(event.pointerId);
   }
   if (!gesture.moved) return;
   if (zoomLevel > 1) {

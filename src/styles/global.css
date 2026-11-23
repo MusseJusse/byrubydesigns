@@ -219,10 +219,20 @@ button:focus-visible {
     text-underline-offset: 0.35em;
   }
 }
+.filter-controls > label {
+  position: relative;
+}
+/* Drawn on a pseudo-element: wider than the text, but inside the label's
+   height, so the sticky rail never clips it and the underline stays clear. */
 .filter-controls > input:focus-visible + label {
+  outline: none;
+}
+.filter-controls > input:focus-visible + label::after {
+  content: "";
+  position: absolute;
+  inset: 4px -0.4em;
   outline: 2px solid var(--ink);
-  /* Inside the label, so the sticky rail never clips the ring at the top. */
-  outline-offset: -2px;
+  pointer-events: none;
 }
 /* Announces the shown count to screen readers when the filter changes. */
 .collection-count {
@@ -461,12 +471,15 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .collection-grid figcaption {
     display: flex;
     flex-wrap: wrap;
+    align-items: baseline;
   }
   .artwork-title {
-    flex: 1 1 0;
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .artwork-meta {
     flex-basis: 100%;
+    min-width: 0;
   }
 }
 .artwork-meta {
@@ -579,7 +592,8 @@ html[data-gallery-scroll]::view-transition-new(root) {
   background: transparent;
   cursor: zoom-out;
 }
-.lightbox:focus {
+.lightbox:focus,
+#work:focus {
   outline: none;
 }
 .lightbox[open] {
@@ -667,6 +681,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   position: absolute;
   z-index: 4;
   left: 28px;
+  right: 28px;
   bottom: 86px;
   display: grid;
   gap: 3px;
@@ -756,8 +771,11 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 @media (forced-colors: active) {
   .lightbox-rail button[aria-current="true"] {
-    outline: 2px solid Highlight;
-    outline-offset: -2px;
+    border: 2px solid Highlight;
+  }
+  /* Focus sits outside the thumbnail, so it reads apart from the current one. */
+  .lightbox-rail button:focus-visible {
+    outline-offset: 1px;
   }
 }
 .lightbox-rail img {
@@ -935,10 +953,12 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .lightbox {
     --lightbox-top: 64px;
     --lightbox-side: 12px;
-    --lightbox-bottom: max(132px, calc(36px + 3.5rem));
+    /* Four caption lines fit once large text wraps the medium. */
+    --lightbox-bottom: max(132px, calc(36px + 4.5rem));
   }
   .lightbox figcaption {
     left: 16px;
+    right: 16px;
     bottom: 22px;
   }
   .lightbox-count {
