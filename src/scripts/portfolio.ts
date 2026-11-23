@@ -477,7 +477,7 @@ function setActiveSlide(index: number) {
   });
 }
 
-function updateRail(index: number) {
+function updateRail(index: number, behavior: ScrollBehavior = "smooth") {
   const items = lightboxRail.children;
   for (let position = 0; position < items.length; position += 1) {
     const item = items[position] as HTMLElement | undefined;
@@ -498,7 +498,7 @@ function updateRail(index: number) {
       current.offsetLeft -
       lightboxRail.clientWidth / 2 +
       current.offsetWidth / 2,
-    behavior: reducedMotion.matches ? "auto" : "smooth",
+    behavior: reducedMotion.matches ? "auto" : behavior,
   });
 }
 
@@ -766,6 +766,8 @@ for (const button of imageButtons) {
     unlockScroll = lockDocumentScroll();
     lightbox.showModal();
     lightbox.focus({ preventScroll: true });
+    // The closed dialog has no layout, so centre the current thumbnail now.
+    updateRail(activeIndex, "auto");
     slideWidth = lightboxTrack.clientWidth;
     setTrackTransform(-activeIndex * slideWidth, 0, false);
     if (!reducedMotion.matches) animateLightbox(true);
@@ -799,6 +801,9 @@ lightbox.addEventListener("keydown", (event) => {
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
     event.preventDefault();
     moveBy(event.key === "ArrowLeft" ? -1 : 1);
+  } else if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    goToSlide(event.key === "Home" ? 0 : activeButtons.length - 1);
   }
 });
 
@@ -935,7 +940,8 @@ lightboxStage.addEventListener("pointermove", (event) => {
   event.preventDefault();
 });
 
-lightboxStage.addEventListener("pointerup", (event) => {
+// On the dialog, so a release over the arrows or rail still ends the gesture.
+lightbox.addEventListener("pointerup", (event) => {
   activePointers.delete(event.pointerId);
   if (pinch) {
     if (activePointers.size < 2) {
@@ -983,7 +989,7 @@ lightboxStage.addEventListener("pointerup", (event) => {
   settleTrack(240);
 });
 
-lightboxStage.addEventListener("pointercancel", (event) => {
+lightbox.addEventListener("pointercancel", (event) => {
   activePointers.delete(event.pointerId);
   if (pinch && activePointers.size < 2) pinch = null;
   const interrupted = gesture && zoomLevel === 1;

@@ -230,7 +230,8 @@ button:focus-visible {
 .filter-controls > input:focus-visible + label::after {
   content: "";
   position: absolute;
-  inset: 4px -0.4em;
+  /* Clear of the underline below, and of the next tab across a phone's 10px gap. */
+  inset: 6px max(-0.4em, -6px);
   outline: 2px solid var(--ink);
   pointer-events: none;
 }
@@ -769,15 +770,6 @@ html[data-gallery-scroll]::view-transition-new(root) {
   opacity: 1;
   box-shadow: inset 0 0 0 1.5px var(--ink);
 }
-@media (forced-colors: active) {
-  .lightbox-rail button[aria-current="true"] {
-    border: 2px solid Highlight;
-  }
-  /* Focus sits outside the thumbnail, so it reads apart from the current one. */
-  .lightbox-rail button:focus-visible {
-    outline-offset: 1px;
-  }
-}
 .lightbox-rail img {
   display: block;
   width: 100%;
@@ -793,7 +785,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   transition: opacity var(--duration-fast) var(--ease-smooth-out);
 }
 .lightbox[data-chrome-hidden]
-  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, .lightbox figcaption, .lightbox-rail) {
+  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, figcaption, .lightbox-rail) {
   opacity: 0;
   pointer-events: none;
 }
@@ -807,6 +799,15 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .lightbox-rail button:focus-visible {
   opacity: 1;
   outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  .lightbox-rail button[aria-current="true"] {
+    border: 2px solid Highlight;
+  }
+  /* Focus sits outside the thumbnail, so it reads apart from the current one. */
+  .lightbox-rail button:focus-visible {
+    outline-offset: 1px;
+  }
 }
 .lightbox[data-zoomed] .lightbox-fit {
   cursor: grab;
