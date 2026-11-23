@@ -801,6 +801,10 @@ html[data-gallery-scroll]::view-transition-new(root) {
   outline-offset: -2px;
 }
 @media (forced-colors: active) {
+  /* GrayText already marks a disabled arrow. */
+  .lightbox-arrow:disabled {
+    opacity: 1;
+  }
   .lightbox-rail button[aria-current="true"] {
     border: 2px solid Highlight;
   }
@@ -968,6 +972,10 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .lightbox-arrow {
     background: rgba(232, 232, 229, 0.82);
+  }
+  /* The arrows sit 6px from the edge, so keep their ring on screen. */
+  .lightbox-arrow:focus-visible {
+    outline-offset: 2px;
   }
   .lightbox-previous {
     left: 6px;

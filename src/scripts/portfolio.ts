@@ -219,6 +219,14 @@ function thumbnailTransform(index: number) {
   const from = thumb.getBoundingClientRect();
   const to = fit.getBoundingClientRect();
   if (!from.width || !to.width) return null;
+  // A thumbnail off screen has nowhere visible to fly to, so fall back to a fade.
+  if (
+    from.bottom <= 0 ||
+    from.top >= window.innerHeight ||
+    from.right <= 0 ||
+    from.left >= window.innerWidth
+  )
+    return null;
   const x = from.left + from.width / 2 - (to.left + to.width / 2);
   const y = from.top + from.height / 2 - (to.top + to.height / 2);
   return `translate(${x}px, ${y}px) scale(${from.width / to.width})`;
@@ -798,6 +806,8 @@ lightbox.addEventListener("close", () => {
   if (!lightbox.open) cleanupLightbox();
 });
 lightbox.addEventListener("keydown", (event) => {
+  // Leave browser shortcuts such as Alt+Left alone, and ignore keys while closing.
+  if (closingLightbox || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
     event.preventDefault();
     moveBy(event.key === "ArrowLeft" ? -1 : 1);
@@ -860,6 +870,8 @@ lightboxStage.addEventListener("pointerdown", (event) => {
     y: event.clientY,
   });
   if (activePointers.size === 2) {
+    // A swipe that turns into a pinch returns to the current slide first.
+    if (gesture) settleTrack();
     gesture = null;
     lightbox.removeAttribute("data-dragging");
     lightbox.style.opacity = "";
@@ -898,6 +910,13 @@ lightboxStage.addEventListener("pointermove", (event) => {
     return;
   }
   if (!gesture || event.pointerId !== gesture.id) return;
+  // A mouse release lost to another window ends the drag here instead.
+  if (!gesture.touch && !(event.buttons & 1)) {
+    gesture = null;
+    lightbox.removeAttribute("data-dragging");
+    if (zoomLevel === 1) settleTrack();
+    return;
+  }
   const dx = event.clientX - gesture.x;
   const dy = event.clientY - gesture.y;
   const moveX = event.clientX - gesture.lastX;
@@ -1018,6 +1037,11 @@ window.addEventListener("resize", () => {
   if (!lightbox.open || !imgEls.length) return;
   slideWidth = lightboxTrack.clientWidth;
   setTrackTransform(-activeIndex * slideWidth, 0, false);
+  updateRail(activeIndex, "auto");
+  if (zoomLevel > 1) {
+    clampPan();
+    applyZoom(false);
+  }
 });
 window.addEventListener("pagehide", () => {
   categoryTransition?.skipTransition();
