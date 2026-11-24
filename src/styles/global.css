@@ -135,9 +135,8 @@ button:focus-visible {
   letter-spacing: 0;
   margin-top: 0.7vw;
 }
-.enquire,
-.wall-about-cta {
-  /* Transparent until forced colours paint it, so the buttons keep an edge. */
+.enquire {
+  /* Transparent until forced colours paint it, so the button keeps an edge. */
   outline: 1px solid transparent;
   outline-offset: -1px;
   display: inline-flex;
@@ -460,55 +459,48 @@ html[data-gallery-scroll]::view-transition-new(root) {
   margin-top: min(0.25vw, 4px);
 }
 .wall-about {
-  display: grid;
-  /* The photo column stops growing on very wide screens. */
-  grid-template-columns: minmax(0, min(44.5vw, 960px)) minmax(0, 1fr);
+  display: flex;
   align-items: center;
-  gap: min(4vw, 80px);
-  padding: min(5vw, 96px) var(--page-gutter) min(5.5vw, 104px);
-  background: var(--ink);
-  color: #c8cac2;
+  justify-content: center;
+  gap: min(4vw, 72px);
+  padding: min(5vw, 96px) min(6vw, 120px);
+  background: #fafafa;
 }
-.wall-about-photos {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: min(1.2vw, 24px);
-}
-.wall-about-photos img {
+.wall-about > img {
   display: block;
-  width: 100%;
+  /* Stops growing on very wide screens, like the gallery rows. */
+  width: min(15vw, 300px);
   height: auto;
-  aspect-ratio: 3 / 4;
-  object-fit: cover;
   border-radius: min(0.5vw, 8px);
 }
 .wall-about h2 {
+  margin-bottom: min(1.2vw, 20px);
   font-size: var(--text-heading);
   font-weight: 450;
   letter-spacing: -0.025em;
-  color: #f4f4f0;
+}
+.ruby-accent,
+.brand-handle {
+  color: var(--ruby);
 }
 .wall-about p {
-  max-width: 38ch;
-  margin-top: min(1.2vw, 24px);
+  margin-bottom: min(2vw, 36px);
   font-size: var(--text-control);
 }
-.wall-about .wall-about-studio {
-  margin-top: min(0.8vw, 16px);
-  font-size: var(--text-detail);
-  color: #9ea198;
+.wall-about a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: var(--text-control);
+  text-decoration: none;
 }
-.wall-about-cta {
-  max-width: 100%;
-  margin-top: min(2.2vw, 40px);
-  padding-block: 0.5em;
-  background: var(--paper);
-  color: var(--ink);
-  /* Wrap at large text sizes rather than widen the page. */
-  white-space: normal;
+.wall-about a span[aria-hidden] {
+  font-family: system-ui, sans-serif;
+  color: var(--ruby);
+  transition: transform 160ms ease;
 }
-.wall-about-cta:focus-visible {
-  outline-color: var(--paper);
+.wall-about a:focus-visible span[aria-hidden] {
+  transform: translate(2px, -2px);
 }
 .legal {
   max-width: 68ch;
@@ -795,8 +787,8 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .enquire:active {
   background: var(--ruby-deep);
 }
-.wall-about-cta:active {
-  background: #d9d9d5;
+.wall-about a:active {
+  text-decoration: underline;
 }
 .lightbox-rail button:active {
   opacity: 1;
@@ -889,31 +881,32 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: 0.6875rem;
   }
   .wall-about {
-    grid-template-columns: minmax(0, 1fr);
+    align-items: flex-start;
     gap: 20px;
-    padding: 30px var(--page-gutter) 34px;
+    padding: 32px var(--page-gutter);
   }
-  .wall-about-photos {
-    gap: 10px;
-  }
-  .wall-about-photos img {
+  .wall-about > img {
+    width: 30%;
+    margin-top: 3px;
     border-radius: 3px;
   }
+  .wall-about > div {
+    flex: 1;
+  }
   .wall-about h2 {
+    margin-bottom: 12px;
     font-size: 1.375rem;
     line-height: 1.2;
   }
   .wall-about p {
-    margin-top: 10px;
-    font-size: 0.875rem;
-  }
-  .wall-about .wall-about-studio {
-    margin-top: 8px;
+    margin-bottom: 12px;
     font-size: 0.8125rem;
   }
-  .wall-about-cta {
-    margin-top: 18px;
-    font-size: 0.875rem;
+  .wall-about p br {
+    display: none;
+  }
+  .wall-about a {
+    font-size: 0.8125rem;
   }
   .lightbox {
     padding: 64px 12px 132px;
@@ -951,8 +944,11 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .enquire:hover {
     background: var(--ruby-deep);
   }
-  .wall-about-cta:hover {
-    background: #fff;
+  .wall-about a:hover {
+    text-decoration: underline;
+  }
+  .wall-about a:hover span[aria-hidden] {
+    transform: translate(2px, -2px);
   }
   .filter-controls > label:hover {
     color: var(--ink);

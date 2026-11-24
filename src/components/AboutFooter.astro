@@ -1,40 +1,29 @@
 ---
 import { Image } from "astro:assets";
 import contactPhoto from "../assets/artwork/contact/IMG_1155.webp";
-import studioPhoto from "../assets/artwork/tattoo/IMG_2233.webp";
 ---
 
 <footer id="about" class="wall-about" aria-labelledby="about-heading">
-  <div class="wall-about-photos">
-    <Image
-      src={contactPhoto}
-      alt="Ruby painting beside a bouquet of flowers"
-      widths={[240, 480, 640]}
-      sizes="(max-width: 767px) 44vw, 22vw"
-      quality={88}
-      loading="lazy"
-    />
-    <Image
-      src={studioPhoto}
-      alt="Sunlight across Inkdependent Studio in Edinburgh"
-      widths={[240, 480, 640]}
-      sizes="(max-width: 767px) 44vw, 22vw"
-      quality={88}
-      loading="lazy"
-    />
-  </div>
+  <Image
+    src={contactPhoto}
+    alt="Ruby painting beside a bouquet of flowers"
+    widths={[240, 480, 640]}
+    sizes="(max-width: 767px) 30vw, min(15vw, 300px)"
+    quality={88}
+    loading="lazy"
+  />
   <div>
-    <h2 id="about-heading">Hi, I’m Ruby</h2>
-    <p>
-      New Zealand-born painter and tattoo artist in Edinburgh. Custom work and
-      flash bookings via Instagram.
-    </p>
-    <p class="wall-about-studio">Inkdependent Studio, Haymarket</p>
+    <h2 id="about-heading">Made by <span class="ruby-accent">Ruby</span>.</h2>
+    <p>New Zealand-born painter and tattoo artist, <br />based in Edinburgh.</p>
     <a
-      class="wall-about-cta"
       href="https://www.instagram.com/byrubydesigns"
       target="_blank"
-      rel="noopener noreferrer">Message @byrubydesigns</a
+      rel="noopener noreferrer"
     >
+      <span
+        >Work and bookings <span class="brand-handle">@byrubydesigns</span>{" "}
+        <span aria-hidden="true">↗</span></span
+      >
+    </a>
   </div>
 </footer>
