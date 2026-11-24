@@ -11,6 +11,9 @@
   --ink: #30312e;
   --muted: #646860;
   --ruby: #873e4f;
+  --ruby-deep: #6e2f3e;
+  --paper-soft: #f2f2ef;
+  --on-ruby: #f8f8f6;
   --page-gutter: 4.5vw;
   /* Rem bounds and a rem contribution let fluid text follow font preferences. */
   --text-body: clamp(0.875rem, 0.5rem + 0.625vw, 1.25rem);
@@ -80,43 +83,23 @@ button:focus-visible {
   display: none !important;
 }
 ::selection {
-  background: var(--ink);
-  color: #fff;
+  background: var(--ruby);
+  color: var(--on-ruby);
+}
+/* The ruby button would hide a ruby highlight, so invert it there. */
+.enquire::selection,
+.enquire ::selection {
+  background: var(--on-ruby);
+  color: var(--ruby-deep);
 }
 
-.collection {
-  padding: 3.2vw var(--page-gutter) 0;
-}
-.collection a {
-  display: inline-flex;
-  align-items: center;
-  gap: 1vw;
-  text-decoration: none;
-}
-a span[aria-hidden] {
-  font-family: system-ui, sans-serif;
-  color: var(--ruby);
-  transition: transform 160ms ease;
-}
-.collection a:focus-visible span[aria-hidden] {
-  transform: translate(2px, -2px);
-}
-@media (hover: hover) and (pointer: fine) {
-  .collection a:hover span[aria-hidden] {
-    transform: translate(2px, -2px);
-  }
-}
-.collection a:not(.brand-lockup):active {
-  opacity: 1;
-  text-decoration: underline;
-}
 .collection-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 3vw;
-  margin-bottom: 2.2vw;
+  padding: min(3.2vw, 64px) var(--page-gutter) min(1.4vw, 28px);
 }
 .collection-header h1 {
   min-width: 0;
@@ -125,8 +108,11 @@ a span[aria-hidden] {
   font-weight: inherit;
 }
 .collection-header .brand-lockup {
+  display: inline-flex;
+  align-items: center;
   max-width: 100%;
   gap: 1.1vw;
+  text-decoration: none;
 }
 .brand-mark {
   display: block;
@@ -150,77 +136,35 @@ a span[aria-hidden] {
   margin-top: 0.7vw;
 }
 .enquire {
+  /* Transparent until forced colours paint it, so the button keeps an edge. */
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
+  padding: 0 1.3em;
+  border-radius: 2px;
   font-size: var(--text-contact);
+  font-weight: 500;
+  text-decoration: none;
   white-space: nowrap;
 }
-.brand-handle {
-  color: var(--ruby);
+.enquire {
+  background: var(--ruby);
+  color: var(--on-ruby);
 }
-.collection-body {
-  display: grid;
-  grid-template-columns: 17% minmax(0, 1fr);
-  gap: 6vw;
-}
-.collection-aside {
-  padding-top: 0.9vw;
-  font-size: var(--text-detail);
-}
-.collection-aside > a {
-  margin-top: 2.8vw;
-  min-height: 44px;
-}
-.collection-aside-intros {
-  margin-top: 3.2vw;
-}
-.collection-selected-intro {
-  margin-top: 3.2vw;
-  padding-left: 1vw;
-  border-left: 2px solid var(--ruby);
-  font-size: var(--text-detail);
-  line-height: 1.4;
-}
-.collection-body:has(input[value="tattoo"]:checked) .collection-selected-intro,
-.collection-body:has(input[value="paintings"]:checked) .collection-selected-intro,
-.collection-body:has(input[value="drawings"]:checked) .collection-selected-intro {
-  display: none;
-}
-.category-intro {
-  display: none;
-  padding-left: 1vw;
-  border-left: 2px solid var(--ruby);
-}
-.category-intro p {
-  font-size: var(--text-detail);
-  line-height: 1.4;
-}
-.category-intro p + p {
-  margin-top: 0.8vw;
-}
-.collection-mobile-intros {
-  display: none;
-}
-.collection-body:has(input[value="tattoo"]:checked)
-  [data-category-intro="tattoo"],
-.collection-body:has(input[value="paintings"]:checked)
-  [data-category-intro="paintings"],
-.collection-body:has(input[value="drawings"]:checked)
-  [data-category-intro="drawings"] {
-  display: block;
-}
-.collection-content {
-  min-width: 0;
-  scroll-margin-top: 12px;
+.enquire:focus-visible {
+  outline-color: var(--ruby);
 }
 .filter-controls {
-  flex-wrap: wrap;
   position: sticky;
   top: 0;
   z-index: 3;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 2.7vw;
-  margin-bottom: 1.2vw;
+  gap: min(2.7vw, 52px);
+  padding: 0 var(--page-gutter);
   background: var(--paper);
 }
 .filter-controls > input {
@@ -235,7 +179,7 @@ a span[aria-hidden] {
   top: 0;
   left: 0;
   width: 0;
-  height: 1px;
+  height: 2px;
   background: var(--ruby);
   transform: translate(0, 0);
   transition:
@@ -245,28 +189,60 @@ a span[aria-hidden] {
   view-transition-name: filter-indicator;
 }
 .filter-controls:not([data-indicator-ready]) > input:checked + label {
-  box-shadow: inset 0 -1px var(--ruby);
+  box-shadow: inset 0 -2px var(--ruby);
 }
 .filter-controls > label {
   display: inline-flex;
-  align-items: center;
-  min-height: max(44px, 3.5vw);
+  align-items: baseline;
+  gap: 0.4em;
+  padding-block: 0.9em;
+  min-height: 44px;
   font-size: var(--text-control);
-  color: #666a62;
+  color: var(--muted);
   white-space: nowrap;
   cursor: pointer;
 }
+.filter-count {
+  font-size: 0.8em;
+  font-variant-numeric: tabular-nums;
+}
 .filter-controls > input:checked + label {
+  color: var(--ink);
+}
+.filter-controls > input:checked + label .filter-count {
   color: var(--ruby);
 }
-.filter-controls > input:focus-visible + label {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
+/* Forced colours drop the indicator's background, so underline the chosen tab. */
+@media (forced-colors: active) {
+  .filter-controls > input:checked + label {
+    text-decoration: underline 2px;
+    text-underline-offset: 0.35em;
+  }
 }
+.filter-controls > label {
+  position: relative;
+}
+/* Drawn on a pseudo-element: wider than the text, but inside the label's
+   height, so the sticky rail never clips it and the underline stays clear. */
+.filter-controls > input:focus-visible + label {
+  outline: none;
+}
+.filter-controls > input:focus-visible + label::after {
+  content: "";
+  position: absolute;
+  /* Clear of the underline below, and of the next tab across a phone's 10px gap. */
+  inset: 6px max(-0.4em, -6px);
+  outline: 2px solid var(--ink);
+  pointer-events: none;
+}
+/* Announces the shown count to screen readers when the filter changes. */
 .collection-count {
-  font-size: clamp(0.6875rem, 0.25rem + 0.6375vw, 1.0625rem);
-  color: var(--muted);
-  margin: -0.3vw 0 1vw;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .collection-count > span {
   display: none;
@@ -280,6 +256,33 @@ a span[aria-hidden] {
   [data-count="drawings"] {
   display: inline;
 }
+.collection-wall {
+  padding: min(2.4vw, 48px) var(--page-gutter) min(5vw, 96px);
+  background: var(--paper-soft);
+}
+.category-intros {
+  max-width: 60ch;
+  margin-bottom: min(2.4vw, 48px);
+  view-transition-name: artwork-intro;
+}
+.category-intro {
+  display: none;
+  font-size: var(--text-detail);
+  line-height: 1.45;
+}
+.category-intro p + p {
+  margin-top: 0.6em;
+}
+.collection-content:has(input[value="selected"]:checked)
+  [data-category-intro="selected"],
+.collection-content:has(input[value="tattoo"]:checked)
+  [data-category-intro="tattoo"],
+.collection-content:has(input[value="paintings"]:checked)
+  [data-category-intro="paintings"],
+.collection-content:has(input[value="drawings"]:checked)
+  [data-category-intro="drawings"] {
+  display: block;
+}
 .collection-content:has(input[value="selected"]:checked)
   figure:not([data-selected="true"]),
 .collection-content:has(input[value="tattoo"]:checked)
@@ -290,27 +293,55 @@ a span[aria-hidden] {
   figure:not([data-category="drawings"]) {
   display: none;
 }
+/* Justified rows: each piece grows by its aspect ratio, so a row shares one
+   height and nothing is cropped. --row-height is the height before growing.
+   Its px and svh caps fit more pieces per row on large screens instead of
+   scaling them up. Full rows grow to fill the width; the max-width cap only
+   bounds the rare row that would need to more than double. */
 .collection-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  column-gap: 4vw;
-  row-gap: 4.5vw;
+  --row-height: min(33vw, 560px, 42svh);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: min(4vw, 64px) min(2.4vw, 40px);
   view-transition-name: artwork;
 }
-.collection-count {
-  view-transition-name: artwork-count;
+/* Favourites open big, two to a row as in the mock, centred when their height
+   cap leaves room beside them. Very wide or short windows fit all four in one
+   row, which avoids a 3+1 split. */
+.collection-content:has(input[value="selected"]:checked) .collection-grid {
+  --row-height: 46vw;
+  justify-content: center;
 }
-.collection-aside-intros {
-  view-transition-name: artwork-intro;
+@media (min-width: 2400px), (min-aspect-ratio: 11/6) {
+  .collection-content:has(input[value="selected"]:checked) .collection-grid {
+    --row-height: min(26vw, 640px, 50svh);
+  }
 }
-.collection-mobile-intros {
-  view-transition-name: artwork-intro-mobile;
+.collection-grid > figure {
+  flex: var(--ratio) 1 calc(var(--ratio) * var(--row-height));
+  max-width: calc(var(--ratio) * var(--row-height) * 2);
+  min-width: 0;
 }
-/* With no destination snapshot, the outgoing intro fades at its original position. */
-.collection-body:has(input[value="selected"]:checked) .category-intros {
-  view-transition-name: none;
+/* Soaks up the last row's spare width, so it stays at row height. */
+.collection-grid::after {
+  content: "";
+  flex: 999 1 0;
 }
-
+/* Favourites centre instead, and stay shorter than the screen. */
+.collection-content:has(input[value="selected"]:checked) .collection-grid::after {
+  display: none;
+}
+.collection-content:has(input[value="selected"]:checked) .collection-grid > figure {
+  max-width: min(
+    calc(var(--ratio) * var(--row-height) * 1.5),
+    calc(var(--ratio) * 75svh)
+  );
+}
+/* Keep focused artwork clear of the sticky filters. */
+.collection-grid button {
+  scroll-margin-top: 6rem;
+}
 /* Only the changing artwork moves; keep the page and its controls still. */
 ::view-transition {
   pointer-events: none;
@@ -329,20 +360,13 @@ a span[aria-hidden] {
   animation: none;
 }
 ::view-transition-old(artwork),
-::view-transition-old(artwork-count),
-::view-transition-old(artwork-intro),
-::view-transition-old(artwork-intro-mobile) {
+::view-transition-old(artwork-intro) {
   animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) both;
   mix-blend-mode: normal;
 }
 ::view-transition-new(artwork),
-::view-transition-new(artwork-intro),
-::view-transition-new(artwork-intro-mobile) {
+::view-transition-new(artwork-intro) {
   animation: artwork-lift-in 220ms cubic-bezier(.22, 1, .36, 1) both;
-  mix-blend-mode: normal;
-}
-::view-transition-new(artwork-count) {
-  animation: artwork-fade-out 220ms cubic-bezier(.22, 1, .36, 1) reverse both;
   mix-blend-mode: normal;
 }
 ::view-transition-old(filter-indicator),
@@ -351,7 +375,7 @@ a span[aria-hidden] {
   mix-blend-mode: normal;
 }
 /* A scroll reset fades between viewports instead of moving the entire tall grid. */
-html[data-gallery-scroll] :is(.collection-grid, .collection-count, .category-intros) {
+html[data-gallery-scroll] :is(.collection-grid, .category-intros) {
   view-transition-name: none;
 }
 html[data-gallery-scroll]::view-transition-old(root) {
@@ -392,8 +416,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   ::view-transition-new(*) {
     animation: none !important;
   }
-  .filter-indicator,
-  a span[aria-hidden] {
+  .filter-indicator {
     transition: none !important;
   }
   .lightbox-slide img,
@@ -409,15 +432,12 @@ html[data-gallery-scroll]::view-transition-new(root) {
     transition: none !important;
   }
 }
-.collection-grid > figure {
-  min-width: 0;
-}
 .collection-grid button {
   display: block;
   width: 100%;
   padding: 0;
   border: 0;
-  border-radius: 0.5vw;
+  border-radius: min(0.5vw, 8px);
   background: transparent;
   color: inherit;
   cursor: zoom-in;
@@ -429,47 +449,87 @@ html[data-gallery-scroll]::view-transition-new(root) {
   border-radius: inherit;
 }
 .collection-grid figcaption {
-  padding-top: 1vw;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) fit-content(40%);
+  column-gap: 1em;
+  padding-top: min(1vw, 14px);
   font-size: var(--text-caption);
   line-height: 1.4;
+  /* Long words break at large text sizes instead of spilling into the next caption. */
+  overflow-wrap: break-word;
 }
-.collection-grid figcaption > span {
-  display: block;
-  margin-top: 0.25vw;
+.artwork-size,
+.artwork-meta {
   font-size: var(--text-meta);
   color: var(--muted);
+}
+.artwork-size {
+  font-variant-numeric: tabular-nums;
+}
+/* Large text can't fit the size beside the title, so it drops to its own line
+   rather than splitting a number. */
+@media (min-width: 768px) {
+  .collection-grid figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+  .artwork-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .artwork-meta {
+    flex-basis: 100%;
+    min-width: 0;
+  }
+}
+.artwork-meta {
+  grid-column: 1 / -1;
+  margin-top: min(0.25vw, 4px);
 }
 .wall-about {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4vw;
-  margin: 2vw calc(-1 * var(--page-gutter)) 0;
-  padding: 5vw 6vw;
+  gap: min(4vw, 72px);
+  padding: min(5vw, 96px) min(6vw, 120px);
   background: #fafafa;
 }
 .wall-about > img {
   display: block;
-  width: 15vw;
+  /* Stops growing on very wide screens, like the gallery rows. */
+  width: min(15vw, 300px);
   height: auto;
-  border-radius: 0.5vw;
+  border-radius: min(0.5vw, 8px);
 }
 .wall-about h2 {
+  margin-bottom: min(1.2vw, 20px);
   font-size: var(--text-heading);
   font-weight: 450;
   letter-spacing: -0.025em;
-  margin-bottom: 1.2vw;
 }
-.wall-about h2 .ruby-accent {
+.ruby-accent,
+.brand-handle {
   color: var(--ruby);
 }
 .wall-about p {
+  margin-bottom: min(2vw, 36px);
   font-size: var(--text-control);
-  margin-bottom: 2vw;
 }
 .wall-about a {
+  display: inline-flex;
+  align-items: center;
   min-height: 44px;
   font-size: var(--text-control);
+  text-decoration: none;
+}
+.wall-about a span[aria-hidden] {
+  font-family: system-ui, sans-serif;
+  color: var(--ruby);
+  transition: transform 160ms ease;
+}
+.wall-about a:focus-visible span[aria-hidden] {
+  transform: translate(2px, -2px);
 }
 .legal {
   max-width: 68ch;
@@ -523,12 +583,18 @@ html[data-gallery-scroll]::view-transition-new(root) {
   max-height: none;
   margin: 0;
   border: 0;
-  padding: 44px 80px 152px;
+  /* Room for the count above and the caption and rail below. The rem parts
+     grow with the text, so large text never covers the artwork. */
+  --lightbox-top: calc(28px + 1rem);
+  --lightbox-side: 80px;
+  --lightbox-bottom: calc(96px + 3.5rem);
+  padding: var(--lightbox-top) var(--lightbox-side) var(--lightbox-bottom);
   color: var(--ink);
   background: transparent;
   cursor: zoom-out;
 }
-.lightbox:focus {
+.lightbox:focus,
+#work:focus {
   outline: none;
 }
 .lightbox[open] {
@@ -564,8 +630,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox-viewport {
   position: absolute;
-  inset: 44px 80px 152px;
+  inset: var(--lightbox-top) var(--lightbox-side) var(--lightbox-bottom);
   overflow: hidden;
+  container-type: size;
 }
 /* Let the open and close transitions travel to and from the thumbnail. */
 .lightbox[data-flipping] .lightbox-viewport {
@@ -599,10 +666,11 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox-slide img {
   display: block;
-  width: auto;
+  /* Sized from the full image, so the box holds still when it replaces the
+     thumbnail. --full-width and --ratio come from portfolio.ts. */
+  width: min(var(--full-width, 1600px), 1600px, 100cqw, 100cqh * var(--ratio, 1));
   height: auto;
-  max-width: min(calc(100vw - 160px), 1600px);
-  max-height: calc(100dvh - 196px);
+  aspect-ratio: var(--ratio, auto);
   object-fit: contain;
   opacity: 1;
   transition: opacity 200ms var(--ease-smooth-out);
@@ -614,6 +682,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   position: absolute;
   z-index: 4;
   left: 28px;
+  right: 28px;
   bottom: 86px;
   display: grid;
   gap: 3px;
@@ -716,7 +785,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   transition: opacity var(--duration-fast) var(--ease-smooth-out);
 }
 .lightbox[data-chrome-hidden]
-  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, .lightbox figcaption, .lightbox-rail) {
+  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, figcaption, .lightbox-rail) {
   opacity: 0;
   pointer-events: none;
 }
@@ -730,6 +799,19 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .lightbox-rail button:focus-visible {
   opacity: 1;
   outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  /* GrayText already marks a disabled arrow. */
+  .lightbox-arrow:disabled {
+    opacity: 1;
+  }
+  .lightbox-rail button[aria-current="true"] {
+    border: 2px solid Highlight;
+  }
+  /* Focus sits outside the thumbnail, so it reads apart from the current one. */
+  .lightbox-rail button:focus-visible {
+    outline-offset: 1px;
+  }
 }
 .lightbox[data-zoomed] .lightbox-fit {
   cursor: grab;
@@ -753,6 +835,12 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .collection-grid button:active {
   opacity: 0.82;
 }
+.enquire:active {
+  background: var(--ruby-deep);
+}
+.wall-about a:active {
+  text-decoration: underline;
+}
 .lightbox-rail button:active {
   opacity: 1;
   filter: brightness(0.85);
@@ -767,12 +855,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: 0.875rem;
     line-height: 1.5;
   }
-  .collection {
-    padding-top: 28px;
-  }
   .collection-header {
     gap: 12px;
-    margin-bottom: 27px;
+    padding: 28px var(--page-gutter) 12px;
   }
   .collection-header .wordmark {
     font-size: clamp(1.5rem, 0.25rem + 6.4vw, 1.9375rem);
@@ -787,79 +872,65 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: clamp(0.625rem, 0.125rem + 2.56vw, 0.75rem);
     margin-top: 6px;
   }
-  .collection a {
-    gap: 6px;
-  }
   .enquire {
+    padding: 0 12px;
     font-size: 0.8125rem;
   }
   .enquire-label {
     display: none;
   }
-  .collection-body {
-    display: block;
-  }
-  .collection-aside {
-    display: none;
-  }
-  .collection-mobile-intros {
-    margin: 4px 0 0;
-    padding: 28px 0 10px;
-  }
-  .collection-body:has(input[value="tattoo"]:checked)
-    .collection-mobile-intros,
-  .collection-body:has(input[value="paintings"]:checked)
-    .collection-mobile-intros,
-  .collection-body:has(input[value="drawings"]:checked)
-    .collection-mobile-intros {
-    display: block;
-  }
-  .collection-mobile-intros .category-intro {
-    padding-left: 14px;
-  }
-  .collection-mobile-intros .category-intro p {
-    font-size: 0.9375rem;
-    line-height: 1.45;
-  }
-  .collection-mobile-intros .category-intro p + p {
-    margin-top: 10px;
-  }
+  /* One scrollable line, so the sticky rail never doubles in height. */
   .filter-controls {
+    flex-wrap: nowrap;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 24px;
-    padding-block: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
   }
   .filter-controls > label {
-    font-size: 0.75rem;
+    padding-block: 0;
     min-height: 44px;
+    align-items: center;
+    font-size: 0.75rem;
   }
-  .collection-count {
-    display: none;
-    font-size: 0.6875rem;
-    margin: -5px 0 16px;
+  .collection-wall {
+    padding: 20px var(--page-gutter) 34px;
   }
-  .collection-grid {
-    column-gap: 20px;
-    row-gap: 30px;
+  .category-intros {
+    margin-bottom: 18px;
+  }
+  .category-intro {
+    font-size: 0.875rem;
+  }
+  .collection-grid,
+  .collection-content:has(input[value="selected"]:checked) .collection-grid {
+    /* Two pieces per row: half the grid width, less the gap, before growing.
+       Phones held sideways fit more per row instead. */
+    --row-height: min(calc((100% - 14px) / 2), 42svh);
+    gap: 24px 14px;
+  }
+  /* A wide piece alone on its row fills it rather than stopping short. */
+  .collection-grid > figure {
+    max-width: calc(var(--ratio) * 75svh);
   }
   .collection-grid button {
     border-radius: 3px;
   }
   .collection-grid figcaption {
+    grid-template-columns: minmax(0, 1fr);
     padding-top: 8px;
     font-size: 0.75rem;
     line-height: 1.35;
   }
-  .collection-grid figcaption > span {
-    font-size: 0.6875rem;
+  .artwork-size,
+  .artwork-meta {
     margin-top: 2px;
+    font-size: 0.6875rem;
   }
   .wall-about {
     align-items: flex-start;
-    margin-top: 28px;
-    padding: 32px 24px;
     gap: 20px;
+    padding: 32px var(--page-gutter);
   }
   .wall-about > img {
     width: 30%;
@@ -870,13 +941,13 @@ html[data-gallery-scroll]::view-transition-new(root) {
     flex: 1;
   }
   .wall-about h2 {
+    margin-bottom: 12px;
     font-size: 1.375rem;
     line-height: 1.2;
-    margin-bottom: 12px;
   }
   .wall-about p {
-    font-size: 0.8125rem;
     margin-bottom: 12px;
+    font-size: 0.8125rem;
   }
   .wall-about p br {
     display: none;
@@ -885,17 +956,14 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: 0.8125rem;
   }
   .lightbox {
-    padding: 64px 12px 132px;
-  }
-  .lightbox-viewport {
-    inset: 64px 12px 132px;
-  }
-  .lightbox-slide img {
-    max-width: calc(100vw - 24px);
-    max-height: calc(100dvh - 196px);
+    --lightbox-top: 64px;
+    --lightbox-side: 12px;
+    /* Four caption lines fit once large text wraps the medium. */
+    --lightbox-bottom: max(132px, calc(36px + 4.5rem));
   }
   .lightbox figcaption {
     left: 16px;
+    right: 16px;
     bottom: 22px;
   }
   .lightbox-count {
@@ -904,6 +972,10 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
   .lightbox-arrow {
     background: rgba(232, 232, 229, 0.82);
+  }
+  /* The arrows sit 6px from the edge, so keep their ring on screen. */
+  .lightbox-arrow:focus-visible {
+    outline-offset: 2px;
   }
   .lightbox-previous {
     left: 6px;
@@ -916,15 +988,33 @@ html[data-gallery-scroll]::view-transition-new(root) {
   }
 }
 
-@media (min-width: 1800px) {
-  .collection-grid {
-    grid-template-columns: repeat(3, 1fr);
+/* Phones held sideways: drop the rail so the artwork gets the height. */
+@media (max-height: 500px) {
+  .lightbox {
+    --lightbox-top: calc(20px + 1rem);
+    --lightbox-side: 80px;
+    --lightbox-bottom: calc(28px + 3.5rem);
+  }
+  .lightbox figcaption {
+    bottom: 16px;
+  }
+  .lightbox-count {
+    top: 16px;
+  }
+  .lightbox-rail {
+    display: none;
   }
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .collection a:not(.brand-lockup):hover {
+  .enquire:hover {
+    background: var(--ruby-deep);
+  }
+  .wall-about a:hover {
     text-decoration: underline;
+  }
+  .wall-about a:hover span[aria-hidden] {
+    transform: translate(2px, -2px);
   }
   .filter-controls > label:hover {
     color: var(--ink);

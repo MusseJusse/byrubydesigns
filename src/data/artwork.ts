@@ -146,8 +146,7 @@ export const galleryCategories = [
     id: "tattoo",
     label: "Tattoos",
     intro: [
-      "Originally trained in Auckland, New Zealand, I have been tattooing since 2022 and now work out of Inkdependent Studio near Edinburgh’s Haymarket station.",
-      "Fully licensed, I do custom and my own original designs with a focus on fine-line black-and-grey."
+      "Trained in Auckland and tattooing since 2022, now at Inkdependent Studio near Haymarket in Edinburgh. Fully licensed for custom work and my own fine-line black-and-grey designs."
     ],
     items: tattooArtwork
   },
@@ -155,15 +154,14 @@ export const galleryCategories = [
     id: "drawings",
     label: "Drawings",
     intro: [
-      "A series of hand-sized flash designs rendered in ballpoint pen, available for tattooing.",
-      "These pieces explore core themes in my work—from delicate flora and pollinators to skulls and wildlife—all balanced with soft shading and natural placement in mind."
+      "Hand-sized ballpoint flash, available for tattooing. Flowers, moths, birds, and skulls shaded to sit naturally on the body."
     ],
     items: drawingArtwork
   },
   {
     id: "paintings",
     label: "Paintings",
-    intro: ["“It's all there, the strangeness, colour, exhilaration.” Rita Angus"],
+    intro: ["“It’s all there, the strangeness, colour, exhilaration.” Rita Angus"],
     items: paintingArtwork
   }
 ] as const satisfies readonly GalleryCategory[];
