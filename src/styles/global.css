@@ -1027,7 +1027,4 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .filter-controls > label {
     color: var(--ink);
   }
-  .wall-about .wall-about-studio {
-    color: inherit;
-  }
 }
