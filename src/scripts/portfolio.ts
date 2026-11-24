@@ -23,6 +23,7 @@ const lightboxPrevious = requireElement<HTMLButtonElement>(
 );
 const lightboxNext = requireElement<HTMLButtonElement>("[data-lightbox-next]");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const skipLink = requireElement<HTMLAnchorElement>(".skip-link");
 
 type LightboxGesture = {
   id: number;
@@ -103,6 +104,8 @@ function selectFilter(
   { animate = true, resetScroll = false } = {},
 ) {
   if (filter === requestedFilter) return;
+  // Back and Forward can change the category under an open lightbox.
+  closeLightbox(true);
   requestedFilter = filter;
   categoryTransition?.skipTransition();
   const scrollToGallery = resetScroll && gallery.getBoundingClientRect().top < 0;
@@ -162,7 +165,6 @@ for (const filter of filters) {
   filter.addEventListener("change", () => {
     // Radios update before change fires; restore the old view for its snapshot.
     renderedFilter.checked = true;
-    closeLightbox(true);
     window.history.pushState(null, "", "#" + filter.value);
     selectFilter(filter, { resetScroll: true });
   });
@@ -219,6 +221,14 @@ function thumbnailTransform(index: number) {
   const from = thumb.getBoundingClientRect();
   const to = fit.getBoundingClientRect();
   if (!from.width || !to.width) return null;
+  // A thumbnail off screen has nowhere visible to fly to, so fall back to a fade.
+  if (
+    from.bottom <= 0 ||
+    from.top >= window.innerHeight ||
+    from.right <= 0 ||
+    from.left >= window.innerWidth
+  )
+    return null;
   const x = from.left + from.width / 2 - (to.left + to.width / 2);
   const y = from.top + from.height / 2 - (to.top + to.height / 2);
   return `translate(${x}px, ${y}px) scale(${from.width / to.width})`;
@@ -257,7 +267,6 @@ function animateLightbox(opening: boolean) {
     element,
     opacity: Number.parseFloat(getComputedStyle(element).opacity) || 0,
     hidden: getComputedStyle(element).display === "none",
-    resting: element instanceof HTMLButtonElement && element.disabled ? 0.25 : 1,
   }));
   stopLightboxMotion();
   const duration = opening
@@ -275,6 +284,8 @@ function animateLightbox(opening: boolean) {
   ];
   if (fit) {
     const target = thumbnailTransform(activeIndex);
+    // With no visible thumbnail to return to, the image fades out with the backdrop.
+    const fade = !opening && !target;
     const scale = fit.animate(
       [
         {
@@ -283,8 +294,12 @@ function animateLightbox(opening: boolean) {
               ? transform
               : openingTransform(activeIndex)
             : transform,
+          ...(fade && { opacity: 1 }),
         },
-        { transform: opening ? "none" : target ?? `scale(${motionScale()})` },
+        {
+          transform: opening ? "none" : target ?? `scale(${motionScale()})`,
+          ...(fade && { opacity: 0 }),
+        },
       ],
       { duration, easing },
     );
@@ -305,10 +320,9 @@ function animateLightbox(opening: boolean) {
     animations.push(
       entry.element.animate(
         opening
-          ? [
-              { opacity: interrupted ? entry.opacity : 0 },
-              { opacity: entry.resting },
-            ]
+          ? // A lone start keyframe ends on the stylesheet's own opacity,
+            // disabled arrows included.
+            [{ opacity: interrupted ? entry.opacity : 0, offset: 0 }]
           : [{ opacity: entry.opacity }, { opacity: 0 }],
         opening
           ? {
@@ -367,6 +381,11 @@ function closeLightbox(immediate = false) {
   }
   if (closingLightbox) return;
   closingLightbox = true;
+  // A drag still held down must not move the image while it flies home.
+  gesture = null;
+  pinch = null;
+  activePointers.clear();
+  lightbox.removeAttribute("data-dragging");
   if (zoomLevel > 1) resetZoom(true);
   const fade = animateLightbox(false);
   const settle = () => {
@@ -384,10 +403,14 @@ function prepareSlide(index: number) {
   const img = imgEls[index];
   const button = activeButtons[index];
   if (!img || !button) return;
-  const width = button.dataset.fullWidth;
-  const height = button.dataset.fullHeight;
-  if (width) img.width = Number(width);
-  if (height) img.height = Number(height);
+  const width = Number(button.dataset.fullWidth);
+  const height = Number(button.dataset.fullHeight);
+  if (width && height) {
+    img.width = width;
+    img.height = height;
+    img.style.setProperty("--full-width", `${width}px`);
+    img.style.setProperty("--ratio", String(width / height));
+  }
   img.alt = button.querySelector("img")?.alt ?? "";
 }
 
@@ -410,15 +433,16 @@ function assignSlideSource(index: number, full: boolean) {
   }
   const preload = new Image();
   preload.src = src;
-  void preload
-    .decode()
-    .catch(() => {})
-    .finally(() => {
+  // A failed load keeps the thumbnail rather than showing a broken image.
+  void preload.decode().then(
+    () => {
       if (!lightbox.open || slideDesired[index] !== src) return;
       const current = imgEls[index];
       if (!current || current.getAttribute("src") === src) return;
       current.src = src;
-    });
+    },
+    () => {},
+  );
 }
 
 function syncSlideSources(center: number) {
@@ -466,25 +490,34 @@ function buildCarousel() {
 function setActiveSlide(index: number) {
   slideEls.forEach((slide, position) => {
     slide.classList.toggle("is-active", position === index);
+    // Offscreen slides stay out of the accessibility tree.
+    if (position === index) slide.removeAttribute("aria-hidden");
+    else slide.setAttribute("aria-hidden", "true");
   });
 }
 
-function updateRail(index: number) {
+function updateRail(index: number, behavior: ScrollBehavior = "smooth") {
   const items = lightboxRail.children;
   for (let position = 0; position < items.length; position += 1) {
     const item = items[position] as HTMLElement | undefined;
     if (!item) continue;
+    // Only the current thumbnail is a tab stop. Arrow keys move between them.
+    item.tabIndex = position === index ? 0 : -1;
     if (position === index) item.setAttribute("aria-current", "true");
     else item.removeAttribute("aria-current");
   }
   const current = items[index] as HTMLElement | undefined;
   if (!current || lightboxRail.hidden) return;
+  // Arrow keys pressed on a thumbnail carry focus to the new one.
+  if (lightboxRail.contains(document.activeElement)) {
+    current.focus({ preventScroll: true });
+  }
   lightboxRail.scrollTo({
     left:
       current.offsetLeft -
       lightboxRail.clientWidth / 2 +
       current.offsetWidth / 2,
-    behavior: reducedMotion.matches ? "auto" : "smooth",
+    behavior: reducedMotion.matches ? "auto" : behavior,
   });
 }
 
@@ -513,6 +546,12 @@ function setActiveState(index: number) {
   syncSlideSources(index);
   lightboxPrevious.disabled = index <= 0;
   lightboxNext.disabled = index >= activeButtons.length - 1;
+  // A disabled arrow drops focus to the page, so hand it to the other one.
+  const focused = document.activeElement;
+  if (focused instanceof HTMLButtonElement && focused.disabled) {
+    const fallback = [lightboxPrevious, lightboxNext].find((arrow) => !arrow.disabled);
+    (fallback ?? lightboxClose).focus();
+  }
   setActiveSlide(index);
 }
 
@@ -544,6 +583,7 @@ function liveTrackTransform() {
 }
 
 function goToSlide(index: number, animate = true) {
+  if (closingLightbox) return;
   const count = activeButtons.length;
   if (!count || !slideWidth) return;
   const target = Math.min(count - 1, Math.max(0, index));
@@ -553,6 +593,13 @@ function goToSlide(index: number, animate = true) {
   setActiveState(target);
   setTrackTransform(-target * slideWidth, 0, animate, trackDuration(distance));
   noteActivity();
+}
+
+// Finish a slide change that a press interrupted without dragging.
+function settleTrack(duration?: number) {
+  const target = -activeIndex * slideWidth;
+  const distance = Math.abs(target - liveTrackTransform().x) / Math.max(1, slideWidth);
+  setTrackTransform(target, 0, true, duration ?? trackDuration(distance));
 }
 
 function moveBy(direction: -1 | 1) {
@@ -739,6 +786,8 @@ for (const button of imageButtons) {
     unlockScroll = lockDocumentScroll();
     lightbox.showModal();
     lightbox.focus({ preventScroll: true });
+    // The closed dialog has no layout, so centre the current thumbnail now.
+    updateRail(activeIndex, "auto");
     slideWidth = lightboxTrack.clientWidth;
     setTrackTransform(-activeIndex * slideWidth, 0, false);
     if (!reducedMotion.matches) animateLightbox(true);
@@ -769,14 +818,19 @@ lightbox.addEventListener("close", () => {
   if (!lightbox.open) cleanupLightbox();
 });
 lightbox.addEventListener("keydown", (event) => {
+  // Leave browser shortcuts such as Alt+Left alone, and ignore keys while closing.
+  if (closingLightbox || event.altKey || event.ctrlKey || event.metaKey) return;
   if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
     event.preventDefault();
     moveBy(event.key === "ArrowLeft" ? -1 : 1);
+  } else if (event.key === "Home" || event.key === "End") {
+    event.preventDefault();
+    goToSlide(event.key === "Home" ? 0 : activeButtons.length - 1);
   }
 });
 
 lightboxStage.addEventListener("dblclick", (event) => {
-  if (!lightbox.open) return;
+  if (!lightbox.open || closingLightbox) return;
   const rect = lightboxViewport.getBoundingClientRect();
   const x = event.clientX - (rect.left + rect.width / 2);
   const y = event.clientY - (rect.top + rect.height / 2);
@@ -787,7 +841,7 @@ lightboxStage.addEventListener("dblclick", (event) => {
 lightbox.addEventListener(
   "wheel",
   (event) => {
-    if (!lightbox.open) return;
+    if (!lightbox.open || closingLightbox) return;
     if (event.ctrlKey || event.metaKey) {
       event.preventDefault();
       const rect = lightboxViewport.getBoundingClientRect();
@@ -820,7 +874,7 @@ lightbox.addEventListener(
 );
 
 lightboxStage.addEventListener("pointerdown", (event) => {
-  if (!lightbox.open || event.button !== 0) return;
+  if (!lightbox.open || closingLightbox || event.button !== 0) return;
   suppressClick = false;
   noteActivity();
   activePointers.set(event.pointerId, {
@@ -828,6 +882,8 @@ lightboxStage.addEventListener("pointerdown", (event) => {
     y: event.clientY,
   });
   if (activePointers.size === 2) {
+    // A swipe that turns into a pinch returns to the current slide first.
+    if (gesture) settleTrack();
     gesture = null;
     lightbox.removeAttribute("data-dragging");
     lightbox.style.opacity = "";
@@ -866,6 +922,14 @@ lightboxStage.addEventListener("pointermove", (event) => {
     return;
   }
   if (!gesture || event.pointerId !== gesture.id) return;
+  // A mouse release lost to another window ends the drag here instead.
+  if (!gesture.touch && !(event.buttons & 1)) {
+    activePointers.delete(event.pointerId);
+    gesture = null;
+    lightbox.removeAttribute("data-dragging");
+    if (zoomLevel === 1) settleTrack();
+    return;
+  }
   const dx = event.clientX - gesture.x;
   const dy = event.clientY - gesture.y;
   const moveX = event.clientX - gesture.lastX;
@@ -875,6 +939,8 @@ lightboxStage.addEventListener("pointermove", (event) => {
   if (!gesture.moved && Math.hypot(dx, dy) > 8) {
     gesture.moved = true;
     suppressClick = true;
+    // Keep the drag's pointerup even if it ends over the chrome.
+    lightboxStage.setPointerCapture(event.pointerId);
   }
   if (!gesture.moved) return;
   if (zoomLevel > 1) {
@@ -906,7 +972,8 @@ lightboxStage.addEventListener("pointermove", (event) => {
   event.preventDefault();
 });
 
-lightboxStage.addEventListener("pointerup", (event) => {
+// On the dialog, so a release over the arrows or rail still ends the gesture.
+lightbox.addEventListener("pointerup", (event) => {
   activePointers.delete(event.pointerId);
   if (pinch) {
     if (activePointers.size < 2) {
@@ -931,8 +998,10 @@ lightboxStage.addEventListener("pointerup", (event) => {
     return;
   }
   const live = liveTrackTransform();
-  if (!active.moved || !active.axis) {
+  // A press that never became a horizontal drag lets an interrupted slide finish.
+  if (!active.moved || !active.axis || (active.axis === "y" && !active.touch)) {
     lightbox.style.opacity = "";
+    settleTrack();
     return;
   }
   if (active.axis === "x") {
@@ -943,22 +1012,23 @@ lightboxStage.addEventListener("pointerup", (event) => {
     goToSlide(target);
     return;
   }
-  if (!active.touch) return;
   if (dy > 90 || (velocityY > 0.11 && dy > 20)) {
-    lightbox.style.opacity = "";
+    // Close from the dimmed state. Cleanup clears the opacity.
     closeLightbox();
     return;
   }
   lightbox.style.opacity = "";
-  setTrackTransform(live.x, 0, true, 240);
+  settleTrack(240);
 });
 
-lightboxStage.addEventListener("pointercancel", (event) => {
+lightbox.addEventListener("pointercancel", (event) => {
   activePointers.delete(event.pointerId);
   if (pinch && activePointers.size < 2) pinch = null;
+  const interrupted = gesture && zoomLevel === 1;
   gesture = null;
   lightbox.removeAttribute("data-dragging");
   lightbox.style.opacity = "";
+  if (interrupted) settleTrack();
 });
 
 lightbox.addEventListener("pointermove", noteActivity);
@@ -969,14 +1039,37 @@ lightbox.addEventListener("focusin", noteActivity);
 window.addEventListener("hashchange", () => syncFromHash());
 window.addEventListener("popstate", () => syncFromHash());
 window.addEventListener("pageshow", () => syncFromHash(false));
-window.addEventListener("resize", () => {
+// Jump to the artwork without writing #work into history, which the
+// category router would not understand on Back.
+skipLink.addEventListener("click", (event) => {
+  event.preventDefault();
+  gallery.focus();
+});
+
+// Text-only zoom and font loading resize the tabs without a window resize.
+const filterResize = new ResizeObserver(() => {
   positionFilterIndicator(false);
   revealFilterLabel(renderedFilter);
+});
+filterResize.observe(filterControls);
+for (const label of filterControls.querySelectorAll("label")) filterResize.observe(label);
+window.addEventListener("resize", () => {
   if (!lightbox.open || !imgEls.length) return;
   slideWidth = lightboxTrack.clientWidth;
+  // A drag measured against the old width would jump, so drop it along with
+  // the dimming a swipe down applies.
+  gesture = null;
+  pinch = null;
+  activePointers.clear();
+  lightbox.removeAttribute("data-dragging");
+  lightbox.style.opacity = "";
   setTrackTransform(-activeIndex * slideWidth, 0, false);
+  updateRail(activeIndex, "auto");
+  if (zoomLevel > 1) {
+    clampPan();
+    applyZoom(false);
+  }
 });
-void document.fonts.ready.then(() => positionFilterIndicator(false));
 window.addEventListener("pagehide", () => {
   categoryTransition?.skipTransition();
   closeLightbox(true);

@@ -219,9 +219,21 @@ button:focus-visible {
     text-underline-offset: 0.35em;
   }
 }
+.filter-controls > label {
+  position: relative;
+}
+/* Drawn on a pseudo-element: wider than the text, but inside the label's
+   height, so the sticky rail never clips it and the underline stays clear. */
 .filter-controls > input:focus-visible + label {
+  outline: none;
+}
+.filter-controls > input:focus-visible + label::after {
+  content: "";
+  position: absolute;
+  /* Clear of the underline below, and of the next tab across a phone's 10px gap. */
+  inset: 6px max(-0.4em, -6px);
   outline: 2px solid var(--ink);
-  outline-offset: 4px;
+  pointer-events: none;
 }
 /* Announces the shown count to screen readers when the filter changes. */
 .collection-count {
@@ -444,7 +456,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   font-size: var(--text-caption);
   line-height: 1.4;
   /* Long words break at large text sizes instead of spilling into the next caption. */
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 .artwork-size,
 .artwork-meta {
@@ -453,6 +465,23 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .artwork-size {
   font-variant-numeric: tabular-nums;
+}
+/* Large text can't fit the size beside the title, so it drops to its own line
+   rather than splitting a number. */
+@media (min-width: 768px) {
+  .collection-grid figcaption {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+  .artwork-title {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+  .artwork-meta {
+    flex-basis: 100%;
+    min-width: 0;
+  }
 }
 .artwork-meta {
   grid-column: 1 / -1;
@@ -554,12 +583,18 @@ html[data-gallery-scroll]::view-transition-new(root) {
   max-height: none;
   margin: 0;
   border: 0;
-  padding: 44px 80px 152px;
+  /* Room for the count above and the caption and rail below. The rem parts
+     grow with the text, so large text never covers the artwork. */
+  --lightbox-top: calc(28px + 1rem);
+  --lightbox-side: 80px;
+  --lightbox-bottom: calc(96px + 3.5rem);
+  padding: var(--lightbox-top) var(--lightbox-side) var(--lightbox-bottom);
   color: var(--ink);
   background: transparent;
   cursor: zoom-out;
 }
-.lightbox:focus {
+.lightbox:focus,
+#work:focus {
   outline: none;
 }
 .lightbox[open] {
@@ -595,8 +630,9 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox-viewport {
   position: absolute;
-  inset: 44px 80px 152px;
+  inset: var(--lightbox-top) var(--lightbox-side) var(--lightbox-bottom);
   overflow: hidden;
+  container-type: size;
 }
 /* Let the open and close transitions travel to and from the thumbnail. */
 .lightbox[data-flipping] .lightbox-viewport {
@@ -630,10 +666,11 @@ html[data-gallery-scroll]::view-transition-new(root) {
 }
 .lightbox-slide img {
   display: block;
-  width: auto;
+  /* Sized from the full image, so the box holds still when it replaces the
+     thumbnail. --full-width and --ratio come from portfolio.ts. */
+  width: min(var(--full-width, 1600px), 1600px, 100cqw, 100cqh * var(--ratio, 1));
   height: auto;
-  max-width: min(calc(100vw - 160px), 1600px);
-  max-height: calc(100dvh - 196px);
+  aspect-ratio: var(--ratio, auto);
   object-fit: contain;
   opacity: 1;
   transition: opacity 200ms var(--ease-smooth-out);
@@ -645,6 +682,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   position: absolute;
   z-index: 4;
   left: 28px;
+  right: 28px;
   bottom: 86px;
   display: grid;
   gap: 3px;
@@ -747,7 +785,7 @@ html[data-gallery-scroll]::view-transition-new(root) {
   transition: opacity var(--duration-fast) var(--ease-smooth-out);
 }
 .lightbox[data-chrome-hidden]
-  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, .lightbox figcaption, .lightbox-rail) {
+  :is(.lightbox-close, .lightbox-arrow, .lightbox-count, figcaption, .lightbox-rail) {
   opacity: 0;
   pointer-events: none;
 }
@@ -761,6 +799,19 @@ html[data-gallery-scroll]::view-transition-new(root) {
 .lightbox-rail button:focus-visible {
   opacity: 1;
   outline-offset: -2px;
+}
+@media (forced-colors: active) {
+  /* GrayText already marks a disabled arrow. */
+  .lightbox-arrow:disabled {
+    opacity: 1;
+  }
+  .lightbox-rail button[aria-current="true"] {
+    border: 2px solid Highlight;
+  }
+  /* Focus sits outside the thumbnail, so it reads apart from the current one. */
+  .lightbox-rail button:focus-visible {
+    outline-offset: 1px;
+  }
 }
 .lightbox[data-zoomed] .lightbox-fit {
   cursor: grab;
@@ -836,10 +887,6 @@ html[data-gallery-scroll]::view-transition-new(root) {
     overflow-x: auto;
     scrollbar-width: none;
   }
-  /* The scrolling rail clips anything outside it. */
-  .filter-controls > input:focus-visible + label {
-    outline-offset: -2px;
-  }
   .filter-controls > label {
     padding-block: 0;
     min-height: 44px;
@@ -909,17 +956,14 @@ html[data-gallery-scroll]::view-transition-new(root) {
     font-size: 0.8125rem;
   }
   .lightbox {
-    padding: 64px 12px 132px;
-  }
-  .lightbox-viewport {
-    inset: 64px 12px 132px;
-  }
-  .lightbox-slide img {
-    max-width: calc(100vw - 24px);
-    max-height: calc(100dvh - 196px);
+    --lightbox-top: 64px;
+    --lightbox-side: 12px;
+    /* Four caption lines fit once large text wraps the medium. */
+    --lightbox-bottom: max(132px, calc(36px + 4.5rem));
   }
   .lightbox figcaption {
     left: 16px;
+    right: 16px;
     bottom: 22px;
   }
   .lightbox-count {
@@ -929,11 +973,33 @@ html[data-gallery-scroll]::view-transition-new(root) {
   .lightbox-arrow {
     background: rgba(232, 232, 229, 0.82);
   }
+  /* The arrows sit 6px from the edge, so keep their ring on screen. */
+  .lightbox-arrow:focus-visible {
+    outline-offset: 2px;
+  }
   .lightbox-previous {
     left: 6px;
   }
   .lightbox-next {
     right: 6px;
+  }
+  .lightbox-rail {
+    display: none;
+  }
+}
+
+/* Phones held sideways: drop the rail so the artwork gets the height. */
+@media (max-height: 500px) {
+  .lightbox {
+    --lightbox-top: calc(20px + 1rem);
+    --lightbox-side: 80px;
+    --lightbox-bottom: calc(28px + 3.5rem);
+  }
+  .lightbox figcaption {
+    bottom: 16px;
+  }
+  .lightbox-count {
+    top: 16px;
   }
   .lightbox-rail {
     display: none;
